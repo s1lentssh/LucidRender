@@ -1,4 +1,4 @@
-<img width="50" align="left" src="/Resources/Icons/app-icon.png">
+<img width="100" align="left" src="/Resources/Icons/app-icon.png">
 
 ## Minimalistic render engine
 Written on modern C++ <br>
