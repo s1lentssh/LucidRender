@@ -51,11 +51,11 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       shell: bash
       # Execute the build.  You can specify a specific target with "--target <NAME>"
-      run: cmake --build . --config $BUILD_TYPE --target install --prefix ${{env.INSTALL_DIR}}
+      run: cmake --build . --config $BUILD_TYPE --target install
     
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
         name: LucidRender
-        path: ${{runner.workspace}}/${{env.INSTALL_DIR}}
+        path: "C:/Program Files (x86)/LucidRender/"
       
