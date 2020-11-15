@@ -1,14 +1,14 @@
 #include "VulkanRenderPass.h"
+
 #include <Utils/Logger.hpp>
+#include <Vulkan/VulkanPipeline.h>
 
 namespace lucid
 {
 
 VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, const VulkanSwapchain& swapchain)
 {
-	/* 
-		Create subpass 
-	*/
+	// Create subpass 
 	auto colorAttachmentReference = vk::AttachmentReference()
 		.setAttachment(0)
 		.setLayout(vk::ImageLayout::eColorAttachmentOptimal);
@@ -19,9 +19,15 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, const VulkanSwapchain& 
 		.setColorAttachmentCount(1)
 		.setPColorAttachments(&colorAttachmentReference);
 
-	/*
-		Create render pass
-	*/
+	// Create render pass
+	auto subpassDependency = vk::SubpassDependency()
+		.setSrcSubpass(VK_SUBPASS_EXTERNAL)
+		.setDstSubpass(0)
+		.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+		.setSrcAccessMask({})
+		.setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+		.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite);
+
 	auto colorAttachment = vk::AttachmentDescription()
 		.setFormat(swapchain.GetImageFormat())
 		.setSamples(vk::SampleCountFlagBits::e1)
@@ -36,7 +42,9 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, const VulkanSwapchain& 
 		.setAttachmentCount(1)
 		.setPAttachments(&colorAttachment)
 		.setSubpassCount(1)
-		.setPSubpasses(&subpass);
+		.setPSubpasses(&subpass)
+		.setDependencyCount(1)
+		.setPDependencies(&subpassDependency);
 
 	mRenderPass = device.Handle()->createRenderPassUnique(renderPassCreateInfo);
 	Logger::Info("Render pass created");

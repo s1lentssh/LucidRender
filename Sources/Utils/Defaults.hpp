@@ -5,8 +5,8 @@
 
 struct Defaults
 {
-    inline static const std::uint32_t Width = 800;
-    inline static const std::uint32_t Height = 600;
+    inline static const std::uint32_t Width = 1024;
+    inline static const std::uint32_t Height = 768;
     inline static const std::string ApplicationName = "LucidRender";
     inline static const std::string EngineName = "LucidEngine";
 

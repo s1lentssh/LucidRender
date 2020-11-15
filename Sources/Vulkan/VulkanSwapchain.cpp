@@ -14,13 +14,29 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const VulkanSurface& surf
 	CreateImageViews();
 }
 
+std::uint32_t VulkanSwapchain::AcquireNextImage(const vk::UniqueSemaphore& semaphore)
+{
+	vk::ResultValue resultValue = mDevice.Handle()->acquireNextImageKHR(
+		mSwapchain.get(), 
+		std::numeric_limits<std::uint64_t>::max(), 
+		semaphore.get(), {});
+
+	if (vk::Result::eSuccess != resultValue.result)
+	{
+		using namespace std::string_literals;
+		throw std::runtime_error("Vulkan error: "s);
+	}
+
+	return resultValue.value;
+}
+
 vk::SurfaceFormatKHR VulkanSwapchain::SelectSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats) const noexcept
 {
 	assert(!availableFormats.empty());
 
 	for (const auto& availableFormat : availableFormats)
 	{
-		bool niceFormat = vk::Format::eB8G8R8A8Srgb == availableFormat.format;
+		bool niceFormat = vk::Format::eR8G8B8A8Srgb == availableFormat.format;
 		bool niceColorSpace = vk::ColorSpaceKHR::eSrgbNonlinear == availableFormat.colorSpace;
 
 		if (niceFormat && niceColorSpace)

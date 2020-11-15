@@ -1,9 +1,10 @@
 #pragma once
 
 #include <vulkan/vulkan.hpp>
-#include "VulkanDevice.h"
-#include "VulkanSwapchain.h"
-#include "VulkanRenderPass.h"
+
+#include <Vulkan/VulkanDevice.h>
+#include <Vulkan/VulkanSwapchain.h>
+#include <Vulkan/VulkanRenderPass.h>
 
 namespace lucid
 {
@@ -12,11 +13,12 @@ class VulkanPipeline
 {
 public:
 	VulkanPipeline(VulkanDevice& device, VulkanSwapchain& swapchain, VulkanRenderPass& renderPass);
+	vk::UniquePipeline& Handle() { return mPipeline; }
+	std::vector<vk::UniqueFramebuffer>& GetFramebuffers() { return mFramebuffers; }
 
 private:
 	void Init();
 	void CreateFramebuffers();
-	void CreateCommandBuffers();
 
 	VulkanDevice& mDevice;
 	VulkanSwapchain& mSwapchain;
@@ -25,9 +27,6 @@ private:
 	vk::UniquePipelineLayout mLayout;
 	vk::UniquePipeline mPipeline;
 	std::vector<vk::UniqueFramebuffer> mFramebuffers;
-
-	vk::UniqueCommandPool mCommandPool;
-	std::vector<vk::UniqueCommandBuffer> mCommandBuffers;
 };
 
 }

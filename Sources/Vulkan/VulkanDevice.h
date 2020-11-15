@@ -37,6 +37,8 @@ public:
     [[nodiscard]] SwapchainDetails GetSwapchainDetails(const VulkanSurface& surface) const noexcept;
     [[nodiscard]] std::optional<std::uint32_t> FindGraphicsQueueFamily() const noexcept;
     [[nodiscard]] std::optional<std::uint32_t> FindPresentQueueFamily(const VulkanSurface& surface) const noexcept;
+    [[nodiscard]] vk::Queue& GetGraphicsQueue() noexcept { return mGraphicsQueue; }
+    [[nodiscard]] vk::Queue& GetPresentQueue() noexcept { return mPresentQueue; }
 
 private:
     [[nodiscard]] std::vector<const char*> GetUnsupportedExtensions() const noexcept;

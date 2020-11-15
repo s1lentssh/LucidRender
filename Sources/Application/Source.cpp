@@ -20,6 +20,7 @@ auto main() -> int
     while (!window.ShouldClose())
     {
         window.PollEvents();
+        render->DrawFrame();
     }
 
     return EXIT_SUCCESS;

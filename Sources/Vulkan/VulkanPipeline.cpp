@@ -12,13 +12,12 @@ VulkanPipeline::VulkanPipeline(VulkanDevice& device, VulkanSwapchain& swapchain,
 {
 	Init();
 	CreateFramebuffers();
-	CreateCommandBuffers();
 }
 
 void VulkanPipeline::Init()
 {
 	VulkanShader vertexShader(mDevice, VulkanShader::Type::Vertex);
-	VulkanShader fragmentShader(mDevice, VulkanShader::Type::Vertex);
+	VulkanShader fragmentShader(mDevice, VulkanShader::Type::Fragment);
 
 	auto vertexShaderStageInfo = vk::PipelineShaderStageCreateInfo()
 		.setStage(vk::ShaderStageFlagBits::eVertex)
@@ -47,8 +46,8 @@ void VulkanPipeline::Init()
 		.setY(0.0f)
 		.setMinDepth(0.0f)
 		.setMaxDepth(1.0f)
-		.setWidth(extent.width)
-		.setHeight(extent.height);
+		.setWidth(static_cast<float>(extent.width))
+		.setHeight(static_cast<float>(extent.height));
 
 	auto scissor = vk::Rect2D()
 		.setExtent(extent)
@@ -66,7 +65,8 @@ void VulkanPipeline::Init()
 		.setPolygonMode(vk::PolygonMode::eFill)
 		.setLineWidth(1.0f)
 		.setCullMode(vk::CullModeFlagBits::eBack)
-		.setFrontFace(vk::FrontFace::eClockwise);
+		.setFrontFace(vk::FrontFace::eClockwise)
+		.setDepthBiasEnable(false);
 
 	auto multisampleState = vk::PipelineMultisampleStateCreateInfo()
 		.setSampleShadingEnable(false)
@@ -126,25 +126,6 @@ void VulkanPipeline::CreateFramebuffers()
 	}
 
 	Logger::Info("Framebuffers created");
-}
-
-void VulkanPipeline::CreateCommandBuffers()
-{
-	auto commandPoolCreateInfo = vk::CommandPoolCreateInfo()
-		.setQueueFamilyIndex(mDevice.FindGraphicsQueueFamily().value());
-
-	mCommandPool = mDevice.Handle()->createCommandPoolUnique(commandPoolCreateInfo);
-
-	Logger::Info("Command pool created");
-
-	auto commandBufferAllocateInfo = vk::CommandBufferAllocateInfo()
-		.setCommandBufferCount(mCommandBuffers.size())
-		.setCommandPool(mCommandPool.get())
-		.setLevel(vk::CommandBufferLevel::ePrimary);
-
-	mCommandBuffers = mDevice.Handle()->allocateCommandBuffersUnique(commandBufferAllocateInfo);
-
-	Logger::Info("Command buffers allocated");
 }
 
 }

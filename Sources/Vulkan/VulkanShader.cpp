@@ -11,11 +11,11 @@ VulkanShader::VulkanShader(VulkanDevice& device, Type type)
 	switch (type)
 	{
 	case Type::Vertex:
-		code = ReadFile("../../../Resources/Shaders/Vert.spv");
+		code = ReadFile("D:/Work/LucidRender/Resources/Shaders/Vert.spv");
 		break;
 
 	case Type::Fragment:
-		code = ReadFile("../../../Resources/Shaders/Frag.spv");
+		code = ReadFile("D:/Work/LucidRender/Resources/Shaders/Frag.spv");
 		break;
 	}
 

@@ -9,7 +9,8 @@ set(HEADERS
     VulkanSwapchain.cpp
     VulkanPipeline.cpp
     VulkanShader.cpp
-    VulkanRenderPass.cpp)
+    VulkanRenderPass.cpp
+    VulkanCommandManager.cpp)
 
 set(SOURCES
     VulkanDevice.h
@@ -19,7 +20,8 @@ set(SOURCES
     VulkanSwapchain.h
     VulkanPipeline.h
     VulkanShader.h
-    VulkanRenderPass.h)
+    VulkanRenderPass.h
+    VulkanCommandManager.h)
 
 add_library(${PROJECT_NAME} ${HEADERS} ${SOURCES})
 add_library(lucid::Vulkan ALIAS ${PROJECT_NAME})
