@@ -1,6 +1,7 @@
 #include "VulkanCommandManager.h"
 
 #include <Utils/Logger.hpp>
+#include <Utils/Defaults.hpp>
 
 namespace lucid
 {
@@ -31,7 +32,7 @@ VulkanCommandManager::VulkanCommandManager(VulkanDevice& device, VulkanPipeline&
 		auto commandBufferBeginInfo = vk::CommandBufferBeginInfo();
 		commandBuffer->begin(commandBufferBeginInfo);
 
-		vk::ClearValue clearColor = std::array<float, 4>{ 0.005f, 0.005f, 0.005f, 1.0f };
+		vk::ClearValue clearColor = Defaults::BackgroundColor;
 
 		auto renderPassBeginInfo = vk::RenderPassBeginInfo()
 			.setRenderPass(renderPass.Handle().get())

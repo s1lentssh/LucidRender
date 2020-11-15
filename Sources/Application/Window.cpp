@@ -2,12 +2,20 @@
 
 #include <Utils/Defaults.hpp>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 Window::Window()
 {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     mWindow = glfwCreateWindow(Defaults::Width, Defaults::Height, Defaults::ApplicationName.c_str(), nullptr, nullptr);
+
+    GLFWimage icons[1];
+    icons->pixels = stbi_load("Resources/Icons/app-icon.png", &icons->width, &icons->height, nullptr, 4);
+    glfwSetWindowIcon(mWindow, std::size(icons), icons);
+    stbi_image_free(icons->pixels);
 }
 
 Window::~Window()

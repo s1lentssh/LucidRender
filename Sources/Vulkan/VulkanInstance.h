@@ -35,8 +35,6 @@ private:
 	
 	// Members
 	vk::UniqueInstance mInstance;
-
-	vk::UniqueSurfaceKHR mSurface;
 };
 
 }

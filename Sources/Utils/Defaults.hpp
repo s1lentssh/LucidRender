@@ -2,13 +2,15 @@
 
 #include <cstdint>
 #include <string>
+#include <array>
 
 struct Defaults
 {
-    inline static const std::uint32_t Width = 1024;
-    inline static const std::uint32_t Height = 768;
-    inline static const std::string ApplicationName = "LucidRender";
+    inline static const std::uint32_t Width = 1200;
+    inline static const std::uint32_t Height = 600;
+    inline static const std::string ApplicationName = "Lucid";
     inline static const std::string EngineName = "LucidEngine";
+    inline static const std::array<float, 4> BackgroundColor = { 0.003f, 0.003f, 0.003f, 1.0f };
 
 #ifndef NDEBUG
     inline static const bool EnableValidationLayers = true;

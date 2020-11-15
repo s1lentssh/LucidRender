@@ -16,8 +16,8 @@ VulkanPipeline::VulkanPipeline(VulkanDevice& device, VulkanSwapchain& swapchain,
 
 void VulkanPipeline::Init()
 {
-	VulkanShader vertexShader(mDevice, VulkanShader::Type::Vertex);
-	VulkanShader fragmentShader(mDevice, VulkanShader::Type::Fragment);
+	VulkanShader vertexShader(mDevice, "Resources/Shaders/Vert.spv");
+	VulkanShader fragmentShader(mDevice, "Resources/Shaders/Frag.spv");
 
 	auto vertexShaderStageInfo = vk::PipelineShaderStageCreateInfo()
 		.setStage(vk::ShaderStageFlagBits::eVertex)
@@ -82,14 +82,19 @@ void VulkanPipeline::Init()
 
 	auto colorBlendState = vk::PipelineColorBlendStateCreateInfo()
 		.setLogicOpEnable(false)
+		.setLogicOp(vk::LogicOp::eCopy)
 		.setAttachmentCount(1)
-		.setPAttachments(&colorBlendAttachmentState);
+		.setPAttachments(&colorBlendAttachmentState)
+		.setBlendConstants({ 0.0f, 0.0f, 0.0f, 0.0f });
 
-	auto pipelineLayoutCreateInfo = vk::PipelineLayoutCreateInfo();
+	auto pipelineLayoutCreateInfo = vk::PipelineLayoutCreateInfo()
+		.setSetLayoutCount(0)
+		.setPushConstantRangeCount(0);
+
 	mLayout = mDevice.Handle()->createPipelineLayoutUnique(pipelineLayoutCreateInfo);
 
 	auto pipelineCreateInfo = vk::GraphicsPipelineCreateInfo()
-		.setStageCount(1)
+		.setStageCount(std::size(shaderStages))
 		.setPStages(shaderStages)
 		.setPVertexInputState(&vertexInputState)
 		.setPInputAssemblyState(&inputAssemblyState)

@@ -4,20 +4,9 @@
 namespace lucid
 {
 
-VulkanShader::VulkanShader(VulkanDevice& device, Type type)
+VulkanShader::VulkanShader(VulkanDevice& device, const std::filesystem::path& path)
 {
-	std::vector<char> code;
-
-	switch (type)
-	{
-	case Type::Vertex:
-		code = ReadFile("D:/Work/LucidRender/Resources/Shaders/Vert.spv");
-		break;
-
-	case Type::Fragment:
-		code = ReadFile("D:/Work/LucidRender/Resources/Shaders/Frag.spv");
-		break;
-	}
+	std::vector<char> code = ReadFile(path);
 
 	auto shaderModuleCreateInfo = vk::ShaderModuleCreateInfo()
 		.setCodeSize(code.size())

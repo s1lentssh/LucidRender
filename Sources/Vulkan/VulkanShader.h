@@ -11,13 +11,7 @@ namespace lucid
 class VulkanShader
 {
 public:
-	enum class Type
-	{
-		Vertex,
-		Fragment
-	};
-
-	VulkanShader(VulkanDevice& device, Type type);
+	VulkanShader(VulkanDevice& device, const std::filesystem::path& path);
 
 	vk::UniqueShaderModule& Handle() { return mModule; }
 
