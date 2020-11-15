@@ -43,7 +43,7 @@ jobs:
       # Note the current convention is to use the -S and -B options here to specify source 
       # and build directories, but this is only available with CMake 3.13 and higher.  
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=${{runner.workspace}}/${{env.INSTALL_DIR}}
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/${{env.INSTALL_DIR}}
       env:
         Vulkan_SDK: C:/VulkanSDK/${{ env.VULKAN_VERSION }}
 
