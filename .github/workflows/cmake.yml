@@ -6,6 +6,7 @@ env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
   VULKAN_VERSION: 1.2.154.1
+  INSTALL_DIR: bin
 
 jobs:
   build:
@@ -42,7 +43,7 @@ jobs:
       # Note the current convention is to use the -S and -B options here to specify source 
       # and build directories, but this is only available with CMake 3.13 and higher.  
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=${{runner.workspace}}/${{env.INSTALL_DIR}}
       env:
         Vulkan_SDK: C:/VulkanSDK/${{ env.VULKAN_VERSION }}
 
@@ -52,9 +53,16 @@ jobs:
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: cmake --build . --config $BUILD_TYPE
 
-    - name: Test
+    - name: Install
       working-directory: ${{runner.workspace}}/build
       shell: bash
       # Execute tests defined by the CMake configuration.  
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ctest -C $BUILD_TYPE
+      run: cmake --install
+    
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: LucidRender
+        path: ${{runner.workspace}}/${{env.INSTALL_DIR}}
+      
