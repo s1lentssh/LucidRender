@@ -22,7 +22,7 @@ VulkanCommandManager::VulkanCommandManager(VulkanDevice& device, VulkanPipeline&
 
 	// Allocate command buffers
 	auto commandBufferAllocateInfo = vk::CommandBufferAllocateInfo()
-		.setCommandBufferCount(imageCount)
+		.setCommandBufferCount(static_cast<std::uint32_t>(imageCount))
 		.setCommandPool(mCommandPool.get())
 		.setLevel(vk::CommandBufferLevel::ePrimary);
 

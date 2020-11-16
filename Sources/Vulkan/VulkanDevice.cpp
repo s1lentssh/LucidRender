@@ -54,9 +54,9 @@ void VulkanDevice::InitLogicalDeviceForSurface(const VulkanSurface& surface) noe
 
 	auto deviceCreateInfo = vk::DeviceCreateInfo()
 		.setPQueueCreateInfos(queueCreateInfos.data())
-		.setQueueCreateInfoCount(queueCreateInfos.size())
+		.setQueueCreateInfoCount(static_cast<std::uint32_t>(queueCreateInfos.size()))
 		.setPEnabledFeatures(&deviceFeatures)
-		.setEnabledExtensionCount(mExtensions.size())
+		.setEnabledExtensionCount(static_cast<std::uint32_t>(mExtensions.size()))
 		.setPpEnabledExtensionNames(mExtensions.data());
 
 	mLogicalDevice = mPhysicalDevice.createDeviceUnique(deviceCreateInfo);

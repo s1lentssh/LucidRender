@@ -145,7 +145,14 @@ void VulkanInstance::RegisterDebugCallback()
 	if (func != nullptr)
 	{
 		auto status = func(mInstance.get(), (VkDebugUtilsMessengerCreateInfoEXT*)&createInfo, nullptr, (VkDebugUtilsMessengerEXT*)&mDebugMessenger);
-		Logger::Info("Debug messenger created");
+		if (VK_SUCCESS == status)
+		{
+			Logger::Info("Debug messenger created");
+		}
+		else
+		{
+			throw std::runtime_error("Can't create vulkan debug messenger");
+		}
 	}
 	else
 	{

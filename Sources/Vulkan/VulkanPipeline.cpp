@@ -98,7 +98,7 @@ void VulkanPipeline::Init()
 	mLayout = mDevice.Handle()->createPipelineLayoutUnique(pipelineLayoutCreateInfo);
 
 	auto pipelineCreateInfo = vk::GraphicsPipelineCreateInfo()
-		.setStageCount(std::size(shaderStages))
+		.setStageCount(static_cast<std::uint32_t>(std::size(shaderStages)))
 		.setPStages(shaderStages)
 		.setPVertexInputState(&vertexInputState)
 		.setPInputAssemblyState(&inputAssemblyState)

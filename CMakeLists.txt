@@ -7,10 +7,12 @@ project(LucidRender
 set(CMAKE_CXX_STANDARD 17)
 
 if(MSVC)
-    add_compile_options(/W4)
+    add_compile_options(/W4 /WX)
 else()
     add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
+
+add_compile_definitions(CMAKE_LINK_WHAT_YOU_USE)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/conan.cmake) # latest from github
 conan_cmake_run(REQUIRES

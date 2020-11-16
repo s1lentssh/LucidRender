@@ -30,12 +30,12 @@ void VulkanRender::DrawFrame()
 	vk::Semaphore signalSemaphores[] = { mRenderFinishedSemaphore.get() };
 
 	auto submitInfo = vk::SubmitInfo()
-		.setWaitSemaphoreCount(std::size(waitSemaphores))
+		.setWaitSemaphoreCount(static_cast<std::uint32_t>(std::size(waitSemaphores)))
 		.setPWaitSemaphores(waitSemaphores)
 		.setPWaitDstStageMask(waitStages)
 		.setCommandBufferCount(1)
 		.setPCommandBuffers(&mCommandManager->Get(imageIndex).get())
-		.setSignalSemaphoreCount(std::size(signalSemaphores))
+		.setSignalSemaphoreCount(static_cast<std::uint32_t>(std::size(signalSemaphores)))
 		.setPSignalSemaphores(signalSemaphores);
 
 	mDevice->GetGraphicsQueue().submit(submitInfo, {});
@@ -44,10 +44,10 @@ void VulkanRender::DrawFrame()
 	vk::SwapchainKHR swapchains[] = { mSwapchain->Handle().get() };
 
 	auto presentInfo = vk::PresentInfoKHR()
-		.setSwapchainCount(std::size(swapchains))
+		.setSwapchainCount(static_cast<std::uint32_t>(std::size(swapchains)))
 		.setPSwapchains(swapchains)
 		.setPImageIndices(&imageIndex)
-		.setWaitSemaphoreCount(std::size(signalSemaphores))
+		.setWaitSemaphoreCount(static_cast<std::uint32_t>(std::size(signalSemaphores)))
 		.setPWaitSemaphores(signalSemaphores);
 
 	mDevice->GetPresentQueue().presentKHR(presentInfo);

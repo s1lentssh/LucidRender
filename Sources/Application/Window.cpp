@@ -14,7 +14,7 @@ Window::Window()
 
     GLFWimage icons[1];
     icons->pixels = stbi_load("Resources/Icons/app-icon.png", &icons->width, &icons->height, nullptr, 4);
-    glfwSetWindowIcon(mWindow, std::size(icons), icons);
+    glfwSetWindowIcon(mWindow, static_cast<std::uint32_t>(std::size(icons)), icons);
     stbi_image_free(icons->pixels);
 }
 
