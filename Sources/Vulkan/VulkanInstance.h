@@ -1,9 +1,11 @@
 #pragma once
 
 #include <vulkan/vulkan.hpp>
-#include "VulkanDevice.h"
 
-namespace lucid {
+namespace Lucid {
+
+class VulkanDevice;
+class VulkanSurface;
 
 class VulkanInstance
 {
@@ -12,7 +14,6 @@ public:
 	~VulkanInstance();
 
 	[[nodiscard]] VulkanDevice PickSuitableDeviceForSurface(const VulkanSurface& surface) const;
-
 	[[nodiscard]] vk::UniqueInstance& Handle() { return mInstance; };
 
 private:

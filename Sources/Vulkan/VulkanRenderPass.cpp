@@ -1,9 +1,10 @@
 #include "VulkanRenderPass.h"
 
-#include <Utils/Logger.hpp>
 #include <Vulkan/VulkanPipeline.h>
+#include <Vulkan/VulkanSwapchain.h>
+#include <Utils/Logger.hpp>
 
-namespace lucid
+namespace Lucid
 {
 
 VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, const VulkanSwapchain& swapchain)

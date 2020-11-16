@@ -1,8 +1,12 @@
 #include "VulkanPipeline.h"
-#include "VulkanShader.h"
+
+#include <Vulkan/VulkanDevice.h>
+#include <Vulkan/VulkanSwapchain.h>
+#include <Vulkan/VulkanRenderPass.h>
+#include <Vulkan/VulkanShader.h>
 #include <Utils/Logger.hpp>
 
-namespace lucid
+namespace Lucid
 {
 
 VulkanPipeline::VulkanPipeline(VulkanDevice& device, VulkanSwapchain& swapchain, VulkanRenderPass& renderPass)

@@ -1,8 +1,9 @@
 #include "VulkanSwapchain.h"
-#include <Utils/Logger.hpp>
-#include <Vulkan/VulkanSurface.h>
 
-namespace lucid
+#include <Utils/Interfaces.hpp>
+#include <Utils/Logger.hpp>
+
+namespace Lucid
 {
 
 VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const VulkanSurface& surface, const IWindow& window)

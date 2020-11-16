@@ -1,12 +1,12 @@
 #include "VulkanRender.h"
 
-namespace lucid {
+namespace Lucid {
 
 VulkanRender::VulkanRender(const IWindow& window)
 {
 	// Basic initialization
 	mInstance = std::make_unique<VulkanInstance>(window.GetRequiredInstanceExtensions());
-	mSurface = std::make_unique<VulkanSurface>(*mInstance.get(), window.GetHandle());
+	mSurface = std::make_unique<VulkanSurface>(*mInstance.get(), window);
 	mDevice = std::make_unique<VulkanDevice>(mInstance->PickSuitableDeviceForSurface(*mSurface.get()));
 	mDevice->InitLogicalDeviceForSurface(*mSurface.get());
 	mSwapchain = std::make_unique<VulkanSwapchain>(*mDevice.get(), *mSurface.get(), window);

@@ -1,12 +1,12 @@
 #pragma once
 
-#include <vector>
 #include <filesystem>
 #include <vulkan/vulkan.hpp>
-#include <Vulkan/VulkanDevice.h>
 
-namespace lucid
+namespace Lucid
 {
+
+class VulkanDevice;
 
 class VulkanShader
 {
@@ -16,8 +16,6 @@ public:
 	vk::UniqueShaderModule& Handle() { return mModule; }
 
 private:
-	std::vector<char> ReadFile(const std::filesystem::path& path);
-
 	vk::UniqueShaderModule mModule;
 };
 

@@ -4,9 +4,9 @@
 #include <optional>
 #include <set>
 
-namespace lucid {
+namespace Lucid {
 
-   class VulkanSurface;
+class VulkanSurface;
 
 class VulkanDevice
 {

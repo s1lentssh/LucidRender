@@ -1,10 +1,12 @@
 #pragma once
 
 #include <vulkan/vulkan.hpp>
+#include <Vulkan/VulkanSurface.h>
 #include <Vulkan/VulkanDevice.h>
-#include <Utils/Interfaces.hpp>
 
-namespace lucid {
+namespace Lucid {
+
+class IWindow;
 
 class VulkanSwapchain
 {
@@ -26,8 +28,8 @@ private:
     void CreateImageViews();
 
     const IWindow& mWindow;
-    VulkanDevice& mDevice;
     const VulkanSurface& mSurface;
+    VulkanDevice& mDevice;
 
     vk::UniqueSwapchainKHR mSwapchain;
     std::vector<vk::Image> mImages;

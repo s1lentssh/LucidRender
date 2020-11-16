@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vulkan/vulkan.hpp>
-
 #include <Vulkan/VulkanInstance.h>
 #include <Vulkan/VulkanSurface.h>
 #include <Vulkan/VulkanSwapchain.h>
@@ -10,15 +9,13 @@
 #include <Vulkan/VulkanCommandManager.h>
 #include <Utils/Interfaces.hpp>
 
-namespace lucid {
+namespace Lucid {
 
-class VulkanDevice;
-
-class VulkanRender
+class VulkanRender : public IRender
 {
 public:
 	VulkanRender(const IWindow& window);
-	void DrawFrame();
+	void DrawFrame() override;
 
 private:
 	std::unique_ptr<VulkanInstance> mInstance;

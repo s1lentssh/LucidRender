@@ -1,10 +1,12 @@
 #include "VulkanInstance.h"
 
-#include <Utils/Defaults.hpp>
-#include <Utils/Logger.hpp>
 #include <algorithm>
 
-namespace lucid {
+#include <Vulkan/VulkanDevice.h>
+#include <Utils/Defaults.hpp>
+#include <Utils/Logger.hpp>
+
+namespace Lucid {
 
 VulkanInstance::VulkanInstance(std::vector<const char*> requiredInstanceExtensions)
 {

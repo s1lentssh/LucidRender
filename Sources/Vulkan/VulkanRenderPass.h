@@ -1,12 +1,13 @@
 #pragma once
 
 #include <vulkan/vulkan.hpp>
-#include <Vulkan/VulkanSwapchain.h>
 
-namespace lucid
+namespace Lucid
 {
 
 class VulkanPipeline;
+class VulkanSwapchain;
+class VulkanDevice;
 
 class VulkanRenderPass
 {

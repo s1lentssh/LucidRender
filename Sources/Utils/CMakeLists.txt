@@ -4,10 +4,11 @@ project(Utils)
 set(HEADERS 
     Logger.hpp 
     Defaults.hpp
-    Interfaces.hpp)
+    Interfaces.hpp
+    Files.h)
 
 set(SOURCES 
-    Logger.cpp)
+    Files.cpp)
 
 add_library(${PROJECT_NAME} ${HEADERS} ${SOURCES})
 add_library(lucid::Utils ALIAS ${PROJECT_NAME})

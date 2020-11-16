@@ -1,22 +1,26 @@
 #include "VulkanCommandManager.h"
 
+#include <Vulkan/VulkanDevice.h>
+#include <Vulkan/VulkanSwapchain.h>
+#include <Vulkan/VulkanPipeline.h>
+#include <Vulkan/VulkanRenderPass.h>
 #include <Utils/Logger.hpp>
 #include <Utils/Defaults.hpp>
 
-namespace lucid
+namespace Lucid
 {
 
 VulkanCommandManager::VulkanCommandManager(VulkanDevice& device, VulkanPipeline& pipeline, VulkanRenderPass& renderPass, VulkanSwapchain& swapchain)
 {
+	// Create command pool
 	auto commandPoolCreateInfo = vk::CommandPoolCreateInfo()
 		.setQueueFamilyIndex(device.FindGraphicsQueueFamily().value());
 
 	mCommandPool = device.Handle()->createCommandPoolUnique(commandPoolCreateInfo);
 
-	Logger::Info("Command pool created");
-
 	std::size_t imageCount = pipeline.GetFramebuffers().size();
 
+	// Allocate command buffers
 	auto commandBufferAllocateInfo = vk::CommandBufferAllocateInfo()
 		.setCommandBufferCount(imageCount)
 		.setCommandPool(mCommandPool.get())
@@ -26,6 +30,7 @@ VulkanCommandManager::VulkanCommandManager(VulkanDevice& device, VulkanPipeline&
 
 	Logger::Info("Command buffers allocated");
 
+	// Record command buffers
 	for (std::uint32_t i = 0; i < imageCount; i++)
 	{
 		vk::UniqueCommandBuffer& commandBuffer = mCommandBuffers.at(i);

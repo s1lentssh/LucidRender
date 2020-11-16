@@ -2,12 +2,12 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include <Vulkan/VulkanDevice.h>
-#include <Vulkan/VulkanSwapchain.h>
-#include <Vulkan/VulkanRenderPass.h>
-
-namespace lucid
+namespace Lucid
 {
+
+class VulkanDevice;
+class VulkanSwapchain;
+class VulkanRenderPass;
 
 class VulkanPipeline
 {

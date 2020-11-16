@@ -49,7 +49,7 @@ void* Window::GetHandle() const noexcept
     return glfwGetWin32Window(mWindow);
 }
 
-lucid::Vector2d<std::uint32_t> Window::GetSize() const noexcept
+Lucid::Vector2d<std::uint32_t> Window::GetSize() const noexcept
 {
     int width, height;
     glfwGetWindowSize(mWindow, &width, &height);

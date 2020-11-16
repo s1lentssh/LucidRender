@@ -2,26 +2,21 @@
 #include "Window.h"
 #include <Vulkan/VulkanRender.h>
 
-auto main() -> int 
+auto main() -> int try
 {
-    Window window;
+    std::unique_ptr<Lucid::IWindow> window = std::make_unique<Window>();
+    std::unique_ptr<Lucid::IRender> render = std::make_unique<Lucid::VulkanRender>(*window.get());
 
-    std::unique_ptr<lucid::VulkanRender> render;
-    try
+    while (!window->ShouldClose())
     {
-        render = std::make_unique<lucid::VulkanRender>(window);
-    }
-    catch (const std::exception & ex)
-    {
-        Logger::Error(ex.what());
-        return EXIT_FAILURE;
-    }
-
-    while (!window.ShouldClose())
-    {
-        window.PollEvents();
+        window->PollEvents();
         render->DrawFrame();
     }
 
     return EXIT_SUCCESS;
+}
+catch (const std::exception & ex)
+{
+    Logger::Error(ex.what());
+    return EXIT_FAILURE;
 }

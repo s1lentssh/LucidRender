@@ -3,7 +3,7 @@
 #include <Utils/Logger.hpp>
 #include <Vulkan/VulkanSurface.h>
 
-namespace lucid {
+namespace Lucid {
 
 VulkanDevice::VulkanDevice(const vk::PhysicalDevice& device)
 	: mPhysicalDevice(device)

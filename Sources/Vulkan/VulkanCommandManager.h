@@ -2,13 +2,13 @@
 
 #include <vulkan/vulkan.hpp>
 #include <vector>
-#include "VulkanDevice.h"
 
-#include <Vulkan/VulkanSwapchain.h>
-#include <Vulkan/VulkanPipeline.h>
-#include <Vulkan/VulkanRenderPass.h>
+namespace Lucid {
 
-namespace lucid {
+class VulkanDevice;
+class VulkanSwapchain;
+class VulkanPipeline;
+class VulkanRenderPass;
 
 class VulkanCommandManager
 {
@@ -17,7 +17,6 @@ public:
 	vk::UniqueCommandBuffer& Get(std::size_t index) { return mCommandBuffers.at(index); }
 
 private:
-
 	vk::UniqueCommandPool mCommandPool;
 	std::vector<vk::UniqueCommandBuffer> mCommandBuffers;
 };
