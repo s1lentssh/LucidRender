@@ -26,6 +26,14 @@ public:
             << '\n';
     }
 
+    static void Error(const std::string& format)
+    {
+        std::cerr
+            << rang::fgB::red << "error | " << rang::fg::reset
+            << format
+            << '\n';
+    }
+
     template<typename ... Args>
     static void Validation(const std::string& format, const Args&... args)
     {

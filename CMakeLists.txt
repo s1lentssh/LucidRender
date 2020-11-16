@@ -7,24 +7,27 @@ project(LucidRender
 set(CMAKE_CXX_STANDARD 17)
 
 if(MSVC)
-    add_compile_options(/W4 /WX)
+    add_compile_options(/W4)
 else()
     add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-add_compile_definitions(CMAKE_LINK_WHAT_YOU_USE)
-
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/conan.cmake) # latest from github
-conan_cmake_run(REQUIRES
-    fmt/7.0.3
-    rang/3.1.0
-    glfw/3.3.2
-    stb/20200203
-    imgui/1.79
+conan_cmake_run(
+    REQUIRES
+        fmt/7.0.3
+        rang/3.1.0
+        glfw/3.3.2
+        stb/20200203
+        imgui/1.79
+        shaderc/2019.0
 
     BASIC_SETUP
     CMAKE_TARGETS
+
     OPTIONS
+        shaderc:shared=True
+
     BUILD missing
     GENERATORS cmake_find_package)
 

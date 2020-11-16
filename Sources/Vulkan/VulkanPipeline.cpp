@@ -20,8 +20,8 @@ VulkanPipeline::VulkanPipeline(VulkanDevice& device, VulkanSwapchain& swapchain,
 
 void VulkanPipeline::Init()
 {
-	VulkanShader vertexShader(mDevice, "Resources/Shaders/Vert.spv");
-	VulkanShader fragmentShader(mDevice, "Resources/Shaders/Frag.spv");
+	VulkanShader vertexShader(mDevice, VulkanShader::Type::Vertex, "Resources/Shaders/Shader.vert");
+	VulkanShader fragmentShader(mDevice, VulkanShader::Type::Fragment, "Resources/Shaders/Shader.frag");
 
 	auto vertexShaderStageInfo = vk::PipelineShaderStageCreateInfo()
 		.setStage(vk::ShaderStageFlagBits::eVertex)

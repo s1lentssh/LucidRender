@@ -29,4 +29,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../)
 target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_WIN32_KHR NOMINMAX)
 
 find_package(Vulkan REQUIRED)
-target_link_libraries(${PROJECT_NAME} PUBLIC Vulkan::Vulkan Utils)
+find_package(shaderc REQUIRED)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC 
+    Vulkan::Vulkan 
+    Utils
+    shaderc::shaderc)

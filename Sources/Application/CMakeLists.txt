@@ -21,4 +21,10 @@ target_link_libraries(${PROJECT_NAME}
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC GLFW_EXPOSE_NATIVE_WIN32)
 
-file(COPY ${RESOURCES_DIR} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+function(register_resource resource)
+    configure_file(${RESOURCES_DIR}/${resource} ${CMAKE_CURRENT_BINARY_DIR}/Resources/${resource} COPYONLY)
+endfunction()
+
+register_resource(Shaders/Shader.vert)
+register_resource(Shaders/Shader.frag)
+register_resource(Icons/app-icon.png)
