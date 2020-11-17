@@ -1,5 +1,6 @@
 #include "VulkanSwapchain.h"
 
+#include <Vulkan/VulkanRenderPass.h>
 #include <Utils/Interfaces.hpp>
 #include <Utils/Logger.hpp>
 
@@ -159,6 +160,26 @@ void VulkanSwapchain::CreateImageViews()
 
 		mImageViews.push_back(mDevice.Handle()->createImageViewUnique(imageViewCreateInfo));
 	}
+}
+
+void VulkanSwapchain::CreateFramebuffers(VulkanRenderPass& renderPass)
+{
+	mFramebuffers.reserve(mImageViews.size());
+
+	for (const auto& imageView : mImageViews)
+	{
+		auto framebufferCreateInfo = vk::FramebufferCreateInfo()
+			.setRenderPass(renderPass.Handle())
+			.setAttachmentCount(1)
+			.setPAttachments(&imageView.get())
+			.setWidth(mExtent.width)
+			.setHeight(mExtent.height)
+			.setLayers(1);
+
+		mFramebuffers.push_back(mDevice.Handle()->createFramebufferUnique(framebufferCreateInfo));
+	}
+
+	Logger::Info("Framebuffers created");
 }
 
 }

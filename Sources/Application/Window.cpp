@@ -8,14 +8,20 @@
 Window::Window()
 {
     glfwInit();
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+    // If no api is selected, windows couldn't be painted black on load
+    // glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+
     mWindow = glfwCreateWindow(Defaults::Width, Defaults::Height, Defaults::ApplicationName.c_str(), nullptr, nullptr);
 
-    GLFWimage icons[1];
-    icons->pixels = stbi_load("Resources/Icons/app-icon.png", &icons->width, &icons->height, nullptr, 4);
-    glfwSetWindowIcon(mWindow, static_cast<std::uint32_t>(std::size(icons)), icons);
-    stbi_image_free(icons->pixels);
+    if (mWindow == nullptr)
+    {
+        throw std::runtime_error("Can't create window");
+    }
+
+    // Paint it black on load
+	glfwSwapBuffers(mWindow);
 }
 
 Window::~Window()
@@ -34,17 +40,22 @@ void Window::PollEvents() noexcept
     glfwPollEvents();
 }
 
+void Window::SetIcon(const std::filesystem::path& path)
+{
+    GLFWimage icon;
+    icon.pixels = stbi_load(path.string().c_str(), &icon.width, &icon.height, nullptr, 4);
+    glfwSetWindowIcon(mWindow, 1, &icon);
+    stbi_image_free(icon.pixels);
+}
+
 std::vector<const char*> Window::GetRequiredInstanceExtensions() const noexcept
 {
     uint32_t glfwExtensionsCount = 0;
     const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionsCount);
-
-    std::vector<const char*> result(glfwExtensions, glfwExtensions + glfwExtensionsCount);
-
-    return result;
+    return { glfwExtensions, glfwExtensions + glfwExtensionsCount };
 }
 
-void* Window::GetHandle() const noexcept
+void* Window::Handle() const noexcept
 {
     return glfwGetWin32Window(mWindow);
 }

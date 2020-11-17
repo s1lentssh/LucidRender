@@ -7,7 +7,7 @@
 namespace Lucid
 {
 
-VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, const VulkanSwapchain& swapchain)
+VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, vk::Format imageFormat)
 {
 	// Create subpass 
 	auto colorAttachmentReference = vk::AttachmentReference()
@@ -30,7 +30,7 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, const VulkanSwapchain& 
 		.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite);
 
 	auto colorAttachment = vk::AttachmentDescription()
-		.setFormat(swapchain.GetImageFormat())
+		.setFormat(imageFormat)
 		.setSamples(vk::SampleCountFlagBits::e1)
 		.setLoadOp(vk::AttachmentLoadOp::eClear)
 		.setStoreOp(vk::AttachmentStoreOp::eStore)

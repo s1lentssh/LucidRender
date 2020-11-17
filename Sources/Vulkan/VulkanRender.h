@@ -26,8 +26,12 @@ private:
 	std::unique_ptr<VulkanPipeline> mPipeline;
 	std::unique_ptr<VulkanCommandManager> mCommandManager;
 
-	vk::UniqueSemaphore mImagePresentedSemaphore;
-	vk::UniqueSemaphore mRenderFinishedSemaphore;
+	std::vector<vk::UniqueSemaphore> mImagePresentedSemaphores;
+	std::vector<vk::UniqueSemaphore> mRenderFinishedSemaphores;
+	std::vector<vk::UniqueFence> mInFlightFences;
+	std::vector<vk::Fence> mImagesInFlight;
+
+	std::size_t mCurrentFrame = 0;
 };
 
 }

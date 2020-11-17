@@ -13,7 +13,7 @@ class VulkanRenderPass;
 class VulkanCommandManager
 {
 public:
-	VulkanCommandManager(VulkanDevice& device, VulkanPipeline& pipeline, VulkanRenderPass& renderPass, VulkanSwapchain& swapchain);
+	VulkanCommandManager(VulkanDevice& device, VulkanRenderPass& renderPass, VulkanSwapchain& swapchain, VulkanPipeline& pipeline);
 	vk::UniqueCommandBuffer& Get(std::size_t index) { return mCommandBuffers.at(index); }
 
 private:

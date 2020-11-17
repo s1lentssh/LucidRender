@@ -15,10 +15,11 @@ public:
     ~Window();
     
     [[nodiscard]] bool ShouldClose() const noexcept override;
-    void PollEvents() noexcept override;
     [[nodiscard]] std::vector<const char*> GetRequiredInstanceExtensions() const noexcept override;
-    [[nodiscard]] void* GetHandle() const noexcept override;
+    [[nodiscard]] void* Handle() const noexcept override;
     [[nodiscard]] Lucid::Vector2d<std::uint32_t> GetSize() const noexcept override;
+    void PollEvents() noexcept override;
+    void SetIcon(const std::filesystem::path& path) override;
 
 private:
     GLFWwindow* mWindow = nullptr;

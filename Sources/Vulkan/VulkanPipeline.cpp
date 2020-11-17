@@ -9,13 +9,12 @@
 namespace Lucid
 {
 
-VulkanPipeline::VulkanPipeline(VulkanDevice& device, VulkanSwapchain& swapchain, VulkanRenderPass& renderPass)
+VulkanPipeline::VulkanPipeline(VulkanDevice& device, const vk::Extent2D& extent, VulkanRenderPass& renderPass)
 	: mDevice(device)
-	, mSwapchain(swapchain)
+	, mExtent(extent)
 	, mRenderPass(renderPass)
 {
 	Init();
-	CreateFramebuffers();
 }
 
 void VulkanPipeline::Init()
@@ -43,18 +42,16 @@ void VulkanPipeline::Init()
 		.setTopology(vk::PrimitiveTopology::eTriangleList)
 		.setPrimitiveRestartEnable(false);
 
-	vk::Extent2D extent = mSwapchain.GetExtent();
-
 	auto viewport = vk::Viewport()
 		.setX(0.0f)
 		.setY(0.0f)
 		.setMinDepth(0.0f)
 		.setMaxDepth(1.0f)
-		.setWidth(static_cast<float>(extent.width))
-		.setHeight(static_cast<float>(extent.height));
+		.setWidth(static_cast<float>(mExtent.width))
+		.setHeight(static_cast<float>(mExtent.height));
 
 	auto scissor = vk::Rect2D()
-		.setExtent(extent)
+		.setExtent(mExtent)
 		.setOffset({ 0, 0 });
 
 	auto viewportState = vk::PipelineViewportStateCreateInfo()
@@ -107,34 +104,11 @@ void VulkanPipeline::Init()
 		.setPMultisampleState(&multisampleState)
 		.setPColorBlendState(&colorBlendState)
 		.setLayout(mLayout.get())
-		.setRenderPass(mRenderPass.Handle().get())
+		.setRenderPass(mRenderPass.Handle())
 		.setSubpass(0);
 
 	mPipeline = mDevice.Handle()->createGraphicsPipelineUnique({}, pipelineCreateInfo);
 	Logger::Info("Pipeline created");
-}
-
-void VulkanPipeline::CreateFramebuffers()
-{
-	const std::vector<vk::UniqueImageView>& imageViews = mSwapchain.GetImageViews();
-	const vk::Extent2D extent = mSwapchain.GetExtent();
-
-	mFramebuffers.reserve(imageViews.size());
-
-	for (const auto& imageView : imageViews)
-	{
-		auto framebufferCreateInfo = vk::FramebufferCreateInfo()
-			.setRenderPass(mRenderPass.Handle().get())
-			.setAttachmentCount(1)
-			.setPAttachments(&imageView.get())
-			.setWidth(extent.width)
-			.setHeight(extent.height)
-			.setLayers(1);
-
-		mFramebuffers.push_back(mDevice.Handle()->createFramebufferUnique(framebufferCreateInfo));
-	}
-
-	Logger::Info("Framebuffers created");
 }
 
 }

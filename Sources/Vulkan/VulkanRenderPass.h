@@ -12,8 +12,8 @@ class VulkanDevice;
 class VulkanRenderPass
 {
 public:
-	VulkanRenderPass(VulkanDevice& device, const VulkanSwapchain& swapchain);
-	vk::UniqueRenderPass& Handle() { return mRenderPass; }
+	VulkanRenderPass(VulkanDevice& device, vk::Format imageFormat);
+	vk::RenderPass& Handle() { return mRenderPass.get(); }
 
 private:
 	vk::UniqueRenderPass mRenderPass;

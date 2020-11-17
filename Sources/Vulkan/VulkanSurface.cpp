@@ -10,7 +10,7 @@ namespace Lucid
 VulkanSurface::VulkanSurface(VulkanInstance& instance, const IWindow& window)
 {
 	auto createInfo = vk::Win32SurfaceCreateInfoKHR()
-		.setHwnd(static_cast<HWND>(window.GetHandle()))
+		.setHwnd(static_cast<HWND>(window.Handle()))
 		.setHinstance(GetModuleHandle(nullptr));
 
 	mSurface = instance.Handle()->createWin32SurfaceKHRUnique(createInfo);

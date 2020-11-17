@@ -12,21 +12,18 @@ class VulkanRenderPass;
 class VulkanPipeline
 {
 public:
-	VulkanPipeline(VulkanDevice& device, VulkanSwapchain& swapchain, VulkanRenderPass& renderPass);
+	VulkanPipeline(VulkanDevice& device, const vk::Extent2D& extent, VulkanRenderPass& renderPass);
 	vk::UniquePipeline& Handle() { return mPipeline; }
-	std::vector<vk::UniqueFramebuffer>& GetFramebuffers() { return mFramebuffers; }
 
 private:
 	void Init();
-	void CreateFramebuffers();
 
 	VulkanDevice& mDevice;
-	VulkanSwapchain& mSwapchain;
+	vk::Extent2D mExtent;
 	VulkanRenderPass& mRenderPass;
 
 	vk::UniquePipelineLayout mLayout;
 	vk::UniquePipeline mPipeline;
-	std::vector<vk::UniqueFramebuffer> mFramebuffers;
 };
 
 }

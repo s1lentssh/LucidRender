@@ -10,7 +10,7 @@
 namespace Lucid
 {
 
-VulkanCommandManager::VulkanCommandManager(VulkanDevice& device, VulkanPipeline& pipeline, VulkanRenderPass& renderPass, VulkanSwapchain& swapchain)
+VulkanCommandManager::VulkanCommandManager(VulkanDevice& device, VulkanRenderPass& renderPass, VulkanSwapchain& swapchain, VulkanPipeline& pipeline)
 {
 	// Create command pool
 	auto commandPoolCreateInfo = vk::CommandPoolCreateInfo()
@@ -18,7 +18,7 @@ VulkanCommandManager::VulkanCommandManager(VulkanDevice& device, VulkanPipeline&
 
 	mCommandPool = device.Handle()->createCommandPoolUnique(commandPoolCreateInfo);
 
-	std::size_t imageCount = pipeline.GetFramebuffers().size();
+	std::size_t imageCount = swapchain.GetFramebuffers().size();
 
 	// Allocate command buffers
 	auto commandBufferAllocateInfo = vk::CommandBufferAllocateInfo()
@@ -40,8 +40,8 @@ VulkanCommandManager::VulkanCommandManager(VulkanDevice& device, VulkanPipeline&
 		vk::ClearValue clearColor = Defaults::BackgroundColor;
 
 		auto renderPassBeginInfo = vk::RenderPassBeginInfo()
-			.setRenderPass(renderPass.Handle().get())
-			.setFramebuffer(pipeline.GetFramebuffers().at(i).get())
+			.setRenderPass(renderPass.Handle())
+			.setFramebuffer(swapchain.GetFramebuffers().at(i).get())
 			.setRenderArea(vk::Rect2D()
 				.setOffset({ 0, 0 })
 				.setExtent(swapchain.GetExtent()))
