@@ -1,14 +1,13 @@
 #include "VulkanSwapchain.h"
 
 #include <Vulkan/VulkanRenderPass.h>
-#include <Utils/Interfaces.hpp>
 #include <Utils/Logger.hpp>
 
 namespace Lucid
 {
 
-VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const VulkanSurface& surface, const IWindow& window)
-	: mWindow(window)
+VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const VulkanSurface& surface, const Vector2d<std::uint32_t>& size)
+	: mWindowSize(size)
 	, mDevice(device)
 	, mSurface(surface)
 {
@@ -16,20 +15,12 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const VulkanSurface& surf
 	CreateImageViews();
 }
 
-std::uint32_t VulkanSwapchain::AcquireNextImage(const vk::UniqueSemaphore& semaphore)
+vk::ResultValue<std::uint32_t> VulkanSwapchain::AcquireNextImage(const vk::UniqueSemaphore& semaphore)
 {
-	vk::ResultValue resultValue = mDevice.Handle()->acquireNextImageKHR(
+	return mDevice.Handle()->acquireNextImageKHR(
 		mSwapchain.get(), 
 		std::numeric_limits<std::uint64_t>::max(), 
 		semaphore.get(), {});
-
-	if (vk::Result::eSuccess != resultValue.result)
-	{
-		using namespace std::string_literals;
-		throw std::runtime_error("Vulkan error: "s);
-	}
-
-	return resultValue.value;
 }
 
 vk::SurfaceFormatKHR VulkanSwapchain::SelectSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats) const noexcept
@@ -75,9 +66,7 @@ vk::Extent2D VulkanSwapchain::SelectSwapExtent(const vk::SurfaceCapabilitiesKHR&
 	}
 	else
 	{
-		Vector2d windowSize = mWindow.GetSize();
-
-		vk::Extent2D actualExtent = { windowSize.x, windowSize.y };
+		vk::Extent2D actualExtent = { mWindowSize.x, mWindowSize.y };
 		actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
 		actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 

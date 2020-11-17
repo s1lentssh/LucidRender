@@ -18,6 +18,15 @@ public:
     }
 
     template<typename ... Args>
+    static void Action(const std::string& format, const Args&... args)
+    {
+        std::cout
+            << rang::fgB::magenta << "action | " << rang::fg::reset
+            << fmt::format(format, args...)
+            << '\n';
+    }
+
+    template<typename ... Args>
     static void Error(const std::string& format, const Args&... args)
     {
         std::cerr 

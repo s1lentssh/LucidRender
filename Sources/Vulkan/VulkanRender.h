@@ -18,6 +18,8 @@ public:
 	void DrawFrame() override;
 
 private:
+	void RecreateSwapchain();
+
 	std::unique_ptr<VulkanInstance> mInstance;
 	std::unique_ptr<VulkanDevice> mDevice;
 	std::unique_ptr<VulkanSurface> mSurface;
@@ -32,6 +34,7 @@ private:
 	std::vector<vk::Fence> mImagesInFlight;
 
 	std::size_t mCurrentFrame = 0;
+	const IWindow* mWindow = nullptr;
 };
 
 }

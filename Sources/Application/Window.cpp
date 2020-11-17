@@ -8,7 +8,6 @@
 Window::Window()
 {
     glfwInit();
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     // If no api is selected, windows couldn't be painted black on load
     // glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -35,9 +34,14 @@ bool Window::ShouldClose() const noexcept
     return glfwWindowShouldClose(mWindow);
 }
 
-void Window::PollEvents() noexcept
+void Window::PollEvents() const noexcept
 {
     glfwPollEvents();
+}
+
+void Window::WaitEvents() const noexcept
+{
+    glfwWaitEvents();
 }
 
 void Window::SetIcon(const std::filesystem::path& path)

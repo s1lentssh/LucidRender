@@ -19,7 +19,8 @@ public:
     [[nodiscard]] virtual Vector2d<std::uint32_t> GetSize() const noexcept = 0;
     [[nodiscard]] virtual bool ShouldClose() const noexcept = 0;
     virtual void SetIcon(const std::filesystem::path& path) = 0;
-    virtual void PollEvents() noexcept = 0;
+    virtual void PollEvents() const noexcept = 0;
+    virtual void WaitEvents() const noexcept = 0;
 };
 
 class IRender
