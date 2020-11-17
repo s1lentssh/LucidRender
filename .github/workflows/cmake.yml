@@ -81,11 +81,8 @@ jobs:
         libmirclient-dev libwayland-dev libxrandr-dev libxcb-ewmh-dev \
         libgl1-mesa-dev xorg-dev libxcb-render-util0-dev libxcb-xkb-dev \
         libxcb-icccm4-dev libxcb-image0-dev libxcb-xinerama0-dev
-        
         curl -o VulkanSDK.tar.gz https://sdk.lunarg.com/sdk/download/${{ env.VULKAN_VERSION }}/linux/vulkansdk-linux-x86_64-${{ env.VULKAN_VERSION }}.tar.gz
         tar xfv VulkanSDK.tar.gz
-        pwd
-        ls
 
     - name: Create Build Environment
       # Some projects don't allow in-source building, so create a separate build directory
@@ -100,15 +97,11 @@ jobs:
       # Note the current convention is to use the -S and -B options here to specify source 
       # and build directories, but this is only available with CMake 3.13 and higher.  
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-      run: |
-        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
-        ls /tmp/
-        ls /tmp/VulkanSDK
-        ls /tmp/VulkanSDK/${{ env.VULKAN_VERSION }}
-        ls /tmp/VulkanSDK/${{ env.VULKAN_VERSION }}/x86_64
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        
       env:
-        Vulkan_LIBRARY: /tmp/VulkanSDK/${{ env.VULKAN_VERSION }}/x86_64/lib
-        Vulkan_INCLUDE_DIR: /tmp/VulkanSDK/${{ env.VULKAN_VERSION }}/x86_64/include
+        Vulkan_LIBRARY: /tmp/${{ env.VULKAN_VERSION }}/x86_64/lib
+        Vulkan_INCLUDE_DIR: /tmp/${{ env.VULKAN_VERSION }}/x86_64/include
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
