@@ -8,7 +8,8 @@ find_package(glfw REQUIRED)
 find_package(Vulkan REQUIRED)
 find_package(stb REQUIRED)
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES_DIR}/Icons/AppResource.o)
+set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "Lucid")
 install(TARGETS ${PROJECT_NAME} DESTINATION .)
 install(DIRECTORY ${RESOURCES_DIR} DESTINATION .)
 
@@ -27,4 +28,5 @@ endfunction()
 
 register_resource(Shaders/Shader.vert)
 register_resource(Shaders/Shader.frag)
-register_resource(Icons/app-icon.png)
+register_resource(Icons/AppIcon.png)
+register_resource(Icons/AppResource.o)
