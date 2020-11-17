@@ -6,7 +6,7 @@ env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
   VULKAN_VERSION: 1.2.154.1
-  VULKAN_SDK: ${{runner.workspace}}/VulkanSDK/x86_64
+  VULKAN_SDK: /tmp/VulkanSDK/x86_64
 
 jobs:
   Windows:
@@ -75,7 +75,7 @@ jobs:
         sudo python -m pip install conan
         
     - name: Install Vulkan
-      working-directory: ${{runner.workspace}}
+      working-directory: /tmp
       run: |
         sudo apt-get install libglm-dev cmake libxcb-dri3-0 libxcb-present0 libpciaccess0 \
         libpng-dev libxcb-keysyms1-dev libxcb-dri3-dev libx11-dev \
