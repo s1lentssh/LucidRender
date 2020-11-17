@@ -106,10 +106,7 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       shell: bash
       # Execute the build.  You can specify a specific target with "--target <NAME>"
-      run: | 
-        sudo apt install g++-10
-        g++ --version
-        cmake --build . --config $BUILD_TYPE --target install
+      run: cmake --build . --config $BUILD_TYPE --target install -DCMAKE_CXX_COMPILER=g++-10
       env:
         CXX: /usr/bin/g++-10
     
