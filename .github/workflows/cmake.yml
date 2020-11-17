@@ -105,10 +105,10 @@ jobs:
         ls /tmp/${{ env.VULKAN_VERSION }}/x86_64/lib
         ls /tmp/${{ env.VULKAN_VERSION }}/x86_64/include
         echo "----"
-        ls {{ env.Vulkan_LIBRARY }}
-        ls {{ env.Vulkan_INCLUDE_DIR }}
+        ls ${{ env.Vulkan_LIBRARY }}
+        ls ${{ env.Vulkan_INCLUDE_DIR }}
         echo "----"
-        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DVulkan_LIBRARY=${{ env.Vulkan_LIBRARY }} -DVulkan_INCLUDE_DIR=${{ env.Vulkan_INCLUDE_DIR }}
         
       env:
         Vulkan_LIBRARY: /tmp/${{ env.VULKAN_VERSION }}/x86_64/lib
