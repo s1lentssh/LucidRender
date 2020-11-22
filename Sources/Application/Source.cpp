@@ -5,10 +5,13 @@
 
 auto main() -> int try
 {
-    if constexpr (Defaults::CurrentPlatform == Defaults::Platform::Windows)
-    {
-        SetConsoleTitle((Defaults::ApplicationName + " Console").c_str());
-    }
+#ifdef _WIN32
+    SetConsoleTitle((Defaults::ApplicationName + " Console").c_str());
+#endif
+
+#ifdef __linux__
+    std::cout << "\033]0;" << Defaults::ApplicationName << " Console" << "\007";
+#endif
 
     std::unique_ptr<Lucid::IWindow> window = std::make_unique<Window>();
     window->SetIcon("Resources/Icons/AppIcon.png");
