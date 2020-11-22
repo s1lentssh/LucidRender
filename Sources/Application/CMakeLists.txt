@@ -20,7 +20,13 @@ target_link_libraries(${PROJECT_NAME}
     Vulkan::Vulkan
     stb::stb)
 
-target_compile_definitions(${PROJECT_NAME} PUBLIC GLFW_EXPOSE_NATIVE_WIN32)
+if(WIN32)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC GLFW_EXPOSE_NATIVE_WIN32)
+endif()
+
+if(UNIX AND NOT APPLE)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC GLFW_EXPOSE_NATIVE_X11)
+endif()
 
 function(register_resource resource)
     configure_file(${RESOURCES_DIR}/${resource} ${CMAKE_CURRENT_BINARY_DIR}/Resources/${resource} COPYONLY)

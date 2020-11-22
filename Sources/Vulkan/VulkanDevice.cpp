@@ -38,7 +38,8 @@ void VulkanDevice::InitLogicalDeviceForSurface(const VulkanSurface& surface) noe
 		FindPresentQueueFamily(surface)
 	};
 
-	auto deviceFeatures = vk::PhysicalDeviceFeatures();
+	auto deviceFeatures = vk::PhysicalDeviceFeatures()
+		.setFillModeNonSolid(true);
 	const float queuePriority = 1.0f;
 
 	std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;

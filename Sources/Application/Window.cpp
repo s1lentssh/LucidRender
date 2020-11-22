@@ -61,7 +61,13 @@ std::vector<const char*> Window::GetRequiredInstanceExtensions() const noexcept
 
 void* Window::Handle() const noexcept
 {
+#ifdef _WIN32
     return glfwGetWin32Window(mWindow);
+#endif
+
+#ifdef __linux__
+    return glfwGetX11Window(mWindow);
+#endif
 }
 
 Lucid::Vector2d<std::uint32_t> Window::GetSize() const noexcept
