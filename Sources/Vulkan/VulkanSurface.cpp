@@ -20,7 +20,7 @@ VulkanSurface::VulkanSurface(VulkanInstance& instance, const IWindow& window)
 
 #ifdef __linux__
 	auto createInfo = vk::XlibSurfaceCreateInfoKHR()
-		.setWindow(static_cast<Window>(window.Handle()));
+		.setWindow((Window)(window.Handle()));
 
 	mSurface = instance.Handle()->createXlibSurfaceKHRUnique(createInfo);
 #endif
