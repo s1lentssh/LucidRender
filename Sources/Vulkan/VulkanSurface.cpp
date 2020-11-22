@@ -19,10 +19,10 @@ VulkanSurface::VulkanSurface(VulkanInstance& instance, const IWindow& window)
 #endif
 
 #ifdef __linux__
-	auto createInfo = vk::XcbSurfaceCreateInfoKHR()
-		.setWindow(static_cast<HWND>(window.Handle()));
+	auto createInfo = vk::XlibSurfaceCreateInfoKHR()
+		.setWindow(static_cast<Window>(window.Handle()));
 
-	mSurface = instance.Handle()->createXcbSurfaceKHRUnique(createInfo);
+	mSurface = instance.Handle()->createXlibSurfaceKHRUnique(createInfo);
 #endif
 
 	Logger::Info("Surface created");
