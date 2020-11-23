@@ -37,7 +37,7 @@ VulkanCommandManager::VulkanCommandManager(VulkanDevice& device, VulkanRenderPas
 		auto commandBufferBeginInfo = vk::CommandBufferBeginInfo();
 		commandBuffer->begin(commandBufferBeginInfo);
 
-		vk::ClearValue clearColor = Defaults::BackgroundColor;
+		vk::ClearValue clearColor = vk::ClearColorValue(Defaults::BackgroundColor);
 
 		auto renderPassBeginInfo = vk::RenderPassBeginInfo()
 			.setRenderPass(renderPass.Handle())
