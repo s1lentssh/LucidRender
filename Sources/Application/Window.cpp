@@ -69,7 +69,7 @@ void* Window::Handle() const noexcept
 #endif
 
 #ifdef __linux__
-    return glfwGetX11Window(mWindow);
+    return reinterpret_cast<void*>(glfwGetX11Window(mWindow));
 #endif
 }
 
