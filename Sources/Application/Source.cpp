@@ -13,7 +13,7 @@ auto main() -> int try
     std::cout << "\033]0;" << Defaults::ApplicationName << " Console" << "\007";
 #endif
 
-    std::unique_ptr<Lucid::IWindow> window = std::make_unique<Window>();
+    std::unique_ptr<Lucid::IWindow> window = std::make_unique<Lucid::Window>();
     window->SetIcon("Resources/Icons/AppIcon.png");
 
     std::unique_ptr<Lucid::IRender> render = std::make_unique<Lucid::VulkanRender>(*window.get());
