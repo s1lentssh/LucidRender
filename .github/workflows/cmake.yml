@@ -100,7 +100,7 @@ jobs:
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DVulkan_LIBRARY=${{ env.Vulkan_LIBRARY }} -DVulkan_INCLUDE_DIR=${{ env.Vulkan_INCLUDE_DIR }} -DCMAKE_CXX_COMPILER=g++-10
       env:
-        Vulkan_LIBRARIES: /tmp/${{ env.VULKAN_VERSION }}/x86_64/lib
+        Vulkan_LIBRARY: /tmp/${{ env.VULKAN_VERSION }}/x86_64/lib/libvulkan.so
         Vulkan_INCLUDE_DIR: /tmp/${{ env.VULKAN_VERSION }}/x86_64/include
 
     - name: Build
