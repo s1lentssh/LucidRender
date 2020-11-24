@@ -5,7 +5,8 @@ on: [push]
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
-  VULKAN_VERSION: 1.2.154.0
+  VULKAN_VERSION_LINUX: 1.2.154.0
+  VULKAN_VERSION_WINDOWS: 1.2.154.1
 
 jobs:
   Windows:
@@ -44,7 +45,7 @@ jobs:
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
       env:
-        Vulkan_SDK: C:/VulkanSDK/${{ env.VULKAN_VERSION }}
+        Vulkan_SDK: C:/VulkanSDK/${{ env.VULKAN_VERSION_WINDOWS }}
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
@@ -81,7 +82,7 @@ jobs:
         libmirclient-dev libwayland-dev libxrandr-dev libxcb-ewmh-dev \
         libgl1-mesa-dev xorg-dev libxcb-render-util0-dev libxcb-xkb-dev \
         libxcb-icccm4-dev libxcb-image0-dev libxcb-xinerama0-dev
-        curl -o VulkanSDK.tar.gz https://sdk.lunarg.com/sdk/download/${{ env.VULKAN_VERSION }}/linux/vulkansdk-linux-x86_64-${{ env.VULKAN_VERSION }}.tar.gz
+        curl -o VulkanSDK.tar.gz https://sdk.lunarg.com/sdk/download/${{ env.VULKAN_VERSION_LINUX }}/linux/vulkansdk-linux-x86_64-${{ env.VULKAN_VERSION }}.tar.gz
         tar xfv VulkanSDK.tar.gz
 
     - name: Create Build Environment
@@ -99,7 +100,7 @@ jobs:
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DVulkan_LIBRARY=${{ env.Vulkan_LIBRARY }} -DVulkan_INCLUDE_DIR=${{ env.Vulkan_INCLUDE_DIR }} -DCMAKE_CXX_COMPILER=g++-10
       env:
-        Vulkan_LIBRARY: /tmp/${{ env.VULKAN_VERSION }}/x86_64/lib
+        Vulkan_LIBRARIES: /tmp/${{ env.VULKAN_VERSION }}/x86_64/lib
         Vulkan_INCLUDE_DIR: /tmp/${{ env.VULKAN_VERSION }}/x86_64/include
 
     - name: Build
