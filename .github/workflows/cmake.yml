@@ -82,7 +82,7 @@ jobs:
         libmirclient-dev libwayland-dev libxrandr-dev libxcb-ewmh-dev \
         libgl1-mesa-dev xorg-dev libxcb-render-util0-dev libxcb-xkb-dev \
         libxcb-icccm4-dev libxcb-image0-dev libxcb-xinerama0-dev
-        curl -o VulkanSDK.tar.gz https://sdk.lunarg.com/sdk/download/${{ env.VULKAN_VERSION_LINUX }}/linux/vulkansdk-linux-x86_64-${{ env.VULKAN_VERSION }}.tar.gz
+        curl -o VulkanSDK.tar.gz https://sdk.lunarg.com/sdk/download/${{ env.VULKAN_VERSION_LINUX }}/linux/vulkansdk-linux-x86_64-${{ env.VULKAN_VERSION_LINUX }}.tar.gz
         tar xfv VulkanSDK.tar.gz
 
     - name: Create Build Environment
@@ -99,7 +99,7 @@ jobs:
       # and build directories, but this is only available with CMake 3.13 and higher.  
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: |
-        source /tmp/${{ env.VULKAN_VERSION }}/setup-env.sh
+        source /tmp/${{ env.VULKAN_VERSION_LINUX }}/setup-env.sh
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_COMPILER=g++-10
 
     - name: Build
