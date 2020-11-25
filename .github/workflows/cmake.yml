@@ -100,7 +100,7 @@ jobs:
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: |
         source /tmp/${{ env.VULKAN_VERSION_LINUX }}/setup-env.sh
-        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_COMPILER=g++-10 -DCMAKE_INSTALL_PREFIX=/tmp
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_COMPILER=g++-10 -DCMAKE_INSTALL_PREFIX=/tmp/LucidRender
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
