@@ -26,7 +26,14 @@ set(SOURCES
 add_library(${PROJECT_NAME} ${HEADERS} ${SOURCES})
 add_library(lucid::Vulkan ALIAS ${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../)
-target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_WIN32_KHR NOMINMAX)
+
+if(WIN32)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_WIN32_KHR NOMINMAX)
+endif()
+
+if(UNIX AND NOT APPLE)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_XLIB_KHR)
+endif()
 
 find_package(Vulkan REQUIRED)
 find_package(shaderc REQUIRED)

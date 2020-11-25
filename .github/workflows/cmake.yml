@@ -5,11 +5,11 @@ on: [push]
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
-  VULKAN_VERSION: 1.2.154.1
-  INSTALL_DIR: bin
+  VULKAN_VERSION_LINUX: 1.2.154.0
+  VULKAN_VERSION_WINDOWS: 1.2.154.1
 
 jobs:
-  build:
+  Windows:
     # The CMake configure and build commands are platform agnostic and should work equally
     # well on Windows or Mac.  You can convert this to a matrix build if you need
     # cross-platform coverage.
@@ -26,7 +26,7 @@ jobs:
         
     - name: Install Vulkan
       run: |
-          Invoke-WebRequest -Uri "https://sdk.lunarg.com/sdk/download/${{ env.VULKAN_VERSION }}/windows/vulkan-sdk.exe" -OutFile VulkanSDK.exe
+          Invoke-WebRequest -Uri "https://sdk.lunarg.com/sdk/download/${{ env.VULKAN_VERSION_WINDOWS }}/windows/vulkan-sdk.exe" -OutFile VulkanSDK.exe
           $installer = Start-Process -FilePath VulkanSDK.exe -Wait -PassThru -ArgumentList @("/S");
           $installer.WaitForExit();
 
@@ -45,7 +45,7 @@ jobs:
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
       env:
-        Vulkan_SDK: C:/VulkanSDK/${{ env.VULKAN_VERSION }}
+        Vulkan_SDK: C:/VulkanSDK/${{ env.VULKAN_VERSION_WINDOWS }}
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
@@ -56,6 +56,63 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: LucidRender
+        name: LucidRender_Windows
         path: "C:/Program Files (x86)/LucidRender/"
+        
+  Ubuntu:
+    # The CMake configure and build commands are platform agnostic and should work equally
+    # well on Windows or Mac.  You can convert this to a matrix build if you need
+    # cross-platform coverage.
+    # See: https://docs.github.com/en/actions/configuring-and-managing-workflows/configuring-a-workflow#configuring-a-build-matrix
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      
+    - name: Install Conan
+      run: |
+        sudo python -m pip install --upgrade pip
+        sudo python -m pip install conan
+        
+    - name: Install Vulkan
+      working-directory: /tmp
+      run: |
+        sudo apt-get install libglm-dev cmake libxcb-dri3-0 libxcb-present0 libpciaccess0 \
+        libpng-dev libxcb-keysyms1-dev libxcb-dri3-dev libx11-dev \
+        libmirclient-dev libwayland-dev libxrandr-dev libxcb-ewmh-dev \
+        libgl1-mesa-dev xorg-dev libxcb-render-util0-dev libxcb-xkb-dev \
+        libxcb-icccm4-dev libxcb-image0-dev libxcb-xinerama0-dev
+        curl -o VulkanSDK.tar.gz https://sdk.lunarg.com/sdk/download/${{ env.VULKAN_VERSION_LINUX }}/linux/vulkansdk-linux-x86_64-${{ env.VULKAN_VERSION_LINUX }}.tar.gz
+        tar xfv VulkanSDK.tar.gz
+
+    - name: Create Build Environment
+      # Some projects don't allow in-source building, so create a separate build directory
+      # We'll use this as our working directory for all subsequent commands
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Configure CMake
+      # Use a bash shell so we can use the same syntax for environment variable
+      # access regardless of the host operating system
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      # Note the current convention is to use the -S and -B options here to specify source 
+      # and build directories, but this is only available with CMake 3.13 and higher.  
+      # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
+      run: |
+        source /tmp/${{ env.VULKAN_VERSION_LINUX }}/setup-env.sh
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_COMPILER=g++-10 -DCMAKE_INSTALL_PREFIX=/tmp/LucidRender
+
+    - name: Build
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      # Execute the build.  You can specify a specific target with "--target <NAME>"
+      run: cmake --build . --config $BUILD_TYPE --target install
+      env:
+        CXX: /usr/bin/g++-10
+    
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: LucidRender_Ubuntu
+        path: "/tmp/LucidRender/"
       

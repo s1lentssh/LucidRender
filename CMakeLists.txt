@@ -12,7 +12,7 @@ else()
     add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/conan.cmake) # latest from github
+include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/conan.cmake) # latest from github
 conan_cmake_run(
     REQUIRES
         fmt/7.0.3

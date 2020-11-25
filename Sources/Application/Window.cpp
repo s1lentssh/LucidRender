@@ -5,6 +5,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+namespace Lucid
+{
+
 Window::Window()
 {
     glfwInit();
@@ -61,12 +64,20 @@ std::vector<const char*> Window::GetRequiredInstanceExtensions() const noexcept
 
 void* Window::Handle() const noexcept
 {
+#ifdef _WIN32
     return glfwGetWin32Window(mWindow);
+#endif
+
+#ifdef __linux__
+    return reinterpret_cast<void*>(glfwGetX11Window(mWindow));
+#endif
 }
 
-Lucid::Vector2d<std::uint32_t> Window::GetSize() const noexcept
+Vector2d<std::uint32_t> Window::GetSize() const noexcept
 {
     int width, height;
     glfwGetWindowSize(mWindow, &width, &height);
     return { static_cast<std::uint32_t>(width), static_cast<std::uint32_t>(height) };
+}
+
 }
