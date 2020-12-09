@@ -1,10 +1,21 @@
-#include "Window.h"
+﻿#include "Window.h"
 #include <Utils/Logger.hpp>
 #include <Utils/Defaults.hpp>
 #include <Vulkan/VulkanRender.h>
 
 auto main() -> int try
 {
+    std::string title = R"(
+  __         __  __     ______     __     _____        ______     ______     __   __     _____     ______     ______    
+ /\ \       /\ \/\ \   /\  ___\   /\ \   /\  __-.     /\  == \   /\  ___\   /\ "-.\ \   /\  __-.  /\  ___\   /\  == \   
+ \ \ \____  \ \ \_\ \  \ \ \____  \ \ \  \ \ \/\ \    \ \  __<   \ \  __\   \ \ \-.  \  \ \ \/\ \ \ \  __\   \ \  __<   
+  \ \_____\  \ \_____\  \ \_____\  \ \_\  \ \____-     \ \_\ \_\  \ \_____\  \ \_\\"\_\  \ \____-  \ \_____\  \ \_\ \_\ 
+   \/_____/   \/_____/   \/_____/   \/_/   \/____/      \/_/ /_/   \/_____/   \/_/ \/_/   \/____/   \/_____/   \/_/ /_/ 
+
+)";
+
+    std::cout << title << '\n';
+
 #ifdef _WIN32
     SetConsoleTitle((Defaults::ApplicationName + " Console").c_str());
 #endif
