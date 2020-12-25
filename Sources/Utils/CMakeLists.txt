@@ -20,3 +20,5 @@ target_link_libraries(${PROJECT_NAME} INTERFACE fmt::fmt)
 find_package(rang REQUIRED)
 target_link_libraries(${PROJECT_NAME} INTERFACE rang::rang)
 
+find_package(glm REQUIRED)
+target_link_libraries(${PROJECT_NAME} INTERFACE glm::glm)

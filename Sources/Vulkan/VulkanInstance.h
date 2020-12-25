@@ -1,20 +1,21 @@
 #pragma once
 
 #include <vulkan/vulkan.hpp>
+#include <Vulkan/VulkanEntity.h>
 
-namespace Lucid {
+namespace Lucid::Vulkan
+{
 
 class VulkanDevice;
 class VulkanSurface;
 
-class VulkanInstance
+class VulkanInstance : public VulkanEntity<vk::UniqueInstance>
 {
 public:
 	VulkanInstance(std::vector<const char*> requiredInstanceExtensions);
 	~VulkanInstance();
 
 	[[nodiscard]] VulkanDevice PickSuitableDeviceForSurface(const VulkanSurface& surface) const;
-	[[nodiscard]] vk::UniqueInstance& Handle() { return mInstance; };
 
 private:
 	[[nodiscard]] static std::vector<const char*> GetUnsupportedExtensions(std::vector<const char*> requiredExtensions) noexcept;
@@ -33,9 +34,6 @@ private:
 
 	const std::vector<const char*> mValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 	vk::DebugUtilsMessengerEXT mDebugMessenger;
-	
-	// Members
-	vk::UniqueInstance mInstance;
 };
 
 }

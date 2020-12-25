@@ -5,15 +5,18 @@
 
 auto main() -> int try
 {
+    Logger::Info("Version {}", Defaults::Version);
+
     std::string title = R"(
-  __         __  __     ______     __     _____        ______     ______     __   __     _____     ______     ______    
- /\ \       /\ \/\ \   /\  ___\   /\ \   /\  __-.     /\  == \   /\  ___\   /\ "-.\ \   /\  __-.  /\  ___\   /\  == \   
- \ \ \____  \ \ \_\ \  \ \ \____  \ \ \  \ \ \/\ \    \ \  __<   \ \  __\   \ \ \-.  \  \ \ \/\ \ \ \  __\   \ \  __<   
-  \ \_____\  \ \_____\  \ \_____\  \ \_\  \ \____-     \ \_\ \_\  \ \_____\  \ \_\\"\_\  \ \____-  \ \_____\  \ \_\ \_\ 
-   \/_____/   \/_____/   \/_____/   \/_/   \/____/      \/_/ /_/   \/_____/   \/_/ \/_/   \/____/   \/_____/   \/_/ /_/ 
-
+    ___                            __                              __                  
+   /\_ \                    __    /\ \                            /\ \                 
+   \//\ \    __  __    ___ /\_\   \_\ \      _ __    __    ___    \_\ \     __   _ __  
+     \ \ \  /\ \/\ \  /'___\/\ \  /'_` \    /\`'__\/'__`\/' _ `\  /'_` \  /'__`\/\`'__\
+      \_\ \_\ \ \_\ \/\ \__/\ \ \/\ \L\ \   \ \ \//\  __//\ \/\ \/\ \L\ \/\  __/\ \ \/ 
+      /\____\\ \____/\ \____\\ \_\ \___,_\   \ \_\\ \____\ \_\ \_\ \___,_\ \____\\ \_\ 
+      \/____/ \/___/  \/____/ \/_/\/__,_ /    \/_/ \/____/\/_/\/_/\/__,_ /\/____/ \/_/ 
+   
 )";
-
     std::cout << title << '\n';
 
 #ifdef _WIN32
@@ -27,7 +30,7 @@ auto main() -> int try
     std::unique_ptr<Lucid::IWindow> window = std::make_unique<Lucid::Window>();
     window->SetIcon("Resources/Icons/AppIcon.png");
 
-    std::unique_ptr<Lucid::IRender> render = std::make_unique<Lucid::VulkanRender>(*window.get());
+    std::unique_ptr<Lucid::IRender> render = std::make_unique<Lucid::Vulkan::VulkanRender>(*window.get());
 
     while (!window->ShouldClose())
     {

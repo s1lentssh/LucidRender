@@ -1,20 +1,22 @@
 #pragma once
 
 #include <vulkan/vulkan.hpp>
+#include <Vulkan/VulkanEntity.h>
 
-namespace Lucid {
-
+namespace Lucid
+{
 class IWindow;
+}
+
+namespace Lucid::Vulkan
+{
+
 class VulkanInstance;
 
-class VulkanSurface 
+class VulkanSurface : public VulkanEntity<vk::UniqueSurfaceKHR>
 {
 public:
     VulkanSurface(VulkanInstance& instance, const IWindow& window);
-    const vk::UniqueSurfaceKHR& Handle() const { return mSurface; }
-
-private:
-    vk::UniqueSurfaceKHR mSurface;
 };
 
 }

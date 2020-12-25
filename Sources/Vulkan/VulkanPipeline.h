@@ -1,29 +1,29 @@
 #pragma once
 
 #include <vulkan/vulkan.hpp>
+#include <Vulkan/VulkanEntity.h>
 
-namespace Lucid
+namespace Lucid::Vulkan
 {
 
 class VulkanDevice;
 class VulkanSwapchain;
 class VulkanRenderPass;
+class VulkanDescriptorPool;
 
-class VulkanPipeline
+class VulkanPipeline : public VulkanEntity<vk::UniquePipeline>
 {
 public:
-	VulkanPipeline(VulkanDevice& device, const vk::Extent2D& extent, VulkanRenderPass& renderPass);
-	vk::UniquePipeline& Handle() { return mPipeline; }
+	VulkanPipeline(
+		VulkanDevice& device, 
+		const vk::Extent2D& extent, 
+		VulkanRenderPass& renderPass, 
+		VulkanDescriptorPool& descriptorPool);
+
+	[[nodiscard]] const vk::PipelineLayout& Layout() const;
 
 private:
-	void Init();
-
-	VulkanDevice& mDevice;
-	vk::Extent2D mExtent;
-	VulkanRenderPass& mRenderPass;
-
 	vk::UniquePipelineLayout mLayout;
-	vk::UniquePipeline mPipeline;
 };
 
 }

@@ -1,9 +1,11 @@
 #include "VulkanSwapchain.h"
 
 #include <Vulkan/VulkanRenderPass.h>
+#include <Vulkan/VulkanBuffer.h>
+#include <Vulkan/VulkanVertex.h>
 #include <Utils/Logger.hpp>
 
-namespace Lucid
+namespace Lucid::Vulkan
 {
 
 VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const VulkanSurface& surface, const Vector2d<std::uint32_t>& size)
@@ -17,10 +19,15 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const VulkanSurface& surf
 
 vk::ResultValue<std::uint32_t> VulkanSwapchain::AcquireNextImage(const vk::UniqueSemaphore& semaphore)
 {
-	return mDevice.Handle()->acquireNextImageKHR(
-		mSwapchain.get(), 
+	return mDevice.Handle().acquireNextImageKHR(
+		Handle(), 
 		std::numeric_limits<std::uint64_t>::max(), 
 		semaphore.get(), {});
+}
+
+const std::vector<vk::UniqueFramebuffer>& VulkanSwapchain::GetFramebuffers() const noexcept 
+{ 
+	return mFramebuffers; 
 }
 
 vk::SurfaceFormatKHR VulkanSwapchain::SelectSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats) const noexcept
@@ -91,7 +98,7 @@ void VulkanSwapchain::Init()
 	}
 
 	auto swapchainCreateInfo = vk::SwapchainCreateInfoKHR()
-		.setSurface(mSurface.Handle().get())
+		.setSurface(mSurface.Handle())
 		.setMinImageCount(imageCount)
 		.setImageFormat(surfaceFormat.format)
 		.setImageColorSpace(surfaceFormat.colorSpace)
@@ -121,10 +128,10 @@ void VulkanSwapchain::Init()
 			.setImageSharingMode(vk::SharingMode::eExclusive);
 	}
 
-	mSwapchain = mDevice.Handle()->createSwapchainKHRUnique(swapchainCreateInfo);
+	mHandle = mDevice.Handle().createSwapchainKHRUnique(swapchainCreateInfo);
 	Logger::Info("Swapchain created");
 
-	mImages = mDevice.Handle()->getSwapchainImagesKHR(mSwapchain.get());
+	mImages = mDevice.Handle().getSwapchainImagesKHR(Handle());
 	mFormat = surfaceFormat.format;
 	mExtent = extent;
 }
@@ -147,7 +154,7 @@ void VulkanSwapchain::CreateImageViews()
 				.setLayerCount(1)
 				.setLevelCount(1));
 
-		mImageViews.push_back(mDevice.Handle()->createImageViewUnique(imageViewCreateInfo));
+		mImageViews.push_back(mDevice.Handle().createImageViewUnique(imageViewCreateInfo));
 	}
 }
 
@@ -165,10 +172,30 @@ void VulkanSwapchain::CreateFramebuffers(VulkanRenderPass& renderPass)
 			.setHeight(mExtent.height)
 			.setLayers(1);
 
-		mFramebuffers.push_back(mDevice.Handle()->createFramebufferUnique(framebufferCreateInfo));
+		mFramebuffers.push_back(mDevice.Handle().createFramebufferUnique(framebufferCreateInfo));
 	}
 
 	Logger::Info("Framebuffers created");
+}
+
+vk::Extent2D VulkanSwapchain::GetExtent() const noexcept 
+{ 
+	return mExtent; 
+}
+
+vk::Format VulkanSwapchain::GetImageFormat() const noexcept 
+{
+	return mFormat; 
+}
+
+const std::vector<vk::UniqueImageView>& VulkanSwapchain::GetImageViews() const noexcept 
+{ 
+	return mImageViews; 
+}
+
+const std::size_t VulkanSwapchain::GetImageCount() const noexcept 
+{ 
+	return mImageViews.size(); 
 }
 
 }

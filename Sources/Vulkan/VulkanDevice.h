@@ -1,14 +1,16 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
 #include <optional>
 #include <set>
+#include <vulkan/vulkan.hpp>
+#include <Vulkan/VulkanEntity.h>
 
-namespace Lucid {
+namespace Lucid::Vulkan
+{
 
 class VulkanSurface;
 
-class VulkanDevice
+class VulkanDevice : public VulkanEntity<vk::UniqueDevice>
 {
 public:
     struct QueueFamilies
@@ -33,19 +35,18 @@ public:
     VulkanDevice(const vk::PhysicalDevice& device);
     [[nodiscard]] bool IsSuitableForSurface(const VulkanSurface& surface) const noexcept;
     void InitLogicalDeviceForSurface(const VulkanSurface& surface) noexcept;
-    vk::UniqueDevice& Handle() { return mLogicalDevice; }
     [[nodiscard]] SwapchainDetails GetSwapchainDetails(const VulkanSurface& surface) const noexcept;
     [[nodiscard]] std::optional<std::uint32_t> FindGraphicsQueueFamily() const noexcept;
     [[nodiscard]] std::optional<std::uint32_t> FindPresentQueueFamily(const VulkanSurface& surface) const noexcept;
-    [[nodiscard]] vk::Queue& GetGraphicsQueue() noexcept { return mGraphicsQueue; }
-    [[nodiscard]] vk::Queue& GetPresentQueue() noexcept { return mPresentQueue; }
+    [[nodiscard]] vk::Queue& GetGraphicsQueue() noexcept;
+    [[nodiscard]] vk::Queue& GetPresentQueue() noexcept;
+    [[nodiscard]] vk::PhysicalDevice& GetPhysicalDevice() noexcept;
 
 private:
     [[nodiscard]] std::vector<const char*> GetUnsupportedExtensions() const noexcept;
 
 private:
     vk::PhysicalDevice mPhysicalDevice;
-    vk::UniqueDevice mLogicalDevice;
     vk::Queue mGraphicsQueue;
     vk::Queue mPresentQueue;
 

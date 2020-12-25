@@ -3,7 +3,8 @@
 #include <Utils/Logger.hpp>
 #include <Vulkan/VulkanSurface.h>
 
-namespace Lucid {
+namespace Lucid::Vulkan
+{
 
 VulkanDevice::VulkanDevice(const vk::PhysicalDevice& device)
 	: mPhysicalDevice(device)
@@ -60,11 +61,11 @@ void VulkanDevice::InitLogicalDeviceForSurface(const VulkanSurface& surface) noe
 		.setEnabledExtensionCount(static_cast<std::uint32_t>(mExtensions.size()))
 		.setPpEnabledExtensionNames(mExtensions.data());
 
-	mLogicalDevice = mPhysicalDevice.createDeviceUnique(deviceCreateInfo);
+	mHandle = mPhysicalDevice.createDeviceUnique(deviceCreateInfo);
 	Logger::Info("Logical device created");
 
-	mGraphicsQueue = mLogicalDevice->getQueue(queueFamilies.graphics.value(), 0);
-	mPresentQueue = mLogicalDevice->getQueue(queueFamilies.present.value(), 0);
+	mGraphicsQueue = mHandle->getQueue(queueFamilies.graphics.value(), 0);
+	mPresentQueue = mHandle->getQueue(queueFamilies.present.value(), 0);
 }
 
 std::optional<std::uint32_t> VulkanDevice::FindGraphicsQueueFamily() const noexcept
@@ -89,7 +90,7 @@ std::optional<std::uint32_t> VulkanDevice::FindPresentQueueFamily(const VulkanSu
 	std::vector<vk::QueueFamilyProperties> queueFamiliesProperties = mPhysicalDevice.getQueueFamilyProperties();
 	for (std::uint32_t i = 0; i < queueFamiliesProperties.size(); ++i)
 	{
-		vk::Bool32 supportsSurface = mPhysicalDevice.getSurfaceSupportKHR(i, surface.Handle().get());
+		vk::Bool32 supportsSurface = mPhysicalDevice.getSurfaceSupportKHR(i, surface.Handle());
 
 		if (supportsSurface)
 		{
@@ -100,13 +101,28 @@ std::optional<std::uint32_t> VulkanDevice::FindPresentQueueFamily(const VulkanSu
 	return false;
 }
 
+vk::Queue& VulkanDevice::GetGraphicsQueue() noexcept 
+{ 
+	return mGraphicsQueue; 
+}
+
+vk::Queue& VulkanDevice::GetPresentQueue() noexcept 
+{ 
+	return mPresentQueue; 
+}
+
+vk::PhysicalDevice& VulkanDevice::GetPhysicalDevice() noexcept 
+{ 
+	return mPhysicalDevice; 
+}
+
 VulkanDevice::SwapchainDetails VulkanDevice::GetSwapchainDetails(const VulkanSurface& surface) const noexcept
 {
 	SwapchainDetails details;
 
-	details.formats = mPhysicalDevice.getSurfaceFormatsKHR(surface.Handle().get());
-	details.capabilities = mPhysicalDevice.getSurfaceCapabilitiesKHR(surface.Handle().get());
-	details.presentModes = mPhysicalDevice.getSurfacePresentModesKHR(surface.Handle().get());
+	details.formats = mPhysicalDevice.getSurfaceFormatsKHR(surface.Handle());
+	details.capabilities = mPhysicalDevice.getSurfaceCapabilitiesKHR(surface.Handle());
+	details.presentModes = mPhysicalDevice.getSurfacePresentModesKHR(surface.Handle());
 
 	return details;
 }

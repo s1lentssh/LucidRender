@@ -4,7 +4,7 @@
 #include <Utils/Interfaces.hpp>
 #include <Utils/Logger.hpp>
 
-namespace Lucid
+namespace Lucid::Vulkan
 {
 
 VulkanSurface::VulkanSurface(VulkanInstance& instance, const IWindow& window)
@@ -15,14 +15,14 @@ VulkanSurface::VulkanSurface(VulkanInstance& instance, const IWindow& window)
 		.setHwnd(static_cast<HWND>(window.Handle()))
 		.setHinstance(GetModuleHandle(nullptr));
 
-	mSurface = instance.Handle()->createWin32SurfaceKHRUnique(createInfo);
+	mHandle = instance.Handle().createWin32SurfaceKHRUnique(createInfo);
 #endif
 
 #ifdef __linux__
 	auto createInfo = vk::XlibSurfaceCreateInfoKHR()
 		.setWindow((Window)(window.Handle()));
 
-	mSurface = instance.Handle()->createXlibSurfaceKHRUnique(createInfo);
+	mSurface = instance.Handle().createXlibSurfaceKHRUnique(createInfo);
 #endif
 
 	Logger::Info("Surface created");

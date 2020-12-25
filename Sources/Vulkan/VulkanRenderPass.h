@@ -1,22 +1,19 @@
 #pragma once
 
 #include <vulkan/vulkan.hpp>
+#include <Vulkan/VulkanEntity.h>
 
-namespace Lucid
+namespace Lucid::Vulkan
 {
 
 class VulkanPipeline;
 class VulkanSwapchain;
 class VulkanDevice;
 
-class VulkanRenderPass
+class VulkanRenderPass : public VulkanEntity<vk::UniqueRenderPass>
 {
 public:
 	VulkanRenderPass(VulkanDevice& device, vk::Format imageFormat);
-	vk::RenderPass& Handle() { return mRenderPass.get(); }
-
-private:
-	vk::UniqueRenderPass mRenderPass;
 };
 
 }

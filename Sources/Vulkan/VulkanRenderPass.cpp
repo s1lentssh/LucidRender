@@ -4,7 +4,7 @@
 #include <Vulkan/VulkanSwapchain.h>
 #include <Utils/Logger.hpp>
 
-namespace Lucid
+namespace Lucid::Vulkan
 {
 
 VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, vk::Format imageFormat)
@@ -47,7 +47,7 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, vk::Format imageFormat)
 		.setDependencyCount(1)
 		.setPDependencies(&subpassDependency);
 
-	mRenderPass = device.Handle()->createRenderPassUnique(renderPassCreateInfo);
+	mHandle = device.Handle().createRenderPassUnique(renderPassCreateInfo);
 	Logger::Info("Render pass created");
 }
 

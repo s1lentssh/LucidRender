@@ -21,6 +21,7 @@ conan_cmake_run(
         stb/20200203
         imgui/1.79
         shaderc/2019.0
+        glm/0.9.9.8
 
     BASIC_SETUP
     CMAKE_TARGETS

@@ -4,39 +4,42 @@
 #include <Vulkan/VulkanSwapchain.h>
 #include <Vulkan/VulkanRenderPass.h>
 #include <Vulkan/VulkanShader.h>
+#include <Vulkan/VulkanVertex.h>
+#include <Vulkan/VulkanDescriptorPool.h>
 #include <Utils/Logger.hpp>
 
-namespace Lucid
+namespace Lucid::Vulkan
 {
 
-VulkanPipeline::VulkanPipeline(VulkanDevice& device, const vk::Extent2D& extent, VulkanRenderPass& renderPass)
-	: mDevice(device)
-	, mExtent(extent)
-	, mRenderPass(renderPass)
+VulkanPipeline::VulkanPipeline(
+	VulkanDevice& device, 
+	const vk::Extent2D& extent, 
+	VulkanRenderPass& renderPass, 
+	VulkanDescriptorPool& descriptorPool)
 {
-	Init();
-}
-
-void VulkanPipeline::Init()
-{
-	VulkanShader vertexShader(mDevice, VulkanShader::Type::Vertex, "Resources/Shaders/Shader.vert");
-	VulkanShader fragmentShader(mDevice, VulkanShader::Type::Fragment, "Resources/Shaders/Shader.frag");
+	VulkanShader vertexShader(device, VulkanShader::Type::Vertex, "Resources/Shaders/Shader.vert");
+	VulkanShader fragmentShader(device, VulkanShader::Type::Fragment, "Resources/Shaders/Shader.frag");
 
 	auto vertexShaderStageInfo = vk::PipelineShaderStageCreateInfo()
 		.setStage(vk::ShaderStageFlagBits::eVertex)
-		.setModule(vertexShader.Handle().get())
+		.setModule(vertexShader.Handle())
 		.setPName("main");
 
 	auto fragmentShaderStageInfo = vk::PipelineShaderStageCreateInfo()
 		.setStage(vk::ShaderStageFlagBits::eFragment)
-		.setModule(fragmentShader.Handle().get())
+		.setModule(fragmentShader.Handle())
 		.setPName("main");
 
 	vk::PipelineShaderStageCreateInfo shaderStages[] = { vertexShaderStageInfo, fragmentShaderStageInfo };
 
+	auto vertexBindingDescriptions = VulkanVertex::GetBindingDescriptions();
+	auto vertexAttributeDescriptions = VulkanVertex::GetAttributeDescriptions();
+
 	auto vertexInputState = vk::PipelineVertexInputStateCreateInfo()
-		.setVertexBindingDescriptionCount(0)
-		.setVertexAttributeDescriptionCount(0);
+		.setVertexBindingDescriptionCount(static_cast<std::uint32_t>(vertexBindingDescriptions.size()))
+		.setPVertexBindingDescriptions(vertexBindingDescriptions.data())
+		.setVertexAttributeDescriptionCount(static_cast<std::uint32_t>(vertexAttributeDescriptions.size()))
+		.setPVertexAttributeDescriptions(vertexAttributeDescriptions.data());
 
 	auto inputAssemblyState = vk::PipelineInputAssemblyStateCreateInfo()
 		.setTopology(vk::PrimitiveTopology::eTriangleList)
@@ -47,11 +50,11 @@ void VulkanPipeline::Init()
 		.setY(0.0f)
 		.setMinDepth(0.0f)
 		.setMaxDepth(1.0f)
-		.setWidth(static_cast<float>(mExtent.width))
-		.setHeight(static_cast<float>(mExtent.height));
+		.setWidth(static_cast<float>(extent.width))
+		.setHeight(static_cast<float>(extent.height));
 
 	auto scissor = vk::Rect2D()
-		.setExtent(mExtent)
+		.setExtent(extent)
 		.setOffset({ 0, 0 });
 
 	auto viewportState = vk::PipelineViewportStateCreateInfo()
@@ -63,10 +66,10 @@ void VulkanPipeline::Init()
 	auto rasterizationState = vk::PipelineRasterizationStateCreateInfo()
 		.setDepthClampEnable(false)
 		.setRasterizerDiscardEnable(false)
-		.setPolygonMode(vk::PolygonMode::eLine)
+		.setPolygonMode(vk::PolygonMode::eFill)
 		.setLineWidth(1.0f)
 		.setCullMode(vk::CullModeFlagBits::eBack)
-		.setFrontFace(vk::FrontFace::eClockwise)
+		.setFrontFace(vk::FrontFace::eCounterClockwise)
 		.setDepthBiasEnable(false);
 
 	auto multisampleState = vk::PipelineMultisampleStateCreateInfo()
@@ -89,10 +92,11 @@ void VulkanPipeline::Init()
 		.setBlendConstants({ 0.0f, 0.0f, 0.0f, 0.0f });
 
 	auto pipelineLayoutCreateInfo = vk::PipelineLayoutCreateInfo()
-		.setSetLayoutCount(0)
-		.setPushConstantRangeCount(0);
+		.setPushConstantRangeCount(0)
+		.setSetLayoutCount(1)
+		.setPSetLayouts(&descriptorPool.Layout());
 
-	mLayout = mDevice.Handle()->createPipelineLayoutUnique(pipelineLayoutCreateInfo);
+	mLayout = device.Handle().createPipelineLayoutUnique(pipelineLayoutCreateInfo);
 
 	auto pipelineCreateInfo = vk::GraphicsPipelineCreateInfo()
 		.setStageCount(static_cast<std::uint32_t>(std::size(shaderStages)))
@@ -104,11 +108,15 @@ void VulkanPipeline::Init()
 		.setPMultisampleState(&multisampleState)
 		.setPColorBlendState(&colorBlendState)
 		.setLayout(mLayout.get())
-		.setRenderPass(mRenderPass.Handle())
+		.setRenderPass(renderPass.Handle())
 		.setSubpass(0);
 
-	mPipeline = mDevice.Handle()->createGraphicsPipelineUnique({}, pipelineCreateInfo);
-	Logger::Info("Pipeline created");
+	mHandle = device.Handle().createGraphicsPipelineUnique({}, pipelineCreateInfo);
+}
+
+const vk::PipelineLayout& VulkanPipeline::Layout() const 
+{ 
+	return mLayout.get(); 
 }
 
 }

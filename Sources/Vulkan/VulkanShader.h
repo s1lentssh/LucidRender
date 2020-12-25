@@ -2,15 +2,18 @@
 
 #include <filesystem>
 #include <map>
+
 #include <vulkan/vulkan.hpp>
 #include <shaderc/shaderc.hpp>
 
-namespace Lucid
+#include <Vulkan/VulkanEntity.h>
+
+namespace Lucid::Vulkan
 {
 
 class VulkanDevice;
 
-class VulkanShader
+class VulkanShader : public VulkanEntity<vk::UniqueShaderModule>
 {
 public:
 	enum class Type
@@ -21,8 +24,6 @@ public:
 
 	VulkanShader(VulkanDevice& device, Type type, const std::filesystem::path& path);
 
-	vk::UniqueShaderModule& Handle() { return mModule; }
-
 private:
 	[[nodiscard]] std::string PreprocessShader(const std::string& source, Type type, const std::string& name);
 	[[nodiscard]] std::vector<std::uint32_t> CompileShader(const std::string& source, Type type, const std::string& name);
@@ -31,8 +32,6 @@ private:
 		{ Type::Fragment, shaderc_shader_kind::shaderc_fragment_shader },
 		{ Type::Vertex, shaderc_shader_kind::shaderc_vertex_shader },
 	};
-
-	vk::UniqueShaderModule mModule;
 };
 
 }
