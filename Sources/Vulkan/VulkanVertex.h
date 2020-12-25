@@ -11,9 +11,10 @@ struct VulkanVertex
 {
 	glm::vec2 position;
 	glm::vec3 color;
+	glm::vec2 textureCoordinate;
 
 	static std::array<vk::VertexInputBindingDescription, 1> GetBindingDescriptions();
-	static std::array<vk::VertexInputAttributeDescription, 2> GetAttributeDescriptions();
+	static std::array<vk::VertexInputAttributeDescription, 3> GetAttributeDescriptions();
 };
 
 struct UniformBufferObject

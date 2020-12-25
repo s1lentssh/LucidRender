@@ -3,6 +3,8 @@
 #include <Vulkan/VulkanDevice.h>
 #include <Vulkan/VulkanBuffer.h>
 #include <Vulkan/VulkanVertex.h>
+#include <Vulkan/VulkanImageView.h>
+#include <Vulkan/VulkanSampler.h>
 
 namespace Lucid::Vulkan
 {
@@ -12,13 +14,19 @@ VulkanDescriptorPool::VulkanDescriptorPool(VulkanDevice& device) : mDevice(devic
 	const std::uint32_t kMaxDescriptorCount = 128;
 	const std::uint32_t kMaxDescriptorSets = 128;
 
-	auto poolSize = vk::DescriptorPoolSize()
+	auto vertexPoolSize = vk::DescriptorPoolSize()
 		.setDescriptorCount(kMaxDescriptorCount)
 		.setType(vk::DescriptorType::eUniformBuffer);
 
+	auto samplerPoolSize = vk::DescriptorPoolSize()
+		.setDescriptorCount(kMaxDescriptorCount)
+		.setType(vk::DescriptorType::eCombinedImageSampler);
+
+	vk::DescriptorPoolSize poolSizes[] = { vertexPoolSize, samplerPoolSize };
+
 	auto createInfo = vk::DescriptorPoolCreateInfo()
-		.setPoolSizeCount(1)
-		.setPPoolSizes(&poolSize)
+		.setPoolSizeCount(static_cast<std::uint32_t>(std::size(poolSizes)))
+		.setPPoolSizes(poolSizes)
 		.setMaxSets(kMaxDescriptorSets)
 		.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet);
 
@@ -27,7 +35,11 @@ VulkanDescriptorPool::VulkanDescriptorPool(VulkanDevice& device) : mDevice(devic
 	CreateDescriptorSetLayout();
 }
 
-void VulkanDescriptorPool::CreateDescriptorSets(std::size_t count, const std::vector<std::unique_ptr<VulkanUniformBuffer>>& uniformBuffers)
+void VulkanDescriptorPool::CreateDescriptorSets(
+	std::size_t count,
+	const std::vector<std::unique_ptr<VulkanUniformBuffer>>& uniformBuffers,
+	VulkanImageView& texture,
+	VulkanSampler& sampler)
 {
 	std::vector<vk::DescriptorSetLayout> layouts(count, mDescriptorSetLayout.get());
 
@@ -40,12 +52,13 @@ void VulkanDescriptorPool::CreateDescriptorSets(std::size_t count, const std::ve
 
 	for (std::size_t i = 0; i < count; i++)
 	{
+		// Vertex
 		auto bufferInfo = vk::DescriptorBufferInfo()
 			.setBuffer(uniformBuffers.at(i)->Handle())
 			.setOffset(0)
 			.setRange(sizeof(UniformBufferObject));
 
-		auto descriptorWrite = vk::WriteDescriptorSet()
+		auto bufferDescriptorWrite = vk::WriteDescriptorSet()
 			.setDstSet(mDescriptorSets.at(i).get())
 			.setDstBinding(0)
 			.setDstArrayElement(0)
@@ -53,21 +66,43 @@ void VulkanDescriptorPool::CreateDescriptorSets(std::size_t count, const std::ve
 			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
 			.setPBufferInfo(&bufferInfo);
 
-		mDevice.Handle().updateDescriptorSets(descriptorWrite, {});
+		// Sampler
+		auto imageInfo = vk::DescriptorImageInfo()
+			.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
+			.setImageView(texture.Handle())
+			.setSampler(sampler.Handle());
+
+		auto imageDescriptorWrite = vk::WriteDescriptorSet()
+			.setDstSet(mDescriptorSets.at(i).get())
+			.setDstBinding(1)
+			.setDstArrayElement(0)
+			.setDescriptorCount(1)
+			.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+			.setPImageInfo(&imageInfo);
+
+		mDevice.Handle().updateDescriptorSets({ bufferDescriptorWrite, imageDescriptorWrite }, {});
 	}
 }
 
 void VulkanDescriptorPool::CreateDescriptorSetLayout()
 {
-	auto layoutBinding = vk::DescriptorSetLayoutBinding()
+	auto vertexLayoutBinding = vk::DescriptorSetLayoutBinding()
 		.setBinding(0)
 		.setDescriptorType(vk::DescriptorType::eUniformBuffer)
 		.setDescriptorCount(1)
 		.setStageFlags(vk::ShaderStageFlagBits::eVertex);
 
+	auto samplerLayoutBinding = vk::DescriptorSetLayoutBinding()
+		.setBinding(1)
+		.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+		.setDescriptorCount(1)
+		.setStageFlags(vk::ShaderStageFlagBits::eFragment);
+
+	vk::DescriptorSetLayoutBinding bindings[] = { vertexLayoutBinding, samplerLayoutBinding };
+
 	auto createInfo = vk::DescriptorSetLayoutCreateInfo()
-		.setBindingCount(1)
-		.setPBindings(&layoutBinding);
+		.setBindingCount(static_cast<std::uint32_t>(std::size(bindings)))
+		.setPBindings(bindings);
 
 	mDescriptorSetLayout = mDevice.Handle().createDescriptorSetLayoutUnique(createInfo);
 }

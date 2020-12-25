@@ -10,6 +10,8 @@
 #include <Vulkan/VulkanBuffer.h>
 #include <Vulkan/VulkanVertex.h>
 #include <Vulkan/VulkanDescriptorPool.h>
+#include <Vulkan/VulkanImage.h>
+#include <Vulkan/VulkanSampler.h>
 #include <Utils/Interfaces.hpp>
 
 namespace Lucid::Vulkan
@@ -36,6 +38,9 @@ private:
 	std::unique_ptr<VulkanVertexBuffer> mVertexBuffer;
 	std::unique_ptr<VulkanIndexBuffer> mIndexBuffer;
 	std::unique_ptr<VulkanDescriptorPool> mDescriptorPool;
+	std::unique_ptr<VulkanSampler> mSampler;
+	std::unique_ptr<VulkanImage> mTextureImage;
+	std::unique_ptr<VulkanImageView> mTextureImageView;
 	std::vector<std::unique_ptr<VulkanUniformBuffer>> mUniformBuffers;
 
 	// Synchronization
@@ -48,10 +53,10 @@ private:
 	const IWindow* mWindow = nullptr;
 
 	const std::vector<VulkanVertex> mVertices = {
-		{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-		{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-		{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-		{{-0.5f, 0.5f}, {0.1f, 0.1f, 0.1f}}
+		{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+		{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+		{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+		{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
 	};
 
 	const std::vector<std::uint16_t> mIndices = {

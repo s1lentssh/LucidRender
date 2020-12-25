@@ -13,7 +13,7 @@ std::array<vk::VertexInputBindingDescription, 1> VulkanVertex::GetBindingDescrip
 	return { description };
 }
 
-std::array<vk::VertexInputAttributeDescription, 2> VulkanVertex::GetAttributeDescriptions()
+std::array<vk::VertexInputAttributeDescription, 3> VulkanVertex::GetAttributeDescriptions()
 {
 	auto positionDescription = vk::VertexInputAttributeDescription()
 		.setBinding(0)
@@ -27,7 +27,13 @@ std::array<vk::VertexInputAttributeDescription, 2> VulkanVertex::GetAttributeDes
 		.setFormat(vk::Format::eR32G32B32Sfloat)
 		.setOffset(offsetof(VulkanVertex, color));
 
-	return { positionDescription, colorDescription };
+	auto textureCoordinateDescription = vk::VertexInputAttributeDescription()
+		.setBinding(0)
+		.setLocation(2)
+		.setFormat(vk::Format::eR32G32Sfloat)
+		.setOffset(offsetof(VulkanVertex, textureCoordinate));
+
+	return { positionDescription, colorDescription, textureCoordinateDescription };
 }
 
 }

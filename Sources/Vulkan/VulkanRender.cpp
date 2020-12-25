@@ -150,8 +150,15 @@ void VulkanRender::RecreateSwapchain()
 		mUniformBuffers.emplace_back(std::make_unique<VulkanUniformBuffer>(*mDevice.get()));
 	}
 
+	// Create sampler
+	mSampler = std::make_unique<VulkanSampler>(*mDevice.get());
+
+	// Load texture
+	mTextureImage = std::make_unique<VulkanImage>(*mDevice.get(), *mCommandPool.get(), "Resources/Textures/Ancient.jpg");
+	mTextureImageView = std::make_unique<VulkanImageView>(*mDevice.get(), *mTextureImage.get(), vk::Format::eR8G8B8A8Srgb);
+
 	// Create descriptor sets
-	mDescriptorPool->CreateDescriptorSets(mSwapchain->GetImageCount(), mUniformBuffers);
+	mDescriptorPool->CreateDescriptorSets(mSwapchain->GetImageCount(), mUniformBuffers, *mTextureImageView.get(), *mSampler.get());
 
 	// Record command buffers
 	mCommandPool->RecordCommandBuffers(*mVertexBuffer.get(), *mIndexBuffer.get(), *mDescriptorPool.get());

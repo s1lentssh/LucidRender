@@ -26,6 +26,7 @@ public:
 
 	vk::UniqueCommandBuffer& Get(std::size_t index);
 	void RecordCommandBuffers(const VulkanVertexBuffer& vertexBuffer, const VulkanIndexBuffer& indexBuffer, const VulkanDescriptorPool& descriptorPool);
+	void ExecuteSingleCommand(const std::function<void(vk::CommandBuffer&)>& function);
 
 private:
 	std::vector<vk::UniqueCommandBuffer> mCommandBuffers;
@@ -33,6 +34,7 @@ private:
 	VulkanSwapchain& mSwapchain;
 	VulkanRenderPass& mRenderPass;
 	VulkanPipeline& mPipeline;
+	VulkanDevice& mDevice;
 };
 
 }

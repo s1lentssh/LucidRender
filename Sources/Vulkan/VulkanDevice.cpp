@@ -23,6 +23,7 @@ bool VulkanDevice::IsSuitableForSurface(const VulkanSurface& surface) const noex
 	bool hasPresentQueueFamily = FindPresentQueueFamily(surface).has_value();
 	bool allExtensionsSupported = GetUnsupportedExtensions().empty();
 	bool hasSwapchainSupport = GetSwapchainDetails(surface).IsComplete();
+	bool hasSamplerAnisotropy = features.samplerAnisotropy;
 
 	return isSuitableDeviceType && 
 		supportsGeometry && 
@@ -40,7 +41,9 @@ void VulkanDevice::InitLogicalDeviceForSurface(const VulkanSurface& surface) noe
 	};
 
 	auto deviceFeatures = vk::PhysicalDeviceFeatures()
-		.setFillModeNonSolid(true);
+		.setFillModeNonSolid(true)
+		.setSamplerAnisotropy(true);
+
 	const float queuePriority = 1.0f;
 
 	std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;

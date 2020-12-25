@@ -22,3 +22,6 @@ target_link_libraries(${PROJECT_NAME} INTERFACE rang::rang)
 
 find_package(glm REQUIRED)
 target_link_libraries(${PROJECT_NAME} INTERFACE glm::glm)
+
+find_package(stb REQUIRED)
+target_link_libraries(${PROJECT_NAME} PUBLIC stb::stb)

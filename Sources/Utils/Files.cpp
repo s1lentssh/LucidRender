@@ -1,6 +1,7 @@
 #include "Files.h"
 
 #include <fstream>
+#include <stb_image.h>
 
 namespace Lucid
 {
@@ -15,13 +16,30 @@ std::vector<char> Files::Read(const std::filesystem::path& path)
 	}
 
 	std::size_t fileSize = file.tellg();
-	std::vector<char> data(fileSize);
+	std::vector<char> pixels(fileSize);
 
 	file.seekg(0);
-	file.read(data.data(), fileSize);
+	file.read(pixels.data(), fileSize);
 	file.close();
 
-	return data;
+	return pixels;
+}
+
+Texture Files::ReadImage(const std::filesystem::path& path)
+{
+	int width, height, channels;
+	stbi_uc* pixels = stbi_load(path.string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
+
+	/*if (channels != 4)
+	{
+		throw std::runtime_error("Detected texture with channels != 4");
+	}*/
+
+	std::size_t size = static_cast<std::size_t>(width) * height * 4;
+	std::vector<char> result(size);
+	std::memcpy(result.data(), pixels, size);
+
+	return { static_cast<std::uint32_t>(width), static_cast<std::uint32_t>(height), result };
 }
 
 }

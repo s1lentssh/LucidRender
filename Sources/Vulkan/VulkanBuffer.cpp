@@ -17,7 +17,7 @@ VulkanBuffer::VulkanBuffer(VulkanDevice& device, vk::DeviceSize size, vk::Buffer
 
 	mHandle = device.Handle().createBufferUnique(createInfo);
 	vk::MemoryRequirements requirements = device.Handle().getBufferMemoryRequirements(mHandle.get());
-	std::uint32_t memoryType = FindMemoryType(requirements.memoryTypeBits, properties);
+	std::uint32_t memoryType = FindMemoryType(mDevice, requirements.memoryTypeBits, properties);
 
 	auto allocateInfo = vk::MemoryAllocateInfo()
 		.setAllocationSize(requirements.size)
@@ -28,16 +28,16 @@ VulkanBuffer::VulkanBuffer(VulkanDevice& device, vk::DeviceSize size, vk::Buffer
 	device.Handle().bindBufferMemory(mHandle.get(), mMemory.get(), 0);
 }
 
-void VulkanBuffer::Write(void* data)
+void VulkanBuffer::Write(void* pixels)
 {
 	void* deviceMemory = mDevice.Handle().mapMemory(mMemory.get(), 0, mBufferSize);
-	std::memcpy(deviceMemory, data, mBufferSize);
+	std::memcpy(deviceMemory, pixels, mBufferSize);
 	mDevice.Handle().unmapMemory(mMemory.get());
 }
 
-std::uint32_t VulkanBuffer::FindMemoryType(std::uint32_t filter, vk::MemoryPropertyFlags flags)
+std::uint32_t VulkanBuffer::FindMemoryType(VulkanDevice& device, std::uint32_t filter, vk::MemoryPropertyFlags flags)
 {
-	vk::PhysicalDeviceMemoryProperties properties = mDevice.GetPhysicalDevice().getMemoryProperties();
+	vk::PhysicalDeviceMemoryProperties properties = device.GetPhysicalDevice().getMemoryProperties();
 
 	for (std::uint32_t i = 0; i < properties.memoryTypeCount; i++)
 	{
@@ -81,30 +81,11 @@ std::size_t VulkanVertexBuffer::VerticesCount() const noexcept
 
 void VulkanBuffer::Write(VulkanCommandPool& pool, const VulkanBuffer& buffer)
 {
-	auto allocateInfo = vk::CommandBufferAllocateInfo()
-		.setLevel(vk::CommandBufferLevel::ePrimary)
-		.setCommandPool(pool.Handle())
-		.setCommandBufferCount(1);
-
-	auto commandBuffers = mDevice.Handle().allocateCommandBuffersUnique(allocateInfo);
-	vk::CommandBuffer commandBuffer = commandBuffers.at(0).get();
-
-	auto beginInfo = vk::CommandBufferBeginInfo()
-		.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
-
-	auto copyRegion = vk::BufferCopy()
-		.setSize(mBufferSize);
-
-	commandBuffer.begin(beginInfo);
-	commandBuffer.copyBuffer(buffer.Handle(), mHandle.get(), copyRegion);
-	commandBuffer.end();
-
-	auto submitInfo = vk::SubmitInfo()
-		.setCommandBufferCount(1)
-		.setPCommandBuffers(&commandBuffer);
-
-	mDevice.GetGraphicsQueue().submit(submitInfo, {});
-	mDevice.GetGraphicsQueue().waitIdle();
+	pool.ExecuteSingleCommand([&buffer, this](vk::CommandBuffer& commandBuffer) {
+		auto copyRegion = vk::BufferCopy()
+			.setSize(mBufferSize);
+		commandBuffer.copyBuffer(buffer.Handle(), mHandle.get(), copyRegion);
+	});
 }
 
 VulkanIndexBuffer::VulkanIndexBuffer(VulkanDevice& device, VulkanCommandPool& manager, const std::vector<std::uint16_t>& indices)

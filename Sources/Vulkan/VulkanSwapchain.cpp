@@ -54,7 +54,7 @@ vk::PresentModeKHR VulkanSwapchain::SelectPresentMode(const std::vector<vk::Pres
 
 	for (const auto& availableMode : availableModes)
 	{
-		bool niceMode = vk::PresentModeKHR::eMailbox == availableMode;
+		bool niceMode = vk::PresentModeKHR::eImmediate == availableMode;
 
 		if (niceMode)
 		{
@@ -142,19 +142,7 @@ void VulkanSwapchain::CreateImageViews()
 
 	for (const auto& image : mImages)
 	{
-		auto imageViewCreateInfo = vk::ImageViewCreateInfo()
-			.setImage(image)
-			.setViewType(vk::ImageViewType::e2D)
-			.setFormat(mFormat)
-			.setComponents(vk::ComponentMapping{}) // Identity by default
-			.setSubresourceRange(vk::ImageSubresourceRange{}
-				.setAspectMask(vk::ImageAspectFlagBits::eColor)
-				.setBaseArrayLayer(0)
-				.setBaseMipLevel(0)
-				.setLayerCount(1)
-				.setLevelCount(1));
-
-		mImageViews.push_back(mDevice.Handle().createImageViewUnique(imageViewCreateInfo));
+		mImageViews.push_back(VulkanImageView(mDevice, image, mFormat));
 	}
 }
 
@@ -167,7 +155,7 @@ void VulkanSwapchain::CreateFramebuffers(VulkanRenderPass& renderPass)
 		auto framebufferCreateInfo = vk::FramebufferCreateInfo()
 			.setRenderPass(renderPass.Handle())
 			.setAttachmentCount(1)
-			.setPAttachments(&imageView.get())
+			.setPAttachments(&imageView.Handle())
 			.setWidth(mExtent.width)
 			.setHeight(mExtent.height)
 			.setLayers(1);
@@ -188,7 +176,7 @@ vk::Format VulkanSwapchain::GetImageFormat() const noexcept
 	return mFormat; 
 }
 
-const std::vector<vk::UniqueImageView>& VulkanSwapchain::GetImageViews() const noexcept 
+const std::vector<VulkanImageView>& VulkanSwapchain::GetImageViews() const noexcept 
 { 
 	return mImageViews; 
 }

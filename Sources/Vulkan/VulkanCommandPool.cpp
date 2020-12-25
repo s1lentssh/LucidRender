@@ -20,6 +20,7 @@ VulkanCommandPool::VulkanCommandPool(
 	: mSwapchain(swapchain)
 	, mRenderPass(renderPass)
 	, mPipeline(pipeline)
+	, mDevice(device)
 {
 	// Create command pool
 	auto commandPoolCreateInfo = vk::CommandPoolCreateInfo()
@@ -78,6 +79,31 @@ void VulkanCommandPool::RecordCommandBuffers(const VulkanVertexBuffer& vertexBuf
 
 		commandBuffer->end();
 	}
+}
+
+void VulkanCommandPool::ExecuteSingleCommand(const std::function<void(vk::CommandBuffer&)>& function)
+{
+	auto allocateInfo = vk::CommandBufferAllocateInfo()
+		.setLevel(vk::CommandBufferLevel::ePrimary)
+		.setCommandPool(Handle())
+		.setCommandBufferCount(1);
+
+	auto commandBuffers = mDevice.Handle().allocateCommandBuffersUnique(allocateInfo);
+	vk::CommandBuffer commandBuffer = commandBuffers.at(0).get();
+
+	auto beginInfo = vk::CommandBufferBeginInfo()
+		.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+
+	commandBuffer.begin(beginInfo);
+	function(commandBuffer);
+	commandBuffer.end();
+
+	auto submitInfo = vk::SubmitInfo()
+		.setCommandBufferCount(1)
+		.setPCommandBuffers(&commandBuffer);
+
+	mDevice.GetGraphicsQueue().submit(submitInfo, {});
+	mDevice.GetGraphicsQueue().waitIdle();
 }
 
 }
