@@ -24,6 +24,8 @@ Window::Window()
 
     // Paint it black on load
 	glfwSwapBuffers(mWindow);
+
+    glfwSetKeyCallback(mWindow, OnKeyPressed);
 }
 
 Window::~Window()
@@ -53,6 +55,17 @@ void Window::SetIcon(const std::filesystem::path& path)
     icon.pixels = stbi_load(path.string().c_str(), &icon.width, &icon.height, nullptr, 4);
     glfwSetWindowIcon(mWindow, 1, &icon);
     stbi_image_free(icon.pixels);
+}
+
+void Window::OnKeyPressed(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    (void)mods;
+    (void)scancode;
+
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    {
+        glfwSetWindowShouldClose(window, true);
+    }
 }
 
 std::vector<const char*> Window::GetRequiredInstanceExtensions() const noexcept

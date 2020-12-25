@@ -4,7 +4,7 @@ project(Application)
 set(SOURCES Source.cpp Window.cpp)
 set(HEADERS Window.h)
 
-find_package(glfw REQUIRED)
+find_package(glfw3 REQUIRED)
 find_package(Vulkan REQUIRED)
 find_package(stb REQUIRED)
 

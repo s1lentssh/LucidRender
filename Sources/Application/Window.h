@@ -24,6 +24,8 @@ public:
     void WaitEvents() const noexcept override;
     void SetIcon(const std::filesystem::path& path) override;
 
+    static void OnKeyPressed(GLFWwindow* window, int key, int scancode, int action, int mods);
+
 private:
     GLFWwindow* mWindow = nullptr;
 };
