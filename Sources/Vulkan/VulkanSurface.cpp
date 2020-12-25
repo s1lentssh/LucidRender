@@ -22,7 +22,7 @@ VulkanSurface::VulkanSurface(VulkanInstance& instance, const IWindow& window)
 	auto createInfo = vk::XlibSurfaceCreateInfoKHR()
 		.setWindow((Window)(window.Handle()));
 
-	mSurface = instance.Handle().createXlibSurfaceKHRUnique(createInfo);
+	mHandle = instance.Handle().createXlibSurfaceKHRUnique(createInfo);
 #endif
 
 	Logger::Info("Surface created");
