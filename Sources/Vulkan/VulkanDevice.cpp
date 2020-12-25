@@ -30,7 +30,8 @@ bool VulkanDevice::IsSuitableForSurface(const VulkanSurface& surface) const noex
 		hasGraphicsQueueFamily && 
 		hasPresentQueueFamily && 
 		allExtensionsSupported && 
-		hasSwapchainSupport;
+		hasSwapchainSupport &&
+		hasSamplerAnisotropy;
 }
 
 void VulkanDevice::InitLogicalDeviceForSurface(const VulkanSurface& surface) noexcept

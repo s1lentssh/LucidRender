@@ -9,6 +9,7 @@ namespace Lucid::Vulkan
 {
 
 VulkanImage::VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, const std::filesystem::path& path)
+	: mDevice(device)
 {
 	Texture image = Files::ReadImage(path);
 
@@ -35,9 +36,10 @@ VulkanImage::VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, c
 		.setSharingMode(vk::SharingMode::eExclusive)
 		.setSamples(vk::SampleCountFlagBits::e1);
 
-	mHandle = device.Handle().createImageUnique(createInfo);
+	mUniqueImageHolder = device.Handle().createImageUnique(createInfo);
+	mHandle = mUniqueImageHolder.value().get();
 
-	vk::MemoryRequirements requirements = device.Handle().getImageMemoryRequirements(mHandle.get());
+	vk::MemoryRequirements requirements = device.Handle().getImageMemoryRequirements(Handle());
 	std::uint32_t memoryType = VulkanBuffer::FindMemoryType(device, requirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal);
 
 	auto allocateInfo = vk::MemoryAllocateInfo()
@@ -45,11 +47,17 @@ VulkanImage::VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, c
 		.setMemoryTypeIndex(memoryType);
 
 	mDeviceMemory = device.Handle().allocateMemoryUnique(allocateInfo);
-	device.Handle().bindImageMemory(mHandle.get(), mDeviceMemory.get(), 0);
+	device.Handle().bindImageMemory(Handle(), mDeviceMemory.get(), 0);
 
 	Transition(commandPool, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
 	Write(commandPool, stagingBuffer, image.width, image.height);
 	Transition(commandPool, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+}
+
+VulkanImage::VulkanImage(VulkanDevice& device, vk::Image image)
+	: mDevice(device)
+{
+	mHandle = image;
 }
 
 void VulkanImage::Transition(VulkanCommandPool& commandPool, vk::Format format, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
@@ -115,6 +123,23 @@ void VulkanImage::Write(VulkanCommandPool& commandPool, const VulkanBuffer& buff
 
 		commandBuffer.copyBufferToImage(buffer.Handle(), Handle(), vk::ImageLayout::eTransferDstOptimal, region);
 	});
+}
+
+void VulkanImage::CreateImageView(vk::Format format)
+{
+	auto imageViewCreateInfo = vk::ImageViewCreateInfo()
+		.setImage(Handle())
+		.setViewType(vk::ImageViewType::e2D)
+		.setFormat(format)
+		.setComponents(vk::ComponentMapping{}) // Identity by default
+		.setSubresourceRange(vk::ImageSubresourceRange{}
+			.setAspectMask(vk::ImageAspectFlagBits::eColor)
+			.setBaseArrayLayer(0)
+			.setBaseMipLevel(0)
+			.setLayerCount(1)
+			.setLevelCount(1));
+
+	mImageView = mDevice.Handle().createImageViewUnique(imageViewCreateInfo);
 }
 
 }

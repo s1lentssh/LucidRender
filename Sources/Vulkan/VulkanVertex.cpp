@@ -18,7 +18,7 @@ std::array<vk::VertexInputAttributeDescription, 3> VulkanVertex::GetAttributeDes
 	auto positionDescription = vk::VertexInputAttributeDescription()
 		.setBinding(0)
 		.setLocation(0)
-		.setFormat(vk::Format::eR32G32Sfloat)
+		.setFormat(vk::Format::eR32G32B32Sfloat)
 		.setOffset(offsetof(VulkanVertex, position));
 
 	auto colorDescription = vk::VertexInputAttributeDescription()

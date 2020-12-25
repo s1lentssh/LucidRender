@@ -4,7 +4,7 @@
 #include <Vulkan/VulkanSurface.h>
 #include <Vulkan/VulkanDevice.h>
 #include <Vulkan/VulkanEntity.h>
-#include <Vulkan/VulkanImageView.h>
+#include <Vulkan/VulkanImage.h>
 #include <Utils/Interfaces.hpp>
 
 namespace Lucid::Vulkan
@@ -21,7 +21,7 @@ public:
 
     [[nodiscard]] vk::Extent2D GetExtent() const noexcept;
     [[nodiscard]] vk::Format GetImageFormat() const noexcept;
-    [[nodiscard]] const std::vector<VulkanImageView>& GetImageViews() const noexcept;
+    [[nodiscard]] const std::vector<VulkanImage>& GetImages() const noexcept;
     [[nodiscard]] const std::size_t GetImageCount() const noexcept;
     [[nodiscard]] vk::ResultValue<std::uint32_t> AcquireNextImage(const vk::UniqueSemaphore& semaphore);
     [[nodiscard]] const std::vector<vk::UniqueFramebuffer>& GetFramebuffers() const noexcept;
@@ -41,8 +41,7 @@ private:
     vk::Format mFormat;
     vk::Extent2D mExtent;
 
-    std::vector<vk::Image> mImages;
-    std::vector<VulkanImageView> mImageViews;
+    std::vector<VulkanImage> mImages;
     std::vector<vk::UniqueFramebuffer> mFramebuffers;
 };
 

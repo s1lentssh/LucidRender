@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.hpp>
 #include <Vulkan/VulkanEntity.h>
+#include <Vulkan/VulkanImage.h>
 
 namespace Lucid::Vulkan
 {
@@ -9,7 +10,6 @@ namespace Lucid::Vulkan
 class VulkanDevice;
 class VulkanUniformBuffer;
 class VulkanSampler;
-class VulkanImageView;
 
 class VulkanDescriptorPool : public VulkanEntity<vk::UniqueDescriptorPool>
 {
@@ -19,7 +19,7 @@ public:
 	void CreateDescriptorSets(
 		std::size_t count, 
 		const std::vector<std::unique_ptr<VulkanUniformBuffer>>& uniformBuffers,
-		VulkanImageView& texture,
+		VulkanImage& texture,
 		VulkanSampler& sampler);
 
 	void CreateDescriptorSetLayout();

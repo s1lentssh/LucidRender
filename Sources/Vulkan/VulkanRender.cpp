@@ -4,6 +4,7 @@
 #include <Utils/Logger.hpp>
 
 #define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -155,10 +156,10 @@ void VulkanRender::RecreateSwapchain()
 
 	// Load texture
 	mTextureImage = std::make_unique<VulkanImage>(*mDevice.get(), *mCommandPool.get(), "Resources/Textures/Ancient.jpg");
-	mTextureImageView = std::make_unique<VulkanImageView>(*mDevice.get(), *mTextureImage.get(), vk::Format::eR8G8B8A8Srgb);
+	mTextureImage->CreateImageView(vk::Format::eR8G8B8A8Srgb);
 
 	// Create descriptor sets
-	mDescriptorPool->CreateDescriptorSets(mSwapchain->GetImageCount(), mUniformBuffers, *mTextureImageView.get(), *mSampler.get());
+	mDescriptorPool->CreateDescriptorSets(mSwapchain->GetImageCount(), mUniformBuffers, *mTextureImage.get(), *mSampler.get());
 
 	// Record command buffers
 	mCommandPool->RecordCommandBuffers(*mVertexBuffer.get(), *mIndexBuffer.get(), *mDescriptorPool.get());

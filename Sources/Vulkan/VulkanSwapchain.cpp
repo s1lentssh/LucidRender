@@ -131,31 +131,34 @@ void VulkanSwapchain::Init()
 	mHandle = mDevice.Handle().createSwapchainKHRUnique(swapchainCreateInfo);
 	Logger::Info("Swapchain created");
 
-	mImages = mDevice.Handle().getSwapchainImagesKHR(Handle());
+	auto swapchainImages = mDevice.Handle().getSwapchainImagesKHR(Handle());
+	for (const auto& image : swapchainImages)
+	{
+		mImages.push_back(VulkanImage(mDevice, image));
+	}
+
 	mFormat = surfaceFormat.format;
 	mExtent = extent;
 }
 
 void VulkanSwapchain::CreateImageViews()
 {
-	mImageViews.reserve(mImages.size());
-
-	for (const auto& image : mImages)
+	for (auto& image : mImages)
 	{
-		mImageViews.push_back(VulkanImageView(mDevice, image, mFormat));
+		image.CreateImageView(mFormat);
 	}
 }
 
 void VulkanSwapchain::CreateFramebuffers(VulkanRenderPass& renderPass)
 {
-	mFramebuffers.reserve(mImageViews.size());
+	mFramebuffers.reserve(mImages.size());
 
-	for (const auto& imageView : mImageViews)
+	for (const auto& image : mImages)
 	{
 		auto framebufferCreateInfo = vk::FramebufferCreateInfo()
 			.setRenderPass(renderPass.Handle())
 			.setAttachmentCount(1)
-			.setPAttachments(&imageView.Handle())
+			.setPAttachments(&image.GetImageView())
 			.setWidth(mExtent.width)
 			.setHeight(mExtent.height)
 			.setLayers(1);
@@ -176,14 +179,14 @@ vk::Format VulkanSwapchain::GetImageFormat() const noexcept
 	return mFormat; 
 }
 
-const std::vector<VulkanImageView>& VulkanSwapchain::GetImageViews() const noexcept 
+const std::vector<VulkanImage>& VulkanSwapchain::GetImages() const noexcept
 { 
-	return mImageViews; 
+	return mImages; 
 }
 
 const std::size_t VulkanSwapchain::GetImageCount() const noexcept 
 { 
-	return mImageViews.size(); 
+	return mImages.size(); 
 }
 
 }

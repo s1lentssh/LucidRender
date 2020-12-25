@@ -3,7 +3,6 @@
 #include <Vulkan/VulkanDevice.h>
 #include <Vulkan/VulkanBuffer.h>
 #include <Vulkan/VulkanVertex.h>
-#include <Vulkan/VulkanImageView.h>
 #include <Vulkan/VulkanSampler.h>
 
 namespace Lucid::Vulkan
@@ -38,7 +37,7 @@ VulkanDescriptorPool::VulkanDescriptorPool(VulkanDevice& device) : mDevice(devic
 void VulkanDescriptorPool::CreateDescriptorSets(
 	std::size_t count,
 	const std::vector<std::unique_ptr<VulkanUniformBuffer>>& uniformBuffers,
-	VulkanImageView& texture,
+	VulkanImage& texture,
 	VulkanSampler& sampler)
 {
 	std::vector<vk::DescriptorSetLayout> layouts(count, mDescriptorSetLayout.get());
@@ -69,7 +68,7 @@ void VulkanDescriptorPool::CreateDescriptorSets(
 		// Sampler
 		auto imageInfo = vk::DescriptorImageInfo()
 			.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
-			.setImageView(texture.Handle())
+			.setImageView(texture.GetImageView())
 			.setSampler(sampler.Handle());
 
 		auto imageDescriptorWrite = vk::WriteDescriptorSet()
