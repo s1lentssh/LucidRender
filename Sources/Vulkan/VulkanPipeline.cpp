@@ -98,6 +98,13 @@ VulkanPipeline::VulkanPipeline(
 
 	mLayout = device.Handle().createPipelineLayoutUnique(pipelineLayoutCreateInfo);
 
+	auto depthStencilState = vk::PipelineDepthStencilStateCreateInfo()
+		.setDepthTestEnable(true)
+		.setDepthWriteEnable(true)
+		.setDepthCompareOp(vk::CompareOp::eLess)
+		.setDepthBoundsTestEnable(false)
+		.setStencilTestEnable(false);
+
 	auto pipelineCreateInfo = vk::GraphicsPipelineCreateInfo()
 		.setStageCount(static_cast<std::uint32_t>(std::size(shaderStages)))
 		.setPStages(shaderStages)
@@ -107,6 +114,7 @@ VulkanPipeline::VulkanPipeline(
 		.setPRasterizationState(&rasterizationState)
 		.setPMultisampleState(&multisampleState)
 		.setPColorBlendState(&colorBlendState)
+		.setPDepthStencilState(&depthStencilState)
 		.setLayout(mLayout.get())
 		.setRenderPass(renderPass.Handle())
 		.setSubpass(0);

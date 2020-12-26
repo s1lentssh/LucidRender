@@ -54,6 +54,45 @@ VulkanImage::VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, c
 	Transition(commandPool, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
 }
 
+VulkanImage::VulkanImage(
+	VulkanDevice& device, 
+	std::uint32_t width, 
+	std::uint32_t height, 
+	vk::Format format, 
+	vk::ImageTiling tiling, 
+	vk::ImageUsageFlags usage, 
+	vk::MemoryPropertyFlags memoryProperty)
+	: mDevice(device)
+{
+	auto createInfo = vk::ImageCreateInfo()
+		.setImageType(vk::ImageType::e2D)
+		.setExtent(vk::Extent3D()
+			.setWidth(width)
+			.setHeight(height)
+			.setDepth(1))
+		.setMipLevels(1)
+		.setArrayLayers(1)
+		.setFormat(format)
+		.setTiling(tiling)
+		.setInitialLayout(vk::ImageLayout::eUndefined)
+		.setUsage(usage)
+		.setSharingMode(vk::SharingMode::eExclusive)
+		.setSamples(vk::SampleCountFlagBits::e1);
+
+	mUniqueImageHolder = device.Handle().createImageUnique(createInfo);
+	mHandle = mUniqueImageHolder.value().get();
+
+	vk::MemoryRequirements requirements = device.Handle().getImageMemoryRequirements(Handle());
+	std::uint32_t memoryType = VulkanBuffer::FindMemoryType(device, requirements.memoryTypeBits, memoryProperty);
+
+	auto allocateInfo = vk::MemoryAllocateInfo()
+		.setAllocationSize(requirements.size)
+		.setMemoryTypeIndex(memoryType);
+
+	mDeviceMemory = device.Handle().allocateMemoryUnique(allocateInfo);
+	device.Handle().bindImageMemory(Handle(), mDeviceMemory.get(), 0);
+}
+
 VulkanImage::VulkanImage(VulkanDevice& device, vk::Image image)
 	: mDevice(device)
 {
@@ -125,7 +164,7 @@ void VulkanImage::Write(VulkanCommandPool& commandPool, const VulkanBuffer& buff
 	});
 }
 
-void VulkanImage::CreateImageView(vk::Format format)
+void VulkanImage::CreateImageView(vk::Format format, vk::ImageAspectFlags aspectFlags)
 {
 	auto imageViewCreateInfo = vk::ImageViewCreateInfo()
 		.setImage(Handle())
@@ -133,13 +172,30 @@ void VulkanImage::CreateImageView(vk::Format format)
 		.setFormat(format)
 		.setComponents(vk::ComponentMapping{}) // Identity by default
 		.setSubresourceRange(vk::ImageSubresourceRange{}
-			.setAspectMask(vk::ImageAspectFlagBits::eColor)
+			.setAspectMask(aspectFlags)
 			.setBaseArrayLayer(0)
 			.setBaseMipLevel(0)
 			.setLayerCount(1)
 			.setLevelCount(1));
 
 	mImageView = mDevice.Handle().createImageViewUnique(imageViewCreateInfo);
+}
+
+bool VulkanImage::HasStencil(vk::Format format)
+{
+	return format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint;
+}
+
+VulkanDepthImage::VulkanDepthImage(VulkanDevice& device, const vk::Extent2D& swapchainExtent)
+	: VulkanImage(
+		device,
+		swapchainExtent.width,
+		swapchainExtent.height,
+		device.FindSupportedDepthFormat(),
+		vk::ImageTiling::eOptimal,
+		vk::ImageUsageFlagBits::eDepthStencilAttachment,
+		vk::MemoryPropertyFlagBits::eDeviceLocal)
+{
 }
 
 }

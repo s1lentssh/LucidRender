@@ -57,6 +57,9 @@ void VulkanCommandPool::RecordCommandBuffers(const VulkanVertexBuffer& vertexBuf
 		commandBuffer->begin(commandBufferBeginInfo);
 
 		vk::ClearValue clearColor = vk::ClearColorValue(Defaults::BackgroundColor);
+		vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
+
+		vk::ClearValue clearValues[] = { clearColor, clearDepth };
 
 		auto renderPassBeginInfo = vk::RenderPassBeginInfo()
 			.setRenderPass(mRenderPass.Handle())
@@ -64,8 +67,8 @@ void VulkanCommandPool::RecordCommandBuffers(const VulkanVertexBuffer& vertexBuf
 			.setRenderArea(vk::Rect2D()
 				.setOffset({ 0, 0 })
 				.setExtent(mSwapchain.GetExtent()))
-			.setClearValueCount(1)
-			.setPClearValues(&clearColor);
+			.setClearValueCount(std::size(clearValues))
+			.setPClearValues(clearValues);
 
 		commandBuffer->beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
 		commandBuffer->bindPipeline(vk::PipelineBindPoint::eGraphics, mPipeline.Handle());

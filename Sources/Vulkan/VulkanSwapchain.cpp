@@ -145,20 +145,22 @@ void VulkanSwapchain::CreateImageViews()
 {
 	for (auto& image : mImages)
 	{
-		image.CreateImageView(mFormat);
+		image.CreateImageView(mFormat, vk::ImageAspectFlagBits::eColor);
 	}
 }
 
-void VulkanSwapchain::CreateFramebuffers(VulkanRenderPass& renderPass)
+void VulkanSwapchain::CreateFramebuffers(VulkanRenderPass& renderPass, VulkanImage& depthImage)
 {
 	mFramebuffers.reserve(mImages.size());
 
 	for (const auto& image : mImages)
 	{
+		vk::ImageView attachments[] = { image.GetImageView(), depthImage.GetImageView() };
+
 		auto framebufferCreateInfo = vk::FramebufferCreateInfo()
 			.setRenderPass(renderPass.Handle())
-			.setAttachmentCount(1)
-			.setPAttachments(&image.GetImageView())
+			.setAttachmentCount(std::size(attachments))
+			.setPAttachments(attachments)
 			.setWidth(mExtent.width)
 			.setHeight(mExtent.height)
 			.setLayers(1);

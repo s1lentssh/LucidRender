@@ -165,4 +165,39 @@ bool VulkanDevice::SwapchainDetails::IsComplete() const noexcept
 	return !formats.empty() && !presentModes.empty();
 }
 
+vk::Format VulkanDevice::FindSupportedDepthFormat()
+{
+	const std::vector<vk::Format>& candidates =
+	{
+		vk::Format::eD32Sfloat,
+		vk::Format::eD32SfloatS8Uint,
+		vk::Format::eD24UnormS8Uint
+	};
+
+	const vk::ImageTiling selectedTiling = vk::ImageTiling::eOptimal;
+	const vk::FormatFeatureFlags features = vk::FormatFeatureFlagBits::eDepthStencilAttachment;
+
+	for (const auto& format : candidates)
+	{
+		vk::FormatProperties properties = GetPhysicalDevice().getFormatProperties(format);
+		switch (selectedTiling)
+		{
+		case vk::ImageTiling::eOptimal:
+			if ((properties.optimalTilingFeatures & features) == features)
+			{
+				return format;
+			}
+			break;
+		case vk::ImageTiling::eLinear:
+			if ((properties.linearTilingFeatures & features) == features)
+			{
+				return format;
+			}
+			break;
+		}
+	}
+
+	throw std::runtime_error("Failed to find supported depth format");
+}
+
 }

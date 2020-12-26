@@ -41,6 +41,7 @@ public:
     [[nodiscard]] vk::Queue& GetGraphicsQueue() noexcept;
     [[nodiscard]] vk::Queue& GetPresentQueue() noexcept;
     [[nodiscard]] vk::PhysicalDevice& GetPhysicalDevice() noexcept;
+    [[nodiscard]] vk::Format VulkanDevice::FindSupportedDepthFormat();
 
 private:
     [[nodiscard]] std::vector<const char*> GetUnsupportedExtensions() const noexcept;

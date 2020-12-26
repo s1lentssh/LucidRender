@@ -127,14 +127,18 @@ void VulkanRender::RecreateSwapchain()
 	// Create render pass
 	mRenderPass = std::make_unique<VulkanRenderPass>(*mDevice.get(), mSwapchain->GetImageFormat());
 
-	// Create framebuffers for swapchain
-	mSwapchain->CreateFramebuffers(*mRenderPass.get());
-
 	// Create descriptor pool
 	mDescriptorPool = std::make_unique<VulkanDescriptorPool>(*mDevice.get());
 
 	// Create pipeline
 	mPipeline = std::make_unique<VulkanPipeline>(*mDevice.get(), mSwapchain->GetExtent(), *mRenderPass.get(), *mDescriptorPool.get());
+
+	// Create depth image
+	mDepthImage = std::make_unique<VulkanDepthImage>(*mDevice.get(), mSwapchain->GetExtent());
+	mDepthImage->CreateImageView(mDevice->FindSupportedDepthFormat(), vk::ImageAspectFlagBits::eDepth);
+
+	// Create framebuffers for swapchain
+	mSwapchain->CreateFramebuffers(*mRenderPass.get(), *mDepthImage.get());
 
 	// Create command pool
 	mCommandPool = std::make_unique<VulkanCommandPool>(*mDevice.get(), *mRenderPass.get(), *mSwapchain.get(), *mPipeline.get());
@@ -156,7 +160,7 @@ void VulkanRender::RecreateSwapchain()
 
 	// Load texture
 	mTextureImage = std::make_unique<VulkanImage>(*mDevice.get(), *mCommandPool.get(), "Resources/Textures/Ancient.jpg");
-	mTextureImage->CreateImageView(vk::Format::eR8G8B8A8Srgb);
+	mTextureImage->CreateImageView(vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor);
 
 	// Create descriptor sets
 	mDescriptorPool->CreateDescriptorSets(mSwapchain->GetImageCount(), mUniformBuffers, *mTextureImage.get(), *mSampler.get());
