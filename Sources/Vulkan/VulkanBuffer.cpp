@@ -1,8 +1,8 @@
 #include "VulkanBuffer.h"
 
 #include <Vulkan/VulkanDevice.h>
-#include <Vulkan/VulkanVertex.h>
 #include <Vulkan/VulkanCommandPool.h>
+#include <Core/UniformBufferObject.h>
 
 namespace Lucid::Vulkan
 {
@@ -53,7 +53,7 @@ std::uint32_t VulkanBuffer::FindMemoryType(VulkanDevice& device, std::uint32_t f
 	throw std::runtime_error("Can't find memory type");
 }
 
-VulkanVertexBuffer::VulkanVertexBuffer(VulkanDevice& device, VulkanCommandPool& manager, const std::vector<VulkanVertex>& vertices)
+VulkanVertexBuffer::VulkanVertexBuffer(VulkanDevice& device, VulkanCommandPool& manager, const std::vector<Core::Vertex>& vertices)
 	: VulkanBuffer(
 		device, 
 		vertices.size() * sizeof(vertices.at(0)), 
@@ -88,7 +88,7 @@ void VulkanBuffer::Write(VulkanCommandPool& pool, const VulkanBuffer& buffer)
 	});
 }
 
-VulkanIndexBuffer::VulkanIndexBuffer(VulkanDevice& device, VulkanCommandPool& manager, const std::vector<std::uint16_t>& indices)
+VulkanIndexBuffer::VulkanIndexBuffer(VulkanDevice& device, VulkanCommandPool& manager, const std::vector<std::uint32_t>& indices)
 	: VulkanBuffer(
 		device,
 		indices.size() * sizeof(indices.at(0)),
@@ -117,7 +117,7 @@ std::size_t VulkanIndexBuffer::IndicesCount() const noexcept
 VulkanUniformBuffer::VulkanUniformBuffer(VulkanDevice& device)
 	: VulkanBuffer(
 		device,
-		sizeof(UniformBufferObject),
+		sizeof(Core::UniformBufferObject),
 		vk::BufferUsageFlagBits::eUniformBuffer,
 		vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent)
 {}

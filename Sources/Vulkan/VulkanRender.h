@@ -8,19 +8,19 @@
 #include <Vulkan/VulkanPipeline.h>
 #include <Vulkan/VulkanCommandPool.h>
 #include <Vulkan/VulkanBuffer.h>
-#include <Vulkan/VulkanVertex.h>
 #include <Vulkan/VulkanDescriptorPool.h>
 #include <Vulkan/VulkanImage.h>
 #include <Vulkan/VulkanSampler.h>
-#include <Utils/Interfaces.hpp>
+#include <Core/Interfaces.h>
+#include <Core/Mesh.h>
 
 namespace Lucid::Vulkan
 {
 
-class VulkanRender : public IRender
+class VulkanRender : public Core::IRender
 {
 public:
-	VulkanRender(const IWindow& window);
+	VulkanRender(const Core::IWindow& window);
 	void DrawFrame() override;
 
 private:
@@ -50,24 +50,9 @@ private:
 	std::vector<vk::Fence> mImagesInFlight;
 
 	std::size_t mCurrentFrame = 0;
-	const IWindow* mWindow = nullptr;
+	const Core::IWindow* mWindow = nullptr;
 
-	const std::vector<VulkanVertex> mVertices = {
-		{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-		{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-		{{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-		{{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-
-		{{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-		{{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-		{{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-		{{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
-	};
-
-	const std::vector<uint16_t> mIndices = {
-		0, 1, 2, 2, 3, 0,
-		4, 5, 6, 6, 7, 4
-	};
+	Core::Mesh mMesh;
 };
 
 }

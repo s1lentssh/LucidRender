@@ -2,6 +2,8 @@
 
 #include <Utils/Defaults.hpp>
 #include <Utils/Logger.hpp>
+#include <Utils/Files.h>
+#include <Core/UniformBufferObject.h>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -11,7 +13,7 @@
 namespace Lucid::Vulkan
 {
 
-VulkanRender::VulkanRender(const IWindow& window) : mWindow(&window)
+VulkanRender::VulkanRender(const Core::IWindow& window) : mWindow(&window)
 {
 	// Create instance
 	mInstance = std::make_unique<VulkanInstance>(window.GetRequiredInstanceExtensions());
@@ -22,6 +24,12 @@ VulkanRender::VulkanRender(const IWindow& window) : mWindow(&window)
 	// Create and init device
 	mDevice = std::make_unique<VulkanDevice>(mInstance->PickSuitableDeviceForSurface(*mSurface.get()));
 	mDevice->InitLogicalDeviceForSurface(*mSurface.get());
+
+	// Load model
+	mMesh = Files::LoadModel("Resources/Models/VikingRoom.obj");
+
+	// Create sampler
+	mSampler = std::make_unique<VulkanSampler>(*mDevice.get());
 
 	RecreateSwapchain();
 
@@ -141,13 +149,13 @@ void VulkanRender::RecreateSwapchain()
 	mSwapchain->CreateFramebuffers(*mRenderPass.get(), *mDepthImage.get());
 
 	// Create command pool
-	mCommandPool = std::make_unique<VulkanCommandPool>(*mDevice.get(), *mRenderPass.get(), *mSwapchain.get(), *mPipeline.get());
+	mCommandPool = std::make_unique<VulkanCommandPool>(*mDevice.get(), *mSwapchain.get(), *mPipeline.get());
 
 	// Create vertex buffer
-	mVertexBuffer = std::make_unique<VulkanVertexBuffer>(*mDevice.get(), *mCommandPool.get(), mVertices);
+	mVertexBuffer = std::make_unique<VulkanVertexBuffer>(*mDevice.get(), *mCommandPool.get(), mMesh.vertices);
 
 	// Create index buffer
-	mIndexBuffer = std::make_unique<VulkanIndexBuffer>(*mDevice.get(), *mCommandPool.get(), mIndices);
+	mIndexBuffer = std::make_unique<VulkanIndexBuffer>(*mDevice.get(), *mCommandPool.get(), mMesh.indices);
 
 	// Create uniform buffers
 	for (std::size_t i = 0; i < mSwapchain->GetImageCount(); i++)
@@ -155,18 +163,15 @@ void VulkanRender::RecreateSwapchain()
 		mUniformBuffers.emplace_back(std::make_unique<VulkanUniformBuffer>(*mDevice.get()));
 	}
 
-	// Create sampler
-	mSampler = std::make_unique<VulkanSampler>(*mDevice.get());
-
 	// Load texture
-	mTextureImage = std::make_unique<VulkanImage>(*mDevice.get(), *mCommandPool.get(), "Resources/Textures/Ancient.jpg");
+	mTextureImage = std::make_unique<VulkanImage>(*mDevice.get(), *mCommandPool.get(), "Resources/Textures/VikingRoom.png");
 	mTextureImage->CreateImageView(vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor);
 
 	// Create descriptor sets
 	mDescriptorPool->CreateDescriptorSets(mSwapchain->GetImageCount(), mUniformBuffers, *mTextureImage.get(), *mSampler.get());
 
 	// Record command buffers
-	mCommandPool->RecordCommandBuffers(*mVertexBuffer.get(), *mIndexBuffer.get(), *mDescriptorPool.get());
+	mCommandPool->RecordCommandBuffers(*mRenderPass.get(), *mVertexBuffer.get(), *mIndexBuffer.get(), *mDescriptorPool.get());
 }
 
 void VulkanRender::UpdateUniformBuffer(std::uint32_t imageIndex)
@@ -179,10 +184,10 @@ void VulkanRender::UpdateUniformBuffer(std::uint32_t imageIndex)
 	vk::Extent2D extent = mSwapchain->GetExtent();
 	float aspectRatio = extent.width / (float)extent.height;
 
-	UniformBufferObject ubo;
-	ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	ubo.projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 10.0f);
+	Core::UniformBufferObject ubo;
+	ubo.model = glm::rotate(glm::mat4(1.0f), sin(time) * glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.2f), glm::vec3(0.0f, 0.0f, 1.0f));
+	ubo.projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
 	ubo.projection[1][1] *= -1;
 
 	mUniformBuffers.at(imageIndex)->Write(&ubo);

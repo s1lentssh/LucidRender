@@ -57,7 +57,7 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, vk::Format imageFormat)
 	vk::AttachmentDescription attachments[] = { colorAttachment, depthAttachment };
 
 	auto renderPassCreateInfo = vk::RenderPassCreateInfo()
-		.setAttachmentCount(std::size(attachments))
+		.setAttachmentCount(static_cast<std::uint32_t>(std::size(attachments)))
 		.setPAttachments(attachments)
 		.setSubpassCount(1)
 		.setPSubpasses(&subpass)

@@ -12,11 +12,9 @@ set(HEADERS
     VulkanRenderPass.cpp
     VulkanCommandPool.cpp
     VulkanBuffer.cpp
-    VulkanVertex.cpp
     VulkanEntity.cpp
     VulkanDescriptorPool.cpp
     VulkanImage.cpp
-    VulkanImageView.cpp
     VulkanSampler.cpp)
 
 
@@ -31,11 +29,9 @@ set(SOURCES
     VulkanRenderPass.h
     VulkanCommandPool.h
     VulkanBuffer.h
-    VulkanVertex.h
     VulkanEntity.h
     VulkanDescriptorPool.h
     VulkanImage.h
-    VulkanImageView.h
     VulkanSampler.h)
 
 add_library(${PROJECT_NAME} ${HEADERS} ${SOURCES})
@@ -56,4 +52,5 @@ find_package(shaderc REQUIRED)
 target_link_libraries(${PROJECT_NAME} PUBLIC 
     Vulkan::Vulkan 
     Utils
-    shaderc::shaderc)
+    shaderc::shaderc
+    lucid::Core)

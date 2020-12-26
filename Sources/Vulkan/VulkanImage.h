@@ -4,6 +4,7 @@
 #include <optional>
 #include <vulkan/vulkan.hpp>
 #include <Vulkan/VulkanEntity.h>
+#include <Core/Interfaces.h>
 
 namespace Lucid::Vulkan
 {
@@ -28,7 +29,7 @@ public:
 	VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, const std::filesystem::path& path);
 	
 	void Transition(VulkanCommandPool& commandPool, vk::Format format, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
-	void Write(VulkanCommandPool& commandPool, const VulkanBuffer& buffer, std::uint32_t width, std::uint32_t height);
+	void Write(VulkanCommandPool& commandPool, const VulkanBuffer& buffer, const Core::Vector2d<std::uint32_t>& size);
 
 	void CreateImageView(vk::Format format, vk::ImageAspectFlags aspectFlags);
 	const vk::ImageView& GetImageView() const { return mImageView.get(); }

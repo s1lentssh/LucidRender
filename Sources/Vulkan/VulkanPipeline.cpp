@@ -4,9 +4,9 @@
 #include <Vulkan/VulkanSwapchain.h>
 #include <Vulkan/VulkanRenderPass.h>
 #include <Vulkan/VulkanShader.h>
-#include <Vulkan/VulkanVertex.h>
 #include <Vulkan/VulkanDescriptorPool.h>
 #include <Utils/Logger.hpp>
+#include <Core/Vertex.h>
 
 namespace Lucid::Vulkan
 {
@@ -32,8 +32,8 @@ VulkanPipeline::VulkanPipeline(
 
 	vk::PipelineShaderStageCreateInfo shaderStages[] = { vertexShaderStageInfo, fragmentShaderStageInfo };
 
-	auto vertexBindingDescriptions = VulkanVertex::GetBindingDescriptions();
-	auto vertexAttributeDescriptions = VulkanVertex::GetAttributeDescriptions();
+	auto vertexBindingDescriptions = VulkanPipeline::GetBindingDescriptions();
+	auto vertexAttributeDescriptions = VulkanPipeline::GetAttributeDescriptions();
 
 	auto vertexInputState = vk::PipelineVertexInputStateCreateInfo()
 		.setVertexBindingDescriptionCount(static_cast<std::uint32_t>(vertexBindingDescriptions.size()))
@@ -125,6 +125,39 @@ VulkanPipeline::VulkanPipeline(
 const vk::PipelineLayout& VulkanPipeline::Layout() const 
 { 
 	return mLayout.get(); 
+}
+
+std::array<vk::VertexInputBindingDescription, 1> VulkanPipeline::GetBindingDescriptions()
+{
+	auto description = vk::VertexInputBindingDescription()
+		.setBinding(0)
+		.setStride(sizeof(Core::Vertex))
+		.setInputRate(vk::VertexInputRate::eVertex);
+
+	return { description };
+}
+
+std::array<vk::VertexInputAttributeDescription, 3> VulkanPipeline::GetAttributeDescriptions()
+{
+	auto positionDescription = vk::VertexInputAttributeDescription()
+		.setBinding(0)
+		.setLocation(0)
+		.setFormat(vk::Format::eR32G32B32Sfloat)
+		.setOffset(offsetof(Core::Vertex, position));
+
+	auto colorDescription = vk::VertexInputAttributeDescription()
+		.setBinding(0)
+		.setLocation(1)
+		.setFormat(vk::Format::eR32G32B32Sfloat)
+		.setOffset(offsetof(Core::Vertex, color));
+
+	auto textureCoordinateDescription = vk::VertexInputAttributeDescription()
+		.setBinding(0)
+		.setLocation(2)
+		.setFormat(vk::Format::eR32G32Sfloat)
+		.setOffset(offsetof(Core::Vertex, textureCoordinate));
+
+	return { positionDescription, colorDescription, textureCoordinateDescription };
 }
 
 }

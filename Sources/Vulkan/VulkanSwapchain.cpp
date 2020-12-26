@@ -2,13 +2,12 @@
 
 #include <Vulkan/VulkanRenderPass.h>
 #include <Vulkan/VulkanBuffer.h>
-#include <Vulkan/VulkanVertex.h>
 #include <Utils/Logger.hpp>
 
 namespace Lucid::Vulkan
 {
 
-VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const VulkanSurface& surface, const Vector2d<std::uint32_t>& size)
+VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const VulkanSurface& surface, const Core::Vector2d<std::uint32_t>& size)
 	: mWindowSize(size)
 	, mDevice(device)
 	, mSurface(surface)
@@ -159,7 +158,7 @@ void VulkanSwapchain::CreateFramebuffers(VulkanRenderPass& renderPass, VulkanIma
 
 		auto framebufferCreateInfo = vk::FramebufferCreateInfo()
 			.setRenderPass(renderPass.Handle())
-			.setAttachmentCount(std::size(attachments))
+			.setAttachmentCount(static_cast<std::uint32_t>(std::size(attachments)))
 			.setPAttachments(attachments)
 			.setWidth(mExtent.width)
 			.setHeight(mExtent.height)

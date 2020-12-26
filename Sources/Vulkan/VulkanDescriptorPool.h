@@ -2,7 +2,6 @@
 
 #include <vulkan/vulkan.hpp>
 #include <Vulkan/VulkanEntity.h>
-#include <Vulkan/VulkanImage.h>
 
 namespace Lucid::Vulkan
 {
@@ -10,6 +9,7 @@ namespace Lucid::Vulkan
 class VulkanDevice;
 class VulkanUniformBuffer;
 class VulkanSampler;
+class VulkanImage;
 
 class VulkanDescriptorPool : public VulkanEntity<vk::UniqueDescriptorPool>
 {

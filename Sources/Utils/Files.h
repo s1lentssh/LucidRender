@@ -2,22 +2,18 @@
 
 #include <vector>
 #include <filesystem>
+#include <Core/Mesh.h>
+#include <Core/Texture.h>
 
 namespace Lucid
 {
-
-struct Texture
-{
-	std::uint32_t width;
-	std::uint32_t height;
-	std::vector<char> pixels;
-};
 
 class Files
 {
 public:
 	static std::vector<char> Read(const std::filesystem::path& path);
-	static Texture ReadImage(const std::filesystem::path& path);
+	static Core::Texture ReadImage(const std::filesystem::path& path);
+	static Core::Mesh LoadModel(const std::filesystem::path& path);
 };
 
 }

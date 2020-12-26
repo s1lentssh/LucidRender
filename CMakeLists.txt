@@ -22,6 +22,7 @@ conan_cmake_run(
         imgui/1.79
         shaderc/2019.0
         glm/0.9.9.8
+        tinyobjloader/1.0.6
 
     BASIC_SETUP
     CMAKE_TARGETS

@@ -11,7 +11,7 @@ namespace Lucid::Vulkan
 VulkanImage::VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, const std::filesystem::path& path)
 	: mDevice(device)
 {
-	Texture image = Files::ReadImage(path);
+	Core::Texture image = Files::ReadImage(path);
 
 	VulkanBuffer stagingBuffer(
 		device,
@@ -24,8 +24,8 @@ VulkanImage::VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, c
 	auto createInfo = vk::ImageCreateInfo()
 		.setImageType(vk::ImageType::e2D)
 		.setExtent(vk::Extent3D()
-			.setWidth(image.width)
-			.setHeight(image.height)
+			.setWidth(image.size.x)
+			.setHeight(image.size.y)
 			.setDepth(1))
 		.setMipLevels(1)
 		.setArrayLayers(1)
@@ -50,7 +50,7 @@ VulkanImage::VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, c
 	device.Handle().bindImageMemory(Handle(), mDeviceMemory.get(), 0);
 
 	Transition(commandPool, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
-	Write(commandPool, stagingBuffer, image.width, image.height);
+	Write(commandPool, stagingBuffer, image.size);
 	Transition(commandPool, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
 }
 
@@ -109,7 +109,6 @@ void VulkanImage::Transition(VulkanCommandPool& commandPool, vk::Format format, 
 			.setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
 			.setImage(Handle())
 			.setSubresourceRange(vk::ImageSubresourceRange()
-				.setAspectMask(vk::ImageAspectFlagBits::eColor)
 				.setBaseMipLevel(0)
 				.setLayerCount(1)
 				.setBaseArrayLayer(0)
@@ -141,11 +140,26 @@ void VulkanImage::Transition(VulkanCommandPool& commandPool, vk::Format format, 
 			throw std::runtime_error("Unsupported transition");
 		}
 
+		// Handle depth and color aspect mask
+		if (newLayout == vk::ImageLayout::eDepthStencilAttachmentOptimal)
+		{
+			barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
+
+			if (HasStencil(format))
+			{
+				barrier.subresourceRange.aspectMask |= vk::ImageAspectFlagBits::eStencil;
+			}
+		}
+		else
+		{
+			barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+		}
+
 		commandBuffer.pipelineBarrier(sourceStage, destinationStage, {}, {}, {}, barrier);
 	});
 }
 
-void VulkanImage::Write(VulkanCommandPool& commandPool, const VulkanBuffer& buffer, std::uint32_t width, std::uint32_t height)
+void VulkanImage::Write(VulkanCommandPool& commandPool, const VulkanBuffer& buffer, const Core::Vector2d<std::uint32_t>& size)
 {
 	commandPool.ExecuteSingleCommand([&, this](vk::CommandBuffer& commandBuffer) {
 		auto region = vk::BufferImageCopy()
@@ -158,7 +172,7 @@ void VulkanImage::Write(VulkanCommandPool& commandPool, const VulkanBuffer& buff
 				.setBaseArrayLayer(0)
 				.setLayerCount(1))
 			.setImageOffset({ 0, 0, 0 })
-			.setImageExtent({ width, height, 1 });
+			.setImageExtent({ size.x, size.y, 1 });
 
 		commandBuffer.copyBufferToImage(buffer.Handle(), Handle(), vk::ImageLayout::eTransferDstOptimal, region);
 	});

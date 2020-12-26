@@ -86,7 +86,7 @@ void* Window::Handle() const noexcept
 #endif
 }
 
-Vector2d<std::uint32_t> Window::GetSize() const noexcept
+Core::Vector2d<std::uint32_t> Window::GetSize() const noexcept
 {
     int width, height;
     glfwGetWindowSize(mWindow, &width, &height);

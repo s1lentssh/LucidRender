@@ -1,13 +1,13 @@
 #include "VulkanSurface.h"
 
 #include <Vulkan/VulkanInstance.h>
-#include <Utils/Interfaces.hpp>
 #include <Utils/Logger.hpp>
+#include <Core/Interfaces.h>
 
 namespace Lucid::Vulkan
 {
 
-VulkanSurface::VulkanSurface(VulkanInstance& instance, const IWindow& window)
+VulkanSurface::VulkanSurface(VulkanInstance& instance, const Core::IWindow& window)
 {
 
 #ifdef _WIN32

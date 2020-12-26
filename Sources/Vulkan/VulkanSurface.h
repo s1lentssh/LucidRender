@@ -3,7 +3,7 @@
 #include <vulkan/vulkan.hpp>
 #include <Vulkan/VulkanEntity.h>
 
-namespace Lucid
+namespace Lucid::Core
 {
 class IWindow;
 }
@@ -16,7 +16,7 @@ class VulkanInstance;
 class VulkanSurface : public VulkanEntity<vk::UniqueSurfaceKHR>
 {
 public:
-    VulkanSurface(VulkanInstance& instance, const IWindow& window);
+    VulkanSurface(VulkanInstance& instance, const Core::IWindow& window);
 };
 
 }

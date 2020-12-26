@@ -2,9 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 project(Utils)
 
 set(HEADERS 
-    Logger.hpp 
+    Logger.hpp
     Defaults.hpp
-    Interfaces.hpp
     Files.h)
 
 set(SOURCES 
@@ -15,13 +14,13 @@ add_library(lucid::Utils ALIAS ${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../)
 
 find_package(fmt REQUIRED)
-target_link_libraries(${PROJECT_NAME} INTERFACE fmt::fmt)
-
 find_package(rang REQUIRED)
-target_link_libraries(${PROJECT_NAME} INTERFACE rang::rang)
-
-find_package(glm REQUIRED)
-target_link_libraries(${PROJECT_NAME} INTERFACE glm::glm)
-
 find_package(stb REQUIRED)
-target_link_libraries(${PROJECT_NAME} PUBLIC stb::stb)
+find_package(tinyobjloader REQUIRED)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC 
+    fmt::fmt
+    rang::rang
+    stb::stb
+    tinyobjloader::tinyobjloader
+    lucid::Core)

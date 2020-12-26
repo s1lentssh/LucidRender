@@ -20,19 +20,21 @@ class VulkanCommandPool : public VulkanEntity<vk::UniqueCommandPool>
 public:
 	VulkanCommandPool(
 		VulkanDevice& device, 
-		VulkanRenderPass& renderPass, 
 		VulkanSwapchain& swapchain, 
 		VulkanPipeline& pipeline);
 
 	vk::UniqueCommandBuffer& Get(std::size_t index);
-	void RecordCommandBuffers(const VulkanVertexBuffer& vertexBuffer, const VulkanIndexBuffer& indexBuffer, const VulkanDescriptorPool& descriptorPool);
+	void RecordCommandBuffers(
+		const VulkanRenderPass& renderPass, 
+		const VulkanVertexBuffer& vertexBuffer, 
+		const VulkanIndexBuffer& indexBuffer, 
+		const VulkanDescriptorPool& descriptorPool);
 	void ExecuteSingleCommand(const std::function<void(vk::CommandBuffer&)>& function);
 
 private:
 	std::vector<vk::UniqueCommandBuffer> mCommandBuffers;
 
 	VulkanSwapchain& mSwapchain;
-	VulkanRenderPass& mRenderPass;
 	VulkanPipeline& mPipeline;
 	VulkanDevice& mDevice;
 };

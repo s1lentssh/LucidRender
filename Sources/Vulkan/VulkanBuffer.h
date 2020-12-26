@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.hpp>
 #include <Vulkan/VulkanEntity.h>
+#include <Core/Vertex.h>
 
 namespace Lucid::Vulkan
 {
@@ -28,7 +29,7 @@ protected:
 class VulkanVertexBuffer : public VulkanBuffer
 {
 public:
-	VulkanVertexBuffer(VulkanDevice& device, VulkanCommandPool& manager, const std::vector<VulkanVertex>& vertices);
+	VulkanVertexBuffer(VulkanDevice& device, VulkanCommandPool& manager, const std::vector<Core::Vertex>& vertices);
 	[[nodiscard]] std::size_t VerticesCount() const noexcept;
 
 private:
@@ -38,7 +39,7 @@ private:
 class VulkanIndexBuffer : public VulkanBuffer
 {
 public:
-	VulkanIndexBuffer(VulkanDevice& device, VulkanCommandPool& manager, const std::vector<std::uint16_t>& indices);
+	VulkanIndexBuffer(VulkanDevice& device, VulkanCommandPool& manager, const std::vector<std::uint32_t>& indices);
 	[[nodiscard]] std::size_t IndicesCount() const noexcept;
 
 private:

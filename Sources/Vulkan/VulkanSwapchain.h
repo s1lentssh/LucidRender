@@ -5,7 +5,7 @@
 #include <Vulkan/VulkanDevice.h>
 #include <Vulkan/VulkanEntity.h>
 #include <Vulkan/VulkanImage.h>
-#include <Utils/Interfaces.hpp>
+#include <Core/Interfaces.h>
 
 namespace Lucid::Vulkan
 {
@@ -16,7 +16,7 @@ class VulkanUniformBuffer;
 class VulkanSwapchain : public VulkanEntity<vk::UniqueSwapchainKHR>
 {
 public:
-    VulkanSwapchain(VulkanDevice& device, const VulkanSurface& surface, const Vector2d<std::uint32_t>& size);
+    VulkanSwapchain(VulkanDevice& device, const VulkanSurface& surface, const Core::Vector2d<std::uint32_t>& size);
     void CreateFramebuffers(VulkanRenderPass& renderPass, VulkanImage& depthImage);
 
     [[nodiscard]] vk::Extent2D GetExtent() const noexcept;
@@ -36,7 +36,7 @@ private:
 
     const VulkanSurface& mSurface;
     VulkanDevice& mDevice;
-    Vector2d<std::uint32_t> mWindowSize;
+    Core::Vector2d<std::uint32_t> mWindowSize;
 
     vk::Format mFormat;
     vk::Extent2D mExtent;

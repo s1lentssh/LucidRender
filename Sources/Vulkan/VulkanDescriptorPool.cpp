@@ -2,8 +2,9 @@
 
 #include <Vulkan/VulkanDevice.h>
 #include <Vulkan/VulkanBuffer.h>
-#include <Vulkan/VulkanVertex.h>
 #include <Vulkan/VulkanSampler.h>
+#include <Vulkan/VulkanImage.h>
+#include <Core/UniformBufferObject.h>
 
 namespace Lucid::Vulkan
 {
@@ -55,7 +56,7 @@ void VulkanDescriptorPool::CreateDescriptorSets(
 		auto bufferInfo = vk::DescriptorBufferInfo()
 			.setBuffer(uniformBuffers.at(i)->Handle())
 			.setOffset(0)
-			.setRange(sizeof(UniformBufferObject));
+			.setRange(sizeof(Core::UniformBufferObject));
 
 		auto bufferDescriptorWrite = vk::WriteDescriptorSet()
 			.setDstSet(mDescriptorSets.at(i).get())

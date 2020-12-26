@@ -14,11 +14,9 @@ namespace Lucid::Vulkan
 
 VulkanCommandPool::VulkanCommandPool(
 	VulkanDevice& device, 
-	VulkanRenderPass& renderPass, 
 	VulkanSwapchain& swapchain, 
 	VulkanPipeline& pipeline)
 	: mSwapchain(swapchain)
-	, mRenderPass(renderPass)
 	, mPipeline(pipeline)
 	, mDevice(device)
 {
@@ -46,7 +44,7 @@ vk::UniqueCommandBuffer& VulkanCommandPool::Get(std::size_t index)
 	return mCommandBuffers.at(index); 
 }
 
-void VulkanCommandPool::RecordCommandBuffers(const VulkanVertexBuffer& vertexBuffer, const VulkanIndexBuffer& indexBuffer, const VulkanDescriptorPool& descriptorPool)
+void VulkanCommandPool::RecordCommandBuffers(const VulkanRenderPass& renderPass, const VulkanVertexBuffer& vertexBuffer, const VulkanIndexBuffer& indexBuffer, const VulkanDescriptorPool& descriptorPool)
 {
 	std::size_t imageCount = mSwapchain.GetFramebuffers().size();
 
@@ -62,12 +60,12 @@ void VulkanCommandPool::RecordCommandBuffers(const VulkanVertexBuffer& vertexBuf
 		vk::ClearValue clearValues[] = { clearColor, clearDepth };
 
 		auto renderPassBeginInfo = vk::RenderPassBeginInfo()
-			.setRenderPass(mRenderPass.Handle())
+			.setRenderPass(renderPass.Handle())
 			.setFramebuffer(mSwapchain.GetFramebuffers().at(i).get())
 			.setRenderArea(vk::Rect2D()
 				.setOffset({ 0, 0 })
 				.setExtent(mSwapchain.GetExtent()))
-			.setClearValueCount(std::size(clearValues))
+			.setClearValueCount(static_cast<std::uint32_t>(std::size(clearValues)))
 			.setPClearValues(clearValues);
 
 		commandBuffer->beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
@@ -75,7 +73,7 @@ void VulkanCommandPool::RecordCommandBuffers(const VulkanVertexBuffer& vertexBuf
 		vk::Buffer vertexBuffers[] = { vertexBuffer.Handle() };
 		vk::DeviceSize offsets[] = { 0 };
 		commandBuffer->bindVertexBuffers(0, 1, vertexBuffers, offsets);
-		commandBuffer->bindIndexBuffer(indexBuffer.Handle(), 0, vk::IndexType::eUint16);
+		commandBuffer->bindIndexBuffer(indexBuffer.Handle(), 0, vk::IndexType::eUint32);
 		commandBuffer->bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mPipeline.Layout(), 0, 1, &descriptorPool.GetDescriptorSet(i), 0, {});
 		commandBuffer->drawIndexed(static_cast<std::uint32_t>(indexBuffer.IndicesCount()), 1, 0, 0, 0);
 		commandBuffer->endRenderPass();
