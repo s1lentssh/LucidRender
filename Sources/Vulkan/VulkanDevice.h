@@ -44,6 +44,7 @@ public:
     [[nodiscard]] vk::PhysicalDevice& GetPhysicalDevice() noexcept;
     [[nodiscard]] vk::Format FindSupportedDepthFormat();
     [[nodiscard]] bool DoesSupportBlitting(vk::Format format);
+    [[nodiscard]] vk::SampleCountFlagBits GetMsaaSamples() const;
 
 private:
     [[nodiscard]] std::vector<const char*> GetUnsupportedExtensions() const noexcept;
@@ -52,6 +53,7 @@ private:
     vk::PhysicalDevice mPhysicalDevice;
     vk::Queue mGraphicsQueue;
     vk::Queue mPresentQueue;
+    vk::SampleCountFlagBits mMsaaSamples;
 
     const std::vector<const char*> mExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 };

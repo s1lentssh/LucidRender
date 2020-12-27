@@ -141,8 +141,11 @@ void VulkanRender::RecreateSwapchain()
 	// Create depth image
 	mDepthImage = VulkanImage::CreateDepthImage(*mDevice.get(), mSwapchain->GetExtent(), mDevice->FindSupportedDepthFormat(), vk::ImageAspectFlagBits::eDepth);
 
+	// Create MSAA RenderTarget
+	mResolveImage = VulkanImage::CreateImage(*mDevice.get(), mSwapchain->GetImageFormat(), mSwapchain->GetExtent());
+
 	// Create framebuffers for swapchain
-	mSwapchain->CreateFramebuffers(*mRenderPass.get(), *mDepthImage.get());
+	mSwapchain->CreateFramebuffers(*mRenderPass.get(), *mDepthImage.get(), *mResolveImage.get());
 
 	// Create uniform buffers
 	if (mUniformBuffers.size() != mSwapchain->GetImageCount())

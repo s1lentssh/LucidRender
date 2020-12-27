@@ -17,7 +17,7 @@ class VulkanSwapchain : public VulkanEntity<vk::UniqueSwapchainKHR>
 {
 public:
     VulkanSwapchain(VulkanDevice& device, const VulkanSurface& surface, const Core::Vector2d<std::uint32_t>& size);
-    void CreateFramebuffers(VulkanRenderPass& renderPass, VulkanImage& depthImage);
+    void CreateFramebuffers(VulkanRenderPass& renderPass, VulkanImage& depthImage, VulkanImage& resolveImage);
 
     [[nodiscard]] vk::Extent2D GetExtent() const noexcept;
     [[nodiscard]] vk::Format GetImageFormat() const noexcept;

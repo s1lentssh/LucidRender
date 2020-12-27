@@ -66,7 +66,7 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const VulkanSurface& surf
 	auto swapchainImages = mDevice.Handle().getSwapchainImagesKHR(Handle());
 	for (const auto& image : swapchainImages)
 	{
-		mImages.push_back(VulkanImage::CreateImage(mDevice, image, mFormat, vk::ImageAspectFlagBits::eColor));
+		mImages.push_back(VulkanImage::CreateImageFromSwapchain(mDevice, image, mFormat, vk::ImageAspectFlagBits::eColor));
 	}
 }
 
@@ -107,7 +107,7 @@ vk::PresentModeKHR VulkanSwapchain::SelectPresentMode(const std::vector<vk::Pres
 
 	for (const auto& availableMode : availableModes)
 	{
-		bool niceMode = vk::PresentModeKHR::eImmediate == availableMode;
+		bool niceMode = vk::PresentModeKHR::eMailbox == availableMode;
 
 		if (niceMode)
 		{
@@ -134,13 +134,13 @@ vk::Extent2D VulkanSwapchain::SelectSwapExtent(const vk::SurfaceCapabilitiesKHR&
 	}
 }
 
-void VulkanSwapchain::CreateFramebuffers(VulkanRenderPass& renderPass, VulkanImage& depthImage)
+void VulkanSwapchain::CreateFramebuffers(VulkanRenderPass& renderPass, VulkanImage& depthImage, VulkanImage& resolveImage)
 {
 	mFramebuffers.reserve(mImages.size());
 
 	for (const auto& image : mImages)
 	{
-		vk::ImageView attachments[] = { image->GetImageView(), depthImage.GetImageView() };
+		vk::ImageView attachments[] = { resolveImage.GetImageView(), depthImage.GetImageView(), image->GetImageView() };
 
 		auto framebufferCreateInfo = vk::FramebufferCreateInfo()
 			.setRenderPass(renderPass.Handle())

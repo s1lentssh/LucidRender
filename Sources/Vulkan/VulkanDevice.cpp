@@ -9,7 +9,37 @@ namespace Lucid::Vulkan
 VulkanDevice::VulkanDevice(const vk::PhysicalDevice& device)
 	: mPhysicalDevice(device)
 {
-		
+	auto properties = device.getProperties();
+	vk::SampleCountFlags flags = properties.limits.framebufferColorSampleCounts & properties.limits.framebufferDepthSampleCounts;
+
+	if (flags & vk::SampleCountFlagBits::e64) 
+	{ 
+		mMsaaSamples = vk::SampleCountFlagBits::e64; 
+	}
+	else if (flags & vk::SampleCountFlagBits::e32)
+	{
+		mMsaaSamples = vk::SampleCountFlagBits::e32;
+	}	
+	else if (flags & vk::SampleCountFlagBits::e16)
+	{
+		mMsaaSamples = vk::SampleCountFlagBits::e16;
+	}	
+	else if (flags & vk::SampleCountFlagBits::e8)
+	{
+		mMsaaSamples = vk::SampleCountFlagBits::e8;
+	}	
+	else if (flags & vk::SampleCountFlagBits::e4)
+	{
+		mMsaaSamples = vk::SampleCountFlagBits::e4;
+	}
+	else if (flags & vk::SampleCountFlagBits::e2)
+	{
+		mMsaaSamples = vk::SampleCountFlagBits::e2;
+	}
+	else
+	{
+		mMsaaSamples = vk::SampleCountFlagBits::e1;
+	}
 }
 
 bool VulkanDevice::IsSuitableForSurface(const VulkanSurface& surface) const noexcept
@@ -43,7 +73,8 @@ void VulkanDevice::InitLogicalDeviceForSurface(const VulkanSurface& surface) noe
 
 	auto deviceFeatures = vk::PhysicalDeviceFeatures()
 		.setFillModeNonSolid(true)
-		.setSamplerAnisotropy(true);
+		.setSamplerAnisotropy(true)
+		.setSampleRateShading(true);
 
 	const float queuePriority = 1.0f;
 
@@ -204,6 +235,11 @@ bool VulkanDevice::DoesSupportBlitting(vk::Format format)
 {
 	auto properties = GetPhysicalDevice().getFormatProperties(format);
 	return (bool)(properties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear);
+}
+
+vk::SampleCountFlagBits VulkanDevice::GetMsaaSamples() const
+{
+	return mMsaaSamples;
 }
 
 }

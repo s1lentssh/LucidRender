@@ -39,6 +39,7 @@ private:
 	std::unique_ptr<VulkanIndexBuffer> mIndexBuffer;
 	std::unique_ptr<VulkanDescriptorPool> mDescriptorPool;
 	std::unique_ptr<VulkanSampler> mSampler;
+	std::unique_ptr<VulkanImage> mResolveImage;
 	std::unique_ptr<VulkanImage> mTextureImage;
 	std::unique_ptr<VulkanImage> mDepthImage;
 	std::vector<std::unique_ptr<VulkanUniformBuffer>> mUniformBuffers;

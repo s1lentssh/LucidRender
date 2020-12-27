@@ -26,7 +26,7 @@ public:
 		vk::Format format, 
 		vk::ImageAspectFlags aspectFlags);
 
-	static std::unique_ptr<VulkanImage> CreateImage(
+	static std::unique_ptr<VulkanImage> CreateImageFromSwapchain(
 		VulkanDevice& device,
 		vk::Image image,
 		vk::Format format,
@@ -38,6 +38,8 @@ public:
 		const std::filesystem::path& path,
 		vk::Format format,
 		vk::ImageAspectFlags aspectFlags);
+
+	static std::unique_ptr<VulkanImage> CreateImage(VulkanDevice& device, vk::Format format, const vk::Extent2D& swapchainExtent);
 	
 	void Transition(VulkanCommandPool& commandPool, vk::Format format, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
 	void Write(VulkanCommandPool& commandPool, const VulkanBuffer& buffer, const Core::Vector2d<std::uint32_t>& size);

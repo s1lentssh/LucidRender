@@ -73,8 +73,9 @@ VulkanPipeline::VulkanPipeline(
 		.setDepthBiasEnable(false);
 
 	auto multisampleState = vk::PipelineMultisampleStateCreateInfo()
-		.setSampleShadingEnable(false)
-		.setRasterizationSamples(vk::SampleCountFlagBits::e1);
+		.setSampleShadingEnable(true)
+		.setMinSampleShading(0.2f)
+		.setRasterizationSamples(device.GetMsaaSamples());
 
 	auto colorBlendAttachmentState = vk::PipelineColorBlendAttachmentState()
 		.setColorWriteMask(

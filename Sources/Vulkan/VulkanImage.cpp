@@ -78,7 +78,7 @@ std::unique_ptr<VulkanImage> VulkanImage::CreateDepthImage(
 	return std::make_unique<VulkanImage>(std::move(result));
 }
 
-std::unique_ptr<VulkanImage> VulkanImage::CreateImage(
+std::unique_ptr<VulkanImage> VulkanImage::CreateImageFromSwapchain(
 	VulkanDevice& device, 
 	vk::Image image, 
 	vk::Format format, 
@@ -98,6 +98,20 @@ std::unique_ptr<VulkanImage> VulkanImage::CreateImageFromResource(
 {
 	VulkanImage result(device, commandPool, path);
 	result.GenerateImageView(format, aspectFlags);
+	return std::make_unique<VulkanImage>(std::move(result));
+}
+
+std::unique_ptr<VulkanImage> VulkanImage::CreateImage(VulkanDevice& device, vk::Format format, const vk::Extent2D& swapchainExtent)
+{
+	VulkanImage result(
+		device, 
+		swapchainExtent.width,
+		swapchainExtent.height, 
+		format, 
+		vk::ImageTiling::eOptimal,
+		vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransientAttachment,
+		vk::MemoryPropertyFlagBits::eDeviceLocal);
+	result.GenerateImageView(format, vk::ImageAspectFlagBits::eColor);
 	return std::make_unique<VulkanImage>(std::move(result));
 }
 
@@ -124,7 +138,7 @@ VulkanImage::VulkanImage(
 		.setInitialLayout(vk::ImageLayout::eUndefined)
 		.setUsage(usage)
 		.setSharingMode(vk::SharingMode::eExclusive)
-		.setSamples(vk::SampleCountFlagBits::e1);
+		.setSamples(device.GetMsaaSamples());
 
 	mUniqueImageHolder = device.Handle().createImageUnique(createInfo);
 	mHandle = mUniqueImageHolder.value().get();

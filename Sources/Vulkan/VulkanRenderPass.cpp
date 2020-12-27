@@ -18,12 +18,17 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, vk::Format imageFormat)
 		.setAttachment(1)
 		.setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
+	auto resolveAttachmentReference = vk::AttachmentReference()
+		.setAttachment(2)
+		.setLayout(vk::ImageLayout::eColorAttachmentOptimal);
+
 	// Referenced directly from shader layout(location={index})
 	auto subpass = vk::SubpassDescription()
 		.setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
 		.setColorAttachmentCount(1)
 		.setPColorAttachments(&colorAttachmentReference)
-		.setPDepthStencilAttachment(&depthAttachmentReference);
+		.setPDepthStencilAttachment(&depthAttachmentReference)
+		.setPResolveAttachments(&resolveAttachmentReference);
 
 	// Create render pass
 	auto subpassDependency = vk::SubpassDependency()
@@ -36,17 +41,17 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, vk::Format imageFormat)
 
 	auto colorAttachment = vk::AttachmentDescription()
 		.setFormat(imageFormat)
-		.setSamples(vk::SampleCountFlagBits::e1)
+		.setSamples(device.GetMsaaSamples())
 		.setLoadOp(vk::AttachmentLoadOp::eClear)
 		.setStoreOp(vk::AttachmentStoreOp::eStore)
 		.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
 		.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
 		.setInitialLayout(vk::ImageLayout::eUndefined)
-		.setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
+		.setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal);
 
 	auto depthAttachment = vk::AttachmentDescription()
 		.setFormat(device.FindSupportedDepthFormat())
-		.setSamples(vk::SampleCountFlagBits::e1)
+		.setSamples(device.GetMsaaSamples())
 		.setLoadOp(vk::AttachmentLoadOp::eClear)
 		.setStoreOp(vk::AttachmentStoreOp::eDontCare)
 		.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
@@ -54,7 +59,17 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, vk::Format imageFormat)
 		.setInitialLayout(vk::ImageLayout::eUndefined)
 		.setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
-	vk::AttachmentDescription attachments[] = { colorAttachment, depthAttachment };
+	auto resolveAttachment = vk::AttachmentDescription()
+		.setFormat(imageFormat)
+		.setSamples(vk::SampleCountFlagBits::e1)
+		.setLoadOp(vk::AttachmentLoadOp::eDontCare)
+		.setStoreOp(vk::AttachmentStoreOp::eStore)
+		.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+		.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+		.setInitialLayout(vk::ImageLayout::eUndefined)
+		.setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
+
+	vk::AttachmentDescription attachments[] = { colorAttachment, depthAttachment, resolveAttachment };
 
 	auto renderPassCreateInfo = vk::RenderPassCreateInfo()
 		.setAttachmentCount(static_cast<std::uint32_t>(std::size(attachments)))
