@@ -9,7 +9,7 @@
 namespace Lucid
 {
 
-std::vector<char> Files::Read(const std::filesystem::path& path)
+std::vector<char> Files::LoadFile(const std::filesystem::path& path)
 {
 	std::ifstream file(path, std::ios::ate | std::ios::binary);
 
@@ -28,7 +28,8 @@ std::vector<char> Files::Read(const std::filesystem::path& path)
 	return pixels;
 }
 
-Core::Texture Files::ReadImage(const std::filesystem::path& path)
+#undef LoadImage
+Core::Texture Files::LoadImage(const std::filesystem::path& path)
 {
 	int width, height, channels;
 	stbi_uc* pixels = stbi_load(path.string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
@@ -37,9 +38,12 @@ Core::Texture Files::ReadImage(const std::filesystem::path& path)
 	std::vector<char> result(size);
 	std::memcpy(result.data(), pixels, size);
 
+	std::uint32_t mipLevels = static_cast<std::uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
+
 	return { 
 		{ static_cast<std::uint32_t>(width), static_cast<std::uint32_t>(height) }, 
-		result 
+		result,
+		mipLevels
 	};
 }
 

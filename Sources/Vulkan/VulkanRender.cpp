@@ -28,9 +28,6 @@ VulkanRender::VulkanRender(const Core::IWindow& window) : mWindow(&window)
 	// Load model
 	mMesh = Files::LoadModel("Resources/Models/VikingRoom.obj");
 
-	// Create sampler
-	mSampler = std::make_unique<VulkanSampler>(*mDevice.get());
-
 	// Create descriptor pool
 	mDescriptorPool = std::make_unique<VulkanDescriptorPool>(*mDevice.get());
 
@@ -168,6 +165,9 @@ void VulkanRender::RecreateSwapchain()
 
 	// Load texture
 	mTextureImage = VulkanImage::CreateImageFromResource(*mDevice.get(), *mCommandPool.get(), "Resources/Textures/VikingRoom.png", vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor);
+
+	// Create sampler
+	mSampler = std::make_unique<VulkanSampler>(*mDevice.get(), mTextureImage->GetMipLevels());
 
 	// Create descriptor sets
 	mDescriptorPool->CreateDescriptorSets(mSwapchain->GetImageCount(), mUniformBuffers, *mTextureImage.get(), *mSampler.get());

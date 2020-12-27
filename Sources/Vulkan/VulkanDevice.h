@@ -43,6 +43,7 @@ public:
     [[nodiscard]] vk::Queue& GetPresentQueue() noexcept;
     [[nodiscard]] vk::PhysicalDevice& GetPhysicalDevice() noexcept;
     [[nodiscard]] vk::Format FindSupportedDepthFormat();
+    [[nodiscard]] bool DoesSupportBlitting(vk::Format format);
 
 private:
     [[nodiscard]] std::vector<const char*> GetUnsupportedExtensions() const noexcept;

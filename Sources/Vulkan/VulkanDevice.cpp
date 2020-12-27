@@ -200,4 +200,10 @@ vk::Format VulkanDevice::FindSupportedDepthFormat()
 	throw std::runtime_error("Failed to find supported depth format");
 }
 
+bool VulkanDevice::DoesSupportBlitting(vk::Format format)
+{
+	auto properties = GetPhysicalDevice().getFormatProperties(format);
+	return (bool)(properties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear);
+}
+
 }

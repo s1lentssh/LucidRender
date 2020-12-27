@@ -14,7 +14,7 @@ VulkanImage::VulkanImage(
 	const std::filesystem::path& path)
 	: mDevice(device)
 {
-	Core::Texture image = Files::ReadImage(path);
+	Core::Texture image = Files::LoadImage(path);
 
 	VulkanBuffer stagingBuffer(
 		device,
@@ -35,12 +35,14 @@ VulkanImage::VulkanImage(
 		.setFormat(vk::Format::eR8G8B8A8Srgb)
 		.setTiling(vk::ImageTiling::eOptimal)
 		.setInitialLayout(vk::ImageLayout::eUndefined)
-		.setUsage(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled)
+		.setUsage(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc)
 		.setSharingMode(vk::SharingMode::eExclusive)
-		.setSamples(vk::SampleCountFlagBits::e1);
+		.setSamples(vk::SampleCountFlagBits::e1)
+		.setMipLevels(image.mipLevels);
 
 	mUniqueImageHolder = device.Handle().createImageUnique(createInfo);
 	mHandle = mUniqueImageHolder.value().get();
+	mMipLevels = image.mipLevels;
 
 	vk::MemoryRequirements requirements = device.Handle().getImageMemoryRequirements(Handle());
 	std::uint32_t memoryType = VulkanBuffer::FindMemoryType(device, requirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal);
@@ -54,7 +56,7 @@ VulkanImage::VulkanImage(
 
 	Transition(commandPool, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
 	Write(commandPool, stagingBuffer, image.size);
-	Transition(commandPool, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+	GenerateMipmaps(commandPool, image.size, vk::Format::eR8G8B8A8Srgb);
 }
 
 std::unique_ptr<VulkanImage> VulkanImage::CreateDepthImage(
@@ -72,7 +74,7 @@ std::unique_ptr<VulkanImage> VulkanImage::CreateDepthImage(
 		vk::ImageUsageFlagBits::eDepthStencilAttachment,
 		vk::MemoryPropertyFlagBits::eDeviceLocal);
 
-	result.CreateImageView(format, aspectFlags);
+	result.GenerateImageView(format, aspectFlags);
 	return std::make_unique<VulkanImage>(std::move(result));
 }
 
@@ -83,7 +85,7 @@ std::unique_ptr<VulkanImage> VulkanImage::CreateImage(
 	vk::ImageAspectFlags aspectFlags)
 {
 	VulkanImage result(device, image);
-	result.CreateImageView(format, aspectFlags);
+	result.GenerateImageView(format, aspectFlags);
 	return std::make_unique<VulkanImage>(std::move(result));
 }
 
@@ -95,7 +97,7 @@ std::unique_ptr<VulkanImage> VulkanImage::CreateImageFromResource(
 	vk::ImageAspectFlags aspectFlags)
 {
 	VulkanImage result(device, commandPool, path);
-	result.CreateImageView(format, aspectFlags);
+	result.GenerateImageView(format, aspectFlags);
 	return std::make_unique<VulkanImage>(std::move(result));
 }
 
@@ -159,7 +161,7 @@ void VulkanImage::Transition(VulkanCommandPool& commandPool, vk::Format format, 
 				.setBaseMipLevel(0)
 				.setLayerCount(1)
 				.setBaseArrayLayer(0)
-				.setLevelCount(1));
+				.setLevelCount(mMipLevels));
 
 		vk::PipelineStageFlags sourceStage;
 		vk::PipelineStageFlags destinationStage;
@@ -230,7 +232,7 @@ const vk::ImageView& VulkanImage::GetImageView() const
 	return mImageView.get(); 
 }
 
-void VulkanImage::CreateImageView(vk::Format format, vk::ImageAspectFlags aspectFlags)
+void VulkanImage::GenerateImageView(vk::Format format, vk::ImageAspectFlags aspectFlags)
 {
 	auto imageViewCreateInfo = vk::ImageViewCreateInfo()
 		.setImage(Handle())
@@ -242,14 +244,106 @@ void VulkanImage::CreateImageView(vk::Format format, vk::ImageAspectFlags aspect
 			.setBaseArrayLayer(0)
 			.setBaseMipLevel(0)
 			.setLayerCount(1)
-			.setLevelCount(1));
+			.setLevelCount(mMipLevels));
 
 	mImageView = mDevice.Handle().createImageViewUnique(imageViewCreateInfo);
+}
+
+void VulkanImage::GenerateMipmaps(VulkanCommandPool& commandPool, const Core::Vector2d<std::uint32_t>& size, vk::Format format)
+{
+	if (!mDevice.DoesSupportBlitting(format))
+	{
+		throw std::runtime_error("Device doesn't support blitting");
+	}
+
+	commandPool.ExecuteSingleCommand([&, this](vk::CommandBuffer& commandBuffer) {
+		auto barrier = vk::ImageMemoryBarrier()
+			.setImage(Handle())
+			.setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+			.setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+			.setSubresourceRange(vk::ImageSubresourceRange()
+				.setAspectMask(vk::ImageAspectFlagBits::eColor)
+				.setLayerCount(1)
+				.setLevelCount(1)
+				.setBaseArrayLayer(0));
+
+		std::uint32_t mipWidth = size.x;
+		std::uint32_t mipHeight = size.y;
+
+		for (std::uint32_t i = 1; i < mMipLevels; i++)
+		{
+			barrier.subresourceRange.setBaseMipLevel(i - 1);
+			barrier
+				.setOldLayout(vk::ImageLayout::eTransferDstOptimal)
+				.setNewLayout(vk::ImageLayout::eTransferSrcOptimal)
+				.setSrcAccessMask(vk::AccessFlagBits::eTransferWrite)
+				.setDstAccessMask(vk::AccessFlagBits::eTransferRead);
+
+			commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, {}, {}, {}, barrier);
+
+			auto srcOffsets = std::array<vk::Offset3D, 2>{
+				vk::Offset3D( 0, 0, 0 ),
+				vk::Offset3D( mipWidth, mipHeight, 1 )
+			};
+			auto dstOffsets = std::array<vk::Offset3D, 2>{
+				vk::Offset3D( 0, 0, 0 ),
+				vk::Offset3D( mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 )
+			};
+
+			auto blit = vk::ImageBlit()
+				.setSrcOffsets(srcOffsets)
+				.setSrcSubresource(vk::ImageSubresourceLayers()
+					.setAspectMask(vk::ImageAspectFlagBits::eColor)
+					.setMipLevel(i - 1)
+					.setBaseArrayLayer(0)
+					.setLayerCount(1))
+				.setDstOffsets(dstOffsets)
+				.setDstSubresource(vk::ImageSubresourceLayers()
+					.setAspectMask(vk::ImageAspectFlagBits::eColor)
+					.setMipLevel(i)
+					.setBaseArrayLayer(0)
+					.setLayerCount(1));
+
+			commandBuffer.blitImage(Handle(), vk::ImageLayout::eTransferSrcOptimal, Handle(), vk::ImageLayout::eTransferDstOptimal, blit, vk::Filter::eLinear);
+
+			barrier
+				.setOldLayout(vk::ImageLayout::eTransferSrcOptimal)
+				.setNewLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
+				.setSrcAccessMask(vk::AccessFlagBits::eTransferWrite)
+				.setDstAccessMask(vk::AccessFlagBits::eShaderRead);
+
+			commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, {}, {}, {}, barrier);
+
+			if (mipWidth > 1)
+			{
+				mipWidth /= 2;
+			}
+
+			if (mipHeight > 1)
+			{
+				mipHeight /= 2;
+			}
+		}
+
+		barrier.subresourceRange.setBaseMipLevel(mMipLevels - 1);
+		barrier
+			.setOldLayout(vk::ImageLayout::eTransferDstOptimal)
+			.setNewLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
+			.setSrcAccessMask(vk::AccessFlagBits::eTransferWrite)
+			.setDstAccessMask(vk::AccessFlagBits::eShaderRead);
+
+		commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, {}, {}, {}, barrier);
+	});
 }
 
 bool VulkanImage::HasStencil(vk::Format format) const
 {
 	return format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint;
+}
+
+std::uint32_t VulkanImage::GetMipLevels() const
+{
+	return mMipLevels;
 }
 
 }

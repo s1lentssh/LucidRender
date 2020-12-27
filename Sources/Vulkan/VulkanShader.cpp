@@ -11,7 +11,7 @@ VulkanShader::VulkanShader(VulkanDevice& device, Type type, const std::filesyste
 {
 	Logger::Info("Compiling {}", path.string());
 
-	std::vector<char> code = Files::Read(path);
+	std::vector<char> code = Files::LoadFile(path);
 	std::string preprocessed = PreprocessShader({ code.begin(), code.end() }, type, path.string());
 	std::vector<std::uint32_t> compiled = CompileShader(preprocessed, type, path.string());
 

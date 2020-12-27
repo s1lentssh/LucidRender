@@ -44,6 +44,7 @@ public:
 
 	[[nodiscard]] const vk::ImageView& GetImageView() const;
 	[[nodiscard]] bool HasStencil(vk::Format format) const;
+	[[nodiscard]] std::uint32_t GetMipLevels() const;
 
 private:
 	VulkanImage(
@@ -64,12 +65,14 @@ private:
 		VulkanCommandPool& commandPool,
 		const std::filesystem::path& path);
 
-	void CreateImageView(vk::Format format, vk::ImageAspectFlags aspectFlags);
+	void GenerateImageView(vk::Format format, vk::ImageAspectFlags aspectFlags);
+	void GenerateMipmaps(VulkanCommandPool& commandPool, const Core::Vector2d<std::uint32_t>& size, vk::Format format);
 	
 	VulkanDevice& mDevice;
 	vk::UniqueDeviceMemory mDeviceMemory;
 	vk::UniqueImageView mImageView;
 	std::optional<vk::UniqueImage> mUniqueImageHolder;
+	std::uint32_t mMipLevels = 1;
 };
 
 }

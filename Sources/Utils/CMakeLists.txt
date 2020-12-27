@@ -24,3 +24,5 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     stb::stb
     tinyobjloader::tinyobjloader
     lucid::Core)
+
+target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)

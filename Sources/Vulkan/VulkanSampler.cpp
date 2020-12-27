@@ -5,7 +5,7 @@
 namespace Lucid::Vulkan
 {
 
-VulkanSampler::VulkanSampler(VulkanDevice& device)
+VulkanSampler::VulkanSampler(VulkanDevice& device, std::uint32_t mipLevels)
 {
 	vk::PhysicalDeviceProperties properties = device.GetPhysicalDevice().getProperties();
 
@@ -24,7 +24,7 @@ VulkanSampler::VulkanSampler(VulkanDevice& device)
 		.setMipmapMode(vk::SamplerMipmapMode::eLinear)
 		.setMipLodBias(0.0f)
 		.setMinLod(0.0f)
-		.setMaxLod(0.0f);
+		.setMaxLod(static_cast<float>(mipLevels));
 
 	mHandle = device.Handle().createSamplerUnique(createInfo);
 }
