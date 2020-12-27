@@ -12,8 +12,62 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const VulkanSurface& surf
 	, mDevice(device)
 	, mSurface(surface)
 {
-	Init();
-	CreateImageViews();
+	VulkanDevice::SwapchainDetails details = mDevice.GetSwapchainDetails(mSurface);
+
+	vk::SurfaceFormatKHR surfaceFormat = SelectSurfaceFormat(details.formats);
+	vk::PresentModeKHR presentMode = SelectPresentMode(details.presentModes);
+	vk::Extent2D extent = SelectSwapExtent(details.capabilities);
+
+	mFormat = surfaceFormat.format;
+	mExtent = extent;
+
+	std::uint32_t imageCount = details.capabilities.minImageCount + 1;
+	bool shouldStickToMaximumImageCount = details.capabilities.maxImageCount > 0;
+
+	if (shouldStickToMaximumImageCount && imageCount > details.capabilities.maxImageCount)
+	{
+		imageCount = details.capabilities.maxImageCount;
+	}
+
+	auto swapchainCreateInfo = vk::SwapchainCreateInfoKHR()
+		.setSurface(mSurface.Handle())
+		.setMinImageCount(imageCount)
+		.setImageFormat(surfaceFormat.format)
+		.setImageColorSpace(surfaceFormat.colorSpace)
+		.setImageExtent(extent)
+		.setImageArrayLayers(1)
+		.setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)
+		.setPreTransform(details.capabilities.currentTransform)
+		.setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
+		.setPresentMode(presentMode)
+		.setClipped(true);
+
+	std::uint32_t queueFamilies[] = {
+		mDevice.FindGraphicsQueueFamily().value(),
+		mDevice.FindPresentQueueFamily(mSurface).value()
+	};
+
+	if (queueFamilies[0] != queueFamilies[1])
+	{
+		swapchainCreateInfo
+			.setQueueFamilyIndexCount(2)
+			.setPQueueFamilyIndices(queueFamilies)
+			.setImageSharingMode(vk::SharingMode::eConcurrent);
+	}
+	else
+	{
+		swapchainCreateInfo
+			.setImageSharingMode(vk::SharingMode::eExclusive);
+	}
+
+	mHandle = mDevice.Handle().createSwapchainKHRUnique(swapchainCreateInfo);
+	Logger::Info("Swapchain created");
+
+	auto swapchainImages = mDevice.Handle().getSwapchainImagesKHR(Handle());
+	for (const auto& image : swapchainImages)
+	{
+		mImages.push_back(VulkanImage::CreateImage(mDevice, image, mFormat, vk::ImageAspectFlagBits::eColor));
+	}
 }
 
 vk::ResultValue<std::uint32_t> VulkanSwapchain::AcquireNextImage(const vk::UniqueSemaphore& semaphore)
@@ -80,81 +134,13 @@ vk::Extent2D VulkanSwapchain::SelectSwapExtent(const vk::SurfaceCapabilitiesKHR&
 	}
 }
 
-void VulkanSwapchain::Init()
-{
-	VulkanDevice::SwapchainDetails details = mDevice.GetSwapchainDetails(mSurface);
-
-	vk::SurfaceFormatKHR surfaceFormat = SelectSurfaceFormat(details.formats);
-	vk::PresentModeKHR presentMode = SelectPresentMode(details.presentModes);
-	vk::Extent2D extent = SelectSwapExtent(details.capabilities);
-
-	std::uint32_t imageCount = details.capabilities.minImageCount + 1;
-	bool shouldStickToMaximumImageCount = details.capabilities.maxImageCount > 0;
-
-	if (shouldStickToMaximumImageCount && imageCount > details.capabilities.maxImageCount)
-	{
-		imageCount = details.capabilities.maxImageCount;
-	}
-
-	auto swapchainCreateInfo = vk::SwapchainCreateInfoKHR()
-		.setSurface(mSurface.Handle())
-		.setMinImageCount(imageCount)
-		.setImageFormat(surfaceFormat.format)
-		.setImageColorSpace(surfaceFormat.colorSpace)
-		.setImageExtent(extent)
-		.setImageArrayLayers(1)
-		.setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)
-		.setPreTransform(details.capabilities.currentTransform)
-		.setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
-		.setPresentMode(presentMode)
-		.setClipped(true);
-
-	std::uint32_t queueFamilies[] = {
-		mDevice.FindGraphicsQueueFamily().value(),
-		mDevice.FindPresentQueueFamily(mSurface).value()
-	};
-
-	if (queueFamilies[0] != queueFamilies[1])
-	{
-		swapchainCreateInfo
-			.setQueueFamilyIndexCount(2)
-			.setPQueueFamilyIndices(queueFamilies)
-			.setImageSharingMode(vk::SharingMode::eConcurrent);
-	}
-	else
-	{
-		swapchainCreateInfo
-			.setImageSharingMode(vk::SharingMode::eExclusive);
-	}
-
-	mHandle = mDevice.Handle().createSwapchainKHRUnique(swapchainCreateInfo);
-	Logger::Info("Swapchain created");
-
-	auto swapchainImages = mDevice.Handle().getSwapchainImagesKHR(Handle());
-	for (const auto& image : swapchainImages)
-	{
-		mImages.push_back(VulkanImage(mDevice, image));
-	}
-
-	mFormat = surfaceFormat.format;
-	mExtent = extent;
-}
-
-void VulkanSwapchain::CreateImageViews()
-{
-	for (auto& image : mImages)
-	{
-		image.CreateImageView(mFormat, vk::ImageAspectFlagBits::eColor);
-	}
-}
-
 void VulkanSwapchain::CreateFramebuffers(VulkanRenderPass& renderPass, VulkanImage& depthImage)
 {
 	mFramebuffers.reserve(mImages.size());
 
 	for (const auto& image : mImages)
 	{
-		vk::ImageView attachments[] = { image.GetImageView(), depthImage.GetImageView() };
+		vk::ImageView attachments[] = { image->GetImageView(), depthImage.GetImageView() };
 
 		auto framebufferCreateInfo = vk::FramebufferCreateInfo()
 			.setRenderPass(renderPass.Handle())
@@ -180,7 +166,7 @@ vk::Format VulkanSwapchain::GetImageFormat() const noexcept
 	return mFormat; 
 }
 
-const std::vector<VulkanImage>& VulkanSwapchain::GetImages() const noexcept
+const std::vector<std::unique_ptr<VulkanImage>>& VulkanSwapchain::GetImages() const noexcept
 { 
 	return mImages; 
 }

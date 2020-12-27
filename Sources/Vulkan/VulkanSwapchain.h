@@ -21,7 +21,7 @@ public:
 
     [[nodiscard]] vk::Extent2D GetExtent() const noexcept;
     [[nodiscard]] vk::Format GetImageFormat() const noexcept;
-    [[nodiscard]] const std::vector<VulkanImage>& GetImages() const noexcept;
+    [[nodiscard]] const std::vector<std::unique_ptr<VulkanImage>>& GetImages() const noexcept;
     [[nodiscard]] const std::size_t GetImageCount() const noexcept;
     [[nodiscard]] vk::ResultValue<std::uint32_t> AcquireNextImage(const vk::UniqueSemaphore& semaphore);
     [[nodiscard]] const std::vector<vk::UniqueFramebuffer>& GetFramebuffers() const noexcept;
@@ -31,9 +31,6 @@ private:
     [[nodiscard]] vk::PresentModeKHR SelectPresentMode(const std::vector<vk::PresentModeKHR>& availableModes) const noexcept;
     [[nodiscard]] vk::Extent2D SelectSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities) const noexcept;
 
-    void Init();
-    void CreateImageViews();
-
     const VulkanSurface& mSurface;
     VulkanDevice& mDevice;
     Core::Vector2d<std::uint32_t> mWindowSize;
@@ -41,7 +38,7 @@ private:
     vk::Format mFormat;
     vk::Extent2D mExtent;
 
-    std::vector<VulkanImage> mImages;
+    std::vector<std::unique_ptr<VulkanImage>> mImages;
     std::vector<vk::UniqueFramebuffer> mFramebuffers;
 };
 

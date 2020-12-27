@@ -15,8 +15,9 @@ class VulkanBuffer : public VulkanEntity<vk::UniqueBuffer>
 {
 public:
 	VulkanBuffer(VulkanDevice& device, vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties);
-	static std::uint32_t FindMemoryType(VulkanDevice& device, std::uint32_t filter, vk::MemoryPropertyFlags flags);
 	void Write(void* pixels);
+
+	[[nodiscard]] static std::uint32_t FindMemoryType(VulkanDevice& device, std::uint32_t filter, vk::MemoryPropertyFlags flags);
 
 protected:
 	void Write(VulkanCommandPool& manager, const VulkanBuffer& buffer);

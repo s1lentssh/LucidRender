@@ -23,6 +23,7 @@ public:
 		VulkanSampler& sampler);
 
 	void CreateDescriptorSetLayout();
+
 	[[nodiscard]] const vk::DescriptorSet& GetDescriptorSet(std::size_t index) const;
 	[[nodiscard]] vk::DescriptorSetLayout& Layout() { return mDescriptorSetLayout.get(); }
 

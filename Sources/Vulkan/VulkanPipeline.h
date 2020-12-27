@@ -23,8 +23,8 @@ public:
 	[[nodiscard]] const vk::PipelineLayout& Layout() const;
 
 private:
-	static std::array<vk::VertexInputBindingDescription, 1> GetBindingDescriptions();
-	static std::array<vk::VertexInputAttributeDescription, 3> GetAttributeDescriptions();
+	[[nodiscard]] static std::array<vk::VertexInputBindingDescription, 1> GetBindingDescriptions();
+	[[nodiscard]] static std::array<vk::VertexInputAttributeDescription, 3> GetAttributeDescriptions();
 
 	vk::UniquePipelineLayout mLayout;
 };

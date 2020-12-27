@@ -31,6 +31,9 @@ VulkanRender::VulkanRender(const Core::IWindow& window) : mWindow(&window)
 	// Create sampler
 	mSampler = std::make_unique<VulkanSampler>(*mDevice.get());
 
+	// Create descriptor pool
+	mDescriptorPool = std::make_unique<VulkanDescriptorPool>(*mDevice.get());
+
 	RecreateSwapchain();
 
 	// Create semaphores
@@ -135,18 +138,24 @@ void VulkanRender::RecreateSwapchain()
 	// Create render pass
 	mRenderPass = std::make_unique<VulkanRenderPass>(*mDevice.get(), mSwapchain->GetImageFormat());
 
-	// Create descriptor pool
-	mDescriptorPool = std::make_unique<VulkanDescriptorPool>(*mDevice.get());
-
 	// Create pipeline
 	mPipeline = std::make_unique<VulkanPipeline>(*mDevice.get(), mSwapchain->GetExtent(), *mRenderPass.get(), *mDescriptorPool.get());
 
 	// Create depth image
-	mDepthImage = std::make_unique<VulkanDepthImage>(*mDevice.get(), mSwapchain->GetExtent());
-	mDepthImage->CreateImageView(mDevice->FindSupportedDepthFormat(), vk::ImageAspectFlagBits::eDepth);
+	mDepthImage = VulkanImage::CreateDepthImage(*mDevice.get(), mSwapchain->GetExtent(), mDevice->FindSupportedDepthFormat(), vk::ImageAspectFlagBits::eDepth);
 
 	// Create framebuffers for swapchain
 	mSwapchain->CreateFramebuffers(*mRenderPass.get(), *mDepthImage.get());
+
+	// Create uniform buffers
+	if (mUniformBuffers.size() != mSwapchain->GetImageCount())
+	{
+		mUniformBuffers.clear();
+		for (std::size_t i = 0; i < mSwapchain->GetImageCount(); i++)
+		{
+			mUniformBuffers.emplace_back(std::make_unique<VulkanUniformBuffer>(*mDevice.get()));
+		}
+	}
 
 	// Create command pool
 	mCommandPool = std::make_unique<VulkanCommandPool>(*mDevice.get(), *mSwapchain.get(), *mPipeline.get());
@@ -157,15 +166,8 @@ void VulkanRender::RecreateSwapchain()
 	// Create index buffer
 	mIndexBuffer = std::make_unique<VulkanIndexBuffer>(*mDevice.get(), *mCommandPool.get(), mMesh.indices);
 
-	// Create uniform buffers
-	for (std::size_t i = 0; i < mSwapchain->GetImageCount(); i++)
-	{
-		mUniformBuffers.emplace_back(std::make_unique<VulkanUniformBuffer>(*mDevice.get()));
-	}
-
 	// Load texture
-	mTextureImage = std::make_unique<VulkanImage>(*mDevice.get(), *mCommandPool.get(), "Resources/Textures/VikingRoom.png");
-	mTextureImage->CreateImageView(vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor);
+	mTextureImage = VulkanImage::CreateImageFromResource(*mDevice.get(), *mCommandPool.get(), "Resources/Textures/VikingRoom.png", vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor);
 
 	// Create descriptor sets
 	mDescriptorPool->CreateDescriptorSets(mSwapchain->GetImageCount(), mUniformBuffers, *mTextureImage.get(), *mSampler.get());

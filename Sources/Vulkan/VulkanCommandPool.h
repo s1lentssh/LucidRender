@@ -23,12 +23,14 @@ public:
 		VulkanSwapchain& swapchain, 
 		VulkanPipeline& pipeline);
 
-	vk::UniqueCommandBuffer& Get(std::size_t index);
+	[[nodiscard]] vk::UniqueCommandBuffer& Get(std::size_t index);
+
 	void RecordCommandBuffers(
 		const VulkanRenderPass& renderPass, 
 		const VulkanVertexBuffer& vertexBuffer, 
 		const VulkanIndexBuffer& indexBuffer, 
 		const VulkanDescriptorPool& descriptorPool);
+
 	void ExecuteSingleCommand(const std::function<void(vk::CommandBuffer&)>& function);
 
 private:

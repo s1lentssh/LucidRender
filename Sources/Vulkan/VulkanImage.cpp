@@ -8,7 +8,10 @@
 namespace Lucid::Vulkan
 {
 
-VulkanImage::VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, const std::filesystem::path& path)
+VulkanImage::VulkanImage(
+	VulkanDevice& device, 
+	VulkanCommandPool& commandPool, 
+	const std::filesystem::path& path)
 	: mDevice(device)
 {
 	Core::Texture image = Files::ReadImage(path);
@@ -54,6 +57,48 @@ VulkanImage::VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, c
 	Transition(commandPool, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
 }
 
+std::unique_ptr<VulkanImage> VulkanImage::CreateDepthImage(
+	VulkanDevice& device, 
+	const vk::Extent2D& swapchainExtent, 
+	vk::Format format, 
+	vk::ImageAspectFlags aspectFlags)
+{
+	VulkanImage result(
+		device,
+		swapchainExtent.width,
+		swapchainExtent.height,
+		device.FindSupportedDepthFormat(),
+		vk::ImageTiling::eOptimal,
+		vk::ImageUsageFlagBits::eDepthStencilAttachment,
+		vk::MemoryPropertyFlagBits::eDeviceLocal);
+
+	result.CreateImageView(format, aspectFlags);
+	return std::make_unique<VulkanImage>(std::move(result));
+}
+
+std::unique_ptr<VulkanImage> VulkanImage::CreateImage(
+	VulkanDevice& device, 
+	vk::Image image, 
+	vk::Format format, 
+	vk::ImageAspectFlags aspectFlags)
+{
+	VulkanImage result(device, image);
+	result.CreateImageView(format, aspectFlags);
+	return std::make_unique<VulkanImage>(std::move(result));
+}
+
+std::unique_ptr<VulkanImage> VulkanImage::CreateImageFromResource(
+	VulkanDevice& device, 
+	VulkanCommandPool& commandPool, 
+	const std::filesystem::path& path, 
+	vk::Format format, 
+	vk::ImageAspectFlags aspectFlags)
+{
+	VulkanImage result(device, commandPool, path);
+	result.CreateImageView(format, aspectFlags);
+	return std::make_unique<VulkanImage>(std::move(result));
+}
+
 VulkanImage::VulkanImage(
 	VulkanDevice& device, 
 	std::uint32_t width, 
@@ -93,7 +138,9 @@ VulkanImage::VulkanImage(
 	device.Handle().bindImageMemory(Handle(), mDeviceMemory.get(), 0);
 }
 
-VulkanImage::VulkanImage(VulkanDevice& device, vk::Image image)
+VulkanImage::VulkanImage(
+	VulkanDevice& device, 
+	vk::Image image)
 	: mDevice(device)
 {
 	mHandle = image;
@@ -178,6 +225,11 @@ void VulkanImage::Write(VulkanCommandPool& commandPool, const VulkanBuffer& buff
 	});
 }
 
+const vk::ImageView& VulkanImage::GetImageView() const 
+{ 
+	return mImageView.get(); 
+}
+
 void VulkanImage::CreateImageView(vk::Format format, vk::ImageAspectFlags aspectFlags)
 {
 	auto imageViewCreateInfo = vk::ImageViewCreateInfo()
@@ -195,21 +247,9 @@ void VulkanImage::CreateImageView(vk::Format format, vk::ImageAspectFlags aspect
 	mImageView = mDevice.Handle().createImageViewUnique(imageViewCreateInfo);
 }
 
-bool VulkanImage::HasStencil(vk::Format format)
+bool VulkanImage::HasStencil(vk::Format format) const
 {
 	return format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint;
-}
-
-VulkanDepthImage::VulkanDepthImage(VulkanDevice& device, const vk::Extent2D& swapchainExtent)
-	: VulkanImage(
-		device,
-		swapchainExtent.width,
-		swapchainExtent.height,
-		device.FindSupportedDepthFormat(),
-		vk::ImageTiling::eOptimal,
-		vk::ImageUsageFlagBits::eDepthStencilAttachment,
-		vk::MemoryPropertyFlagBits::eDeviceLocal)
-{
 }
 
 }

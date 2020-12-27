@@ -33,15 +33,16 @@ public:
 
 public:
     VulkanDevice(const vk::PhysicalDevice& device);
-    [[nodiscard]] bool IsSuitableForSurface(const VulkanSurface& surface) const noexcept;
     void InitLogicalDeviceForSurface(const VulkanSurface& surface) noexcept;
+
+    [[nodiscard]] bool IsSuitableForSurface(const VulkanSurface& surface) const noexcept;
     [[nodiscard]] SwapchainDetails GetSwapchainDetails(const VulkanSurface& surface) const noexcept;
     [[nodiscard]] std::optional<std::uint32_t> FindGraphicsQueueFamily() const noexcept;
     [[nodiscard]] std::optional<std::uint32_t> FindPresentQueueFamily(const VulkanSurface& surface) const noexcept;
     [[nodiscard]] vk::Queue& GetGraphicsQueue() noexcept;
     [[nodiscard]] vk::Queue& GetPresentQueue() noexcept;
     [[nodiscard]] vk::PhysicalDevice& GetPhysicalDevice() noexcept;
-    [[nodiscard]] vk::Format VulkanDevice::FindSupportedDepthFormat();
+    [[nodiscard]] vk::Format FindSupportedDepthFormat();
 
 private:
     [[nodiscard]] std::vector<const char*> GetUnsupportedExtensions() const noexcept;

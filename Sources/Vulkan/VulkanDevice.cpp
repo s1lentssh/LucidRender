@@ -68,8 +68,8 @@ void VulkanDevice::InitLogicalDeviceForSurface(const VulkanSurface& surface) noe
 	mHandle = mPhysicalDevice.createDeviceUnique(deviceCreateInfo);
 	Logger::Info("Logical device created");
 
-	mGraphicsQueue = mHandle->getQueue(queueFamilies.graphics.value(), 0);
-	mPresentQueue = mHandle->getQueue(queueFamilies.present.value(), 0);
+	mGraphicsQueue = Handle().getQueue(queueFamilies.graphics.value(), 0);
+	mPresentQueue = Handle().getQueue(queueFamilies.present.value(), 0);
 }
 
 std::optional<std::uint32_t> VulkanDevice::FindGraphicsQueueFamily() const noexcept

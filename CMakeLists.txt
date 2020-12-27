@@ -4,7 +4,7 @@ project(LucidRender
     VERSION 0.1
     DESCRIPTION "Minimalistic render application on Vulkan and D3D12")
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 if(MSVC)
     add_compile_options(/W4)

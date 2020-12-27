@@ -69,7 +69,7 @@ VulkanInstance::~VulkanInstance()
 {
 	if (mDebugMessenger.operator bool())
 	{
-		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)(mHandle->getProcAddr("vkDestroyDebugUtilsMessengerEXT"));
+		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)(Handle().getProcAddr("vkDestroyDebugUtilsMessengerEXT"));
 		if (func != nullptr)
 		{
 			func(Handle(), *(VkDebugUtilsMessengerEXT*)&mDebugMessenger, nullptr);
@@ -80,7 +80,7 @@ VulkanInstance::~VulkanInstance()
 
 std::vector<VulkanDevice> VulkanInstance::GetDevices() const
 {
-	std::vector<vk::PhysicalDevice> devices = mHandle->enumeratePhysicalDevices();
+	std::vector<vk::PhysicalDevice> devices = Handle().enumeratePhysicalDevices();
 	std::vector<VulkanDevice> wrappedDevices;
 	std::transform(devices.begin(), devices.end(), std::back_inserter(wrappedDevices),
 		[](const vk::PhysicalDevice& device) { return VulkanDevice(device); });
@@ -142,7 +142,7 @@ void VulkanInstance::RegisterDebugCallback()
 {
 	auto createInfo = VulkanInstance::ProvideDebugMessengerCreateInfo();
 
-	auto func = (PFN_vkCreateDebugUtilsMessengerEXT)mHandle->getProcAddr("vkCreateDebugUtilsMessengerEXT");
+	auto func = (PFN_vkCreateDebugUtilsMessengerEXT)Handle().getProcAddr("vkCreateDebugUtilsMessengerEXT");
 	if (func != nullptr)
 	{
 		auto status = func(Handle(), (VkDebugUtilsMessengerCreateInfoEXT*)&createInfo, nullptr, (VkDebugUtilsMessengerEXT*)&mDebugMessenger);
