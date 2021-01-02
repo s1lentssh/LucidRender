@@ -13,7 +13,7 @@
 namespace Lucid::Vulkan
 {
 
-VulkanRender::VulkanRender(const Core::IWindow& window) : mWindow(&window)
+VulkanRender::VulkanRender(const Core::IWindow& window, const Core::Scene& scene) : mWindow(&window), mScene(scene)
 {
 	// Create instance
 	mInstance = std::make_unique<VulkanInstance>(window.GetRequiredInstanceExtensions());
@@ -24,9 +24,6 @@ VulkanRender::VulkanRender(const Core::IWindow& window) : mWindow(&window)
 	// Create and init device
 	mDevice = std::make_unique<VulkanDevice>(mInstance->PickSuitableDeviceForSurface(*mSurface.get()));
 	mDevice->InitLogicalDeviceForSurface(*mSurface.get());
-
-	// Load model
-	mMesh = Files::LoadModel("Resources/Models/VikingRoom.obj");
 
 	// Create descriptor pool
 	mDescriptorPool = std::make_unique<VulkanDescriptorPool>(*mDevice.get());
@@ -161,10 +158,10 @@ void VulkanRender::RecreateSwapchain()
 	mCommandPool = std::make_unique<VulkanCommandPool>(*mDevice.get(), *mSwapchain.get(), *mPipeline.get());
 
 	// Create vertex buffer
-	mVertexBuffer = std::make_unique<VulkanVertexBuffer>(*mDevice.get(), *mCommandPool.get(), mMesh.vertices);
+	mVertexBuffer = std::make_unique<VulkanVertexBuffer>(*mDevice.get(), *mCommandPool.get(), mScene.GetMeshDebug()->vertices);
 
 	// Create index buffer
-	mIndexBuffer = std::make_unique<VulkanIndexBuffer>(*mDevice.get(), *mCommandPool.get(), mMesh.indices);
+	mIndexBuffer = std::make_unique<VulkanIndexBuffer>(*mDevice.get(), *mCommandPool.get(), mScene.GetMeshDebug()->indices);
 
 	// Load texture
 	mTextureImage = VulkanImage::CreateImageFromResource(*mDevice.get(), *mCommandPool.get(), "Resources/Textures/VikingRoom.png", vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor);
@@ -190,9 +187,9 @@ void VulkanRender::UpdateUniformBuffer(std::uint32_t imageIndex)
 	float aspectRatio = extent.width / (float)extent.height;
 
 	Core::UniformBufferObject ubo;
-	ubo.model = glm::rotate(glm::mat4(1.0f), sin(time) * glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.2f), glm::vec3(0.0f, 0.0f, 1.0f));
-	ubo.projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
+	ubo.model = mScene.GetMeshDebug()->Transform();
+	ubo.view = mScene.GetCamera()->Transform();
+	ubo.projection = glm::perspective(glm::radians(mScene.GetCamera()->FieldOfView()), aspectRatio, 0.1f, 120.0f);
 	ubo.projection[1][1] *= -1;
 
 	mUniformBuffers.at(imageIndex)->Write(&ubo);

@@ -7,6 +7,7 @@ set(HEADERS Window.h)
 find_package(glfw3 REQUIRED)
 find_package(Vulkan REQUIRED)
 find_package(stb REQUIRED)
+find_package(glm REQUIRED)
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES_DIR}/Icons/AppResource.o)
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "Lucid")
@@ -18,7 +19,8 @@ target_link_libraries(${PROJECT_NAME}
     lucid::Vulkan
     glfw::glfw
     Vulkan::Vulkan
-    stb::stb)
+    stb::stb
+    glm::glm)
 
 if(WIN32)
     target_compile_definitions(${PROJECT_NAME} PUBLIC GLFW_EXPOSE_NATIVE_WIN32)

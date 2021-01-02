@@ -107,7 +107,7 @@ vk::PresentModeKHR VulkanSwapchain::SelectPresentMode(const std::vector<vk::Pres
 
 	for (const auto& availableMode : availableModes)
 	{
-		bool niceMode = vk::PresentModeKHR::eMailbox == availableMode;
+		bool niceMode = vk::PresentModeKHR::eImmediate == availableMode;
 
 		if (niceMode)
 		{

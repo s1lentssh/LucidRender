@@ -26,6 +26,8 @@ public:
     void SetIcon(const std::filesystem::path& path) override;
 
     static void OnKeyPressed(GLFWwindow* window, int key, int scancode, int action, int mods);
+    static void OnCursorMoved(GLFWwindow* window, double x, double y);
+    static void OnScrolled(GLFWwindow* window, double x, double y);
 
 private:
     GLFWwindow* mWindow = nullptr;

@@ -12,7 +12,7 @@
 #include <Vulkan/VulkanImage.h>
 #include <Vulkan/VulkanSampler.h>
 #include <Core/Interfaces.h>
-#include <Core/Mesh.h>
+#include <Core/Scene.h>
 
 namespace Lucid::Vulkan
 {
@@ -20,7 +20,7 @@ namespace Lucid::Vulkan
 class VulkanRender : public Core::IRender
 {
 public:
-	VulkanRender(const Core::IWindow& window);
+	VulkanRender(const Core::IWindow& window, const Core::Scene& scene);
 	void DrawFrame() override;
 
 private:
@@ -53,7 +53,7 @@ private:
 	std::size_t mCurrentFrame = 0;
 	const Core::IWindow* mWindow = nullptr;
 
-	Core::Mesh mMesh;
+	const Core::Scene& mScene;
 };
 
 }

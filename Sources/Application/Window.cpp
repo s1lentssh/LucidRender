@@ -1,9 +1,11 @@
 #include "Window.h"
 
 #include <Utils/Defaults.hpp>
+#include <Core/InputController.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include <map>
 
 namespace Lucid
 {
@@ -26,6 +28,9 @@ Window::Window()
 	glfwSwapBuffers(mWindow);
 
     glfwSetKeyCallback(mWindow, OnKeyPressed);
+    glfwSetCursorPosCallback(mWindow, OnCursorMoved);
+    glfwSetScrollCallback(mWindow, OnScrolled);
+    glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 Window::~Window()
@@ -66,6 +71,37 @@ void Window::OnKeyPressed(GLFWwindow* window, int key, int scancode, int action,
     {
         glfwSetWindowShouldClose(window, true);
     }
+    else
+    {
+        std::map<int, Core::InputController::Key> keymap = {
+            {GLFW_KEY_W, Core::InputController::Key::Up},
+            {GLFW_KEY_S, Core::InputController::Key::Down},
+            {GLFW_KEY_A, Core::InputController::Key::Left},
+            {GLFW_KEY_D, Core::InputController::Key::Right},
+        };
+
+        if (keymap.contains(key))
+        {
+            if (action == GLFW_PRESS)
+            {
+                Core::InputController::Instance().KeyPressed(keymap.at(key));
+            }
+            else if (action == GLFW_RELEASE)
+            {
+                Core::InputController::Instance().KeyReleased(keymap.at(key));
+            }
+        }
+    }
+}
+
+void Window::OnCursorMoved(GLFWwindow* window, double x, double y)
+{
+    Core::InputController::Instance().MouseMoved(x, y);
+}
+
+void Window::OnScrolled(GLFWwindow* window, double x, double y)
+{
+    Core::InputController::Instance().MouseScrolled(x, y);
 }
 
 std::vector<const char*> Window::GetRequiredInstanceExtensions() const noexcept

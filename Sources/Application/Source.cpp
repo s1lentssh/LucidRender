@@ -1,7 +1,7 @@
 ﻿#include "Window.h"
 #include <Utils/Logger.hpp>
 #include <Utils/Defaults.hpp>
-#include <Vulkan/VulkanRender.h>
+#include <Core/Engine.h>
 
 auto main() -> int try
 {
@@ -30,12 +30,19 @@ auto main() -> int try
     std::unique_ptr<Lucid::Core::IWindow> window = std::make_unique<Lucid::Window>();
     window->SetIcon("Resources/Icons/AppIcon.png");
 
-    std::unique_ptr<Lucid::Core::IRender> render = std::make_unique<Lucid::Vulkan::VulkanRender>(*window.get());
+    std::unique_ptr<Lucid::Core::Engine> engine = std::make_unique<Lucid::Core::Engine>(*window.get());
+
+    float lastTime = glfwGetTime();
 
     while (!window->ShouldClose())
     {
+        float currentTime = glfwGetTime();
+        float deltaTime = currentTime - lastTime;
+
         window->PollEvents();
-        render->DrawFrame();
+        engine->Update(deltaTime);
+
+        lastTime = currentTime;
     }
 
     return EXIT_SUCCESS;
