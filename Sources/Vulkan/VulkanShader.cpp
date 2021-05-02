@@ -19,7 +19,7 @@ VulkanShader::VulkanShader(VulkanDevice& device, Type type, const std::filesyste
 		.setCodeSize(compiled.size() * sizeof(std::uint32_t))
 		.setPCode(compiled.data());
 
-	mHandle = device.Handle().createShaderModuleUnique(shaderModuleCreateInfo);
+	mHandle = device.Handle()->createShaderModuleUnique(shaderModuleCreateInfo);
 }
 
 std::string VulkanShader::PreprocessShader(const std::string& source, Type type, const std::string& name)

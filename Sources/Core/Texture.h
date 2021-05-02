@@ -6,11 +6,6 @@
 namespace Lucid::Core
 {
 
-struct Texture
-{
-	Vector2d<std::uint32_t> size;
-	std::vector<char> pixels;
-	std::uint32_t mipLevels;
-};
+
 
 }

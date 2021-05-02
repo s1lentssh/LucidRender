@@ -30,7 +30,7 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const VulkanSurface& surf
 	}
 
 	auto swapchainCreateInfo = vk::SwapchainCreateInfoKHR()
-		.setSurface(mSurface.Handle())
+		.setSurface(mSurface.Handle().get())
 		.setMinImageCount(imageCount)
 		.setImageFormat(surfaceFormat.format)
 		.setImageColorSpace(surfaceFormat.colorSpace)
@@ -60,20 +60,20 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const VulkanSurface& surf
 			.setImageSharingMode(vk::SharingMode::eExclusive);
 	}
 
-	mHandle = mDevice.Handle().createSwapchainKHRUnique(swapchainCreateInfo);
+	mHandle = mDevice.Handle()->createSwapchainKHRUnique(swapchainCreateInfo);
 	Logger::Info("Swapchain created");
 
-	auto swapchainImages = mDevice.Handle().getSwapchainImagesKHR(Handle());
+	auto swapchainImages = mDevice.Handle()->getSwapchainImagesKHR(Handle().get());
 	for (const auto& image : swapchainImages)
 	{
-		mImages.push_back(VulkanImage::CreateImageFromSwapchain(mDevice, image, mFormat, vk::ImageAspectFlagBits::eColor));
+		mImages.push_back(VulkanImage::FromSwapchain(mDevice, image, mFormat, vk::ImageAspectFlagBits::eColor));
 	}
 }
 
 vk::ResultValue<std::uint32_t> VulkanSwapchain::AcquireNextImage(const vk::UniqueSemaphore& semaphore)
 {
-	return mDevice.Handle().acquireNextImageKHR(
-		Handle(), 
+	return mDevice.Handle()->acquireNextImageKHR(
+		Handle().get(), 
 		std::numeric_limits<std::uint64_t>::max(), 
 		semaphore.get(), {});
 }
@@ -143,14 +143,14 @@ void VulkanSwapchain::CreateFramebuffers(VulkanRenderPass& renderPass, VulkanIma
 		vk::ImageView attachments[] = { resolveImage.GetImageView(), depthImage.GetImageView(), image->GetImageView() };
 
 		auto framebufferCreateInfo = vk::FramebufferCreateInfo()
-			.setRenderPass(renderPass.Handle())
+			.setRenderPass(renderPass.Handle().get())
 			.setAttachmentCount(static_cast<std::uint32_t>(std::size(attachments)))
 			.setPAttachments(attachments)
 			.setWidth(mExtent.width)
 			.setHeight(mExtent.height)
 			.setLayers(1);
 
-		mFramebuffers.push_back(mDevice.Handle().createFramebufferUnique(framebufferCreateInfo));
+		mFramebuffers.push_back(mDevice.Handle()->createFramebufferUnique(framebufferCreateInfo));
 	}
 
 	Logger::Info("Framebuffers created");

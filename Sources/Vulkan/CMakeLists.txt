@@ -16,7 +16,8 @@ set(HEADERS
     VulkanDescriptorPool.cpp
     VulkanImage.cpp
     VulkanSampler.cpp
-    VulkanMesh.cpp)
+    VulkanMesh.cpp
+    VulkanDescriptorSet.cpp)
 
 
 set(SOURCES
@@ -34,7 +35,8 @@ set(SOURCES
     VulkanDescriptorPool.h
     VulkanImage.h
     VulkanSampler.h
-    VulkanMesh.h)
+    VulkanMesh.h
+    VulkanDescriptorSet.h)
 
 add_library(${PROJECT_NAME} ${HEADERS} ${SOURCES})
 add_library(lucid::Vulkan ALIAS ${PROJECT_NAME})

@@ -69,10 +69,10 @@ VulkanInstance::~VulkanInstance()
 {
 	if (mDebugMessenger.operator bool())
 	{
-		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)(Handle().getProcAddr("vkDestroyDebugUtilsMessengerEXT"));
+		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)(Handle()->getProcAddr("vkDestroyDebugUtilsMessengerEXT"));
 		if (func != nullptr)
 		{
-			func(Handle(), *(VkDebugUtilsMessengerEXT*)&mDebugMessenger, nullptr);
+			func(Handle().get(), *(VkDebugUtilsMessengerEXT*)&mDebugMessenger, nullptr);
 			Logger::Info("Debug messenger destroyed");
 		}
 	}
@@ -80,7 +80,7 @@ VulkanInstance::~VulkanInstance()
 
 std::vector<VulkanDevice> VulkanInstance::GetDevices() const
 {
-	std::vector<vk::PhysicalDevice> devices = Handle().enumeratePhysicalDevices();
+	std::vector<vk::PhysicalDevice> devices = Handle()->enumeratePhysicalDevices();
 	std::vector<VulkanDevice> wrappedDevices;
 	std::transform(devices.begin(), devices.end(), std::back_inserter(wrappedDevices),
 		[](const vk::PhysicalDevice& device) { return VulkanDevice(device); });
@@ -142,10 +142,10 @@ void VulkanInstance::RegisterDebugCallback()
 {
 	auto createInfo = VulkanInstance::ProvideDebugMessengerCreateInfo();
 
-	auto func = (PFN_vkCreateDebugUtilsMessengerEXT)Handle().getProcAddr("vkCreateDebugUtilsMessengerEXT");
+	auto func = (PFN_vkCreateDebugUtilsMessengerEXT)Handle()->getProcAddr("vkCreateDebugUtilsMessengerEXT");
 	if (func != nullptr)
 	{
-		auto status = func(Handle(), (VkDebugUtilsMessengerCreateInfoEXT*)&createInfo, nullptr, (VkDebugUtilsMessengerEXT*)&mDebugMessenger);
+		auto status = func(Handle().get(), (VkDebugUtilsMessengerCreateInfoEXT*)&createInfo, nullptr, (VkDebugUtilsMessengerEXT*)&mDebugMessenger);
 		if (VK_SUCCESS == status)
 		{
 			Logger::Info("Debug messenger created");

@@ -24,10 +24,12 @@ public:
 	VulkanRender(const Core::IWindow& window, const Core::Scene& scene);
 	~VulkanRender() override;
 	void DrawFrame() override;
+	void AddAsset(const Core::Asset& asset) override;
 
 private:
 	void RecreateSwapchain();
-	void UpdateUniformBuffer(std::uint32_t imageIndex);
+	void UpdateUniformBuffers();
+	void RecordCommandBuffers();
 
 	// Vulkan entities
 	std::unique_ptr<VulkanInstance> mInstance;
@@ -38,11 +40,8 @@ private:
 	std::unique_ptr<VulkanPipeline> mPipeline;
 	std::unique_ptr<VulkanCommandPool> mCommandPool;
 	std::unique_ptr<VulkanDescriptorPool> mDescriptorPool;
-	std::unique_ptr<VulkanSampler> mSampler;
 	std::unique_ptr<VulkanImage> mResolveImage;
-	std::unique_ptr<VulkanImage> mTextureImage;
 	std::unique_ptr<VulkanImage> mDepthImage;
-	std::vector<std::unique_ptr<VulkanUniformBuffer>> mUniformBuffers;
 	std::vector<VulkanMesh> mMeshes;
 
 	// Synchronization

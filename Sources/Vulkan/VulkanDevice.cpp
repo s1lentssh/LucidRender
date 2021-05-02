@@ -99,8 +99,8 @@ void VulkanDevice::InitLogicalDeviceForSurface(const VulkanSurface& surface) noe
 	mHandle = mPhysicalDevice.createDeviceUnique(deviceCreateInfo);
 	Logger::Info("Logical device created");
 
-	mGraphicsQueue = Handle().getQueue(queueFamilies.graphics.value(), 0);
-	mPresentQueue = Handle().getQueue(queueFamilies.present.value(), 0);
+	mGraphicsQueue = Handle()->getQueue(queueFamilies.graphics.value(), 0);
+	mPresentQueue = Handle()->getQueue(queueFamilies.present.value(), 0);
 }
 
 std::optional<std::uint32_t> VulkanDevice::FindGraphicsQueueFamily() const noexcept
@@ -125,7 +125,7 @@ std::optional<std::uint32_t> VulkanDevice::FindPresentQueueFamily(const VulkanSu
 	std::vector<vk::QueueFamilyProperties> queueFamiliesProperties = mPhysicalDevice.getQueueFamilyProperties();
 	for (std::uint32_t i = 0; i < queueFamiliesProperties.size(); ++i)
 	{
-		vk::Bool32 supportsSurface = mPhysicalDevice.getSurfaceSupportKHR(i, surface.Handle());
+		vk::Bool32 supportsSurface = mPhysicalDevice.getSurfaceSupportKHR(i, surface.Handle().get());
 
 		if (supportsSurface)
 		{
@@ -155,9 +155,9 @@ VulkanDevice::SwapchainDetails VulkanDevice::GetSwapchainDetails(const VulkanSur
 {
 	SwapchainDetails details;
 
-	details.formats = mPhysicalDevice.getSurfaceFormatsKHR(surface.Handle());
-	details.capabilities = mPhysicalDevice.getSurfaceCapabilitiesKHR(surface.Handle());
-	details.presentModes = mPhysicalDevice.getSurfacePresentModesKHR(surface.Handle());
+	details.formats = mPhysicalDevice.getSurfaceFormatsKHR(surface.Handle().get());
+	details.capabilities = mPhysicalDevice.getSurfaceCapabilitiesKHR(surface.Handle().get());
+	details.presentModes = mPhysicalDevice.getSurfacePresentModesKHR(surface.Handle().get());
 
 	return details;
 }

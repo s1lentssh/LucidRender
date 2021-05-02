@@ -12,6 +12,7 @@ class Engine
 public:
 	Engine(const IWindow& window);
 	void Update(float time);
+	void AddAsset(const Core::Asset& asset);
 	
 private:
 	void ProcessInput(float time);

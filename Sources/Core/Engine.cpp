@@ -15,9 +15,6 @@ namespace Lucid::Core
 Engine::Engine(const IWindow& window)
 {
     mScene = std::make_shared<Lucid::Core::Scene>();
-
-    auto mesh = std::make_shared<Lucid::Core::Mesh>(Lucid::Files::LoadModel("Resources/Models/VikingRoom.obj"));
-    mScene->AddMesh(mesh);
  
     auto camera = std::make_shared<Lucid::Core::Camera>(glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.2f), glm::vec3(0.0f, 0.0f, 1.0f)));
     mScene->AddCamera(camera);
@@ -32,6 +29,12 @@ void Engine::Update(float time)
 
     // Render
     mRender->DrawFrame();
+}
+
+void Engine::AddAsset(const Core::Asset& asset)
+{
+    mScene->AddAsset(asset);
+    mRender->AddAsset(asset);
 }
 
 void Engine::ProcessInput(float time)

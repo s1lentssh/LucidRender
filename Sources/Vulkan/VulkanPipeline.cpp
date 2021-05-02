@@ -22,12 +22,12 @@ VulkanPipeline::VulkanPipeline(
 
 	auto vertexShaderStageInfo = vk::PipelineShaderStageCreateInfo()
 		.setStage(vk::ShaderStageFlagBits::eVertex)
-		.setModule(vertexShader.Handle())
+		.setModule(vertexShader.Handle().get())
 		.setPName("main");
 
 	auto fragmentShaderStageInfo = vk::PipelineShaderStageCreateInfo()
 		.setStage(vk::ShaderStageFlagBits::eFragment)
-		.setModule(fragmentShader.Handle())
+		.setModule(fragmentShader.Handle().get())
 		.setPName("main");
 
 	vk::PipelineShaderStageCreateInfo shaderStages[] = { vertexShaderStageInfo, fragmentShaderStageInfo };
@@ -97,7 +97,7 @@ VulkanPipeline::VulkanPipeline(
 		.setSetLayoutCount(1)
 		.setPSetLayouts(&descriptorPool.Layout());
 
-	mLayout = device.Handle().createPipelineLayoutUnique(pipelineLayoutCreateInfo);
+	mLayout = device.Handle()->createPipelineLayoutUnique(pipelineLayoutCreateInfo);
 
 	auto depthStencilState = vk::PipelineDepthStencilStateCreateInfo()
 		.setDepthTestEnable(true)
@@ -117,10 +117,10 @@ VulkanPipeline::VulkanPipeline(
 		.setPColorBlendState(&colorBlendState)
 		.setPDepthStencilState(&depthStencilState)
 		.setLayout(mLayout.get())
-		.setRenderPass(renderPass.Handle())
+		.setRenderPass(renderPass.Handle().get())
 		.setSubpass(0);
 
-	mHandle = device.Handle().createGraphicsPipelineUnique({}, pipelineCreateInfo);
+	mHandle = device.Handle()->createGraphicsPipelineUnique({}, pipelineCreateInfo);
 }
 
 const vk::PipelineLayout& VulkanPipeline::Layout() const 
