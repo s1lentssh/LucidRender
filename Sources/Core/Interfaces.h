@@ -16,12 +16,14 @@ public:
     virtual void SetIcon(const std::filesystem::path& path) = 0;
     virtual void PollEvents() const noexcept = 0;
     virtual void WaitEvents() const noexcept = 0;
+    virtual ~IWindow() = default;
 };
 
 class IRender
 {
 public:
     virtual void DrawFrame() = 0;
+    virtual ~IRender() = default;
 };
 
 }

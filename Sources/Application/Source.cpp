@@ -32,11 +32,11 @@ auto main() -> int try
 
     std::unique_ptr<Lucid::Core::Engine> engine = std::make_unique<Lucid::Core::Engine>(*window.get());
 
-    float lastTime = glfwGetTime();
+    float lastTime = static_cast<float>(glfwGetTime());
 
     while (!window->ShouldClose())
     {
-        float currentTime = glfwGetTime();
+        float currentTime = static_cast<float>(glfwGetTime());
         float deltaTime = currentTime - lastTime;
 
         window->PollEvents();

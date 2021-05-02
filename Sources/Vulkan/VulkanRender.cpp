@@ -46,6 +46,11 @@ VulkanRender::VulkanRender(const Core::IWindow& window, const Core::Scene& scene
 	mImagesInFlight.resize(Defaults::MaxFramesInFlight, {});
 }
 
+VulkanRender::~VulkanRender()
+{
+	mDevice->Handle().waitIdle();
+}
+
 void VulkanRender::DrawFrame()
 {
 	// Render frame
@@ -178,11 +183,6 @@ void VulkanRender::RecreateSwapchain()
 
 void VulkanRender::UpdateUniformBuffer(std::uint32_t imageIndex)
 {
-	static auto startTime = std::chrono::system_clock::now();
-	auto currentTime = std::chrono::system_clock::now();
-
-	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
 	vk::Extent2D extent = mSwapchain->GetExtent();
 	float aspectRatio = extent.width / (float)extent.height;
 

@@ -21,6 +21,7 @@ class VulkanRender : public Core::IRender
 {
 public:
 	VulkanRender(const Core::IWindow& window, const Core::Scene& scene);
+	~VulkanRender() override;
 	void DrawFrame() override;
 
 private:

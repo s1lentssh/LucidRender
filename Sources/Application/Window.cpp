@@ -96,12 +96,14 @@ void Window::OnKeyPressed(GLFWwindow* window, int key, int scancode, int action,
 
 void Window::OnCursorMoved(GLFWwindow* window, double x, double y)
 {
-    Core::InputController::Instance().MouseMoved(x, y);
+    (void)window;
+    Core::InputController::Instance().MouseMoved(static_cast<float>(x), static_cast<float>(y));
 }
 
 void Window::OnScrolled(GLFWwindow* window, double x, double y)
 {
-    Core::InputController::Instance().MouseScrolled(x, y);
+    (void)window;
+    Core::InputController::Instance().MouseScrolled(static_cast<float>(x), static_cast<float>(y));
 }
 
 std::vector<const char*> Window::GetRequiredInstanceExtensions() const noexcept

@@ -167,7 +167,7 @@ vk::DebugUtilsMessengerCreateInfoEXT VulkanInstance::ProvideDebugMessengerCreate
 		.setMessageSeverity(
 			vk::DebugUtilsMessageSeverityFlagBitsEXT::eError |
 			/*vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo | */
-			vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
+			/*vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | */
 			vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning)
 		.setMessageType(
 			vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
