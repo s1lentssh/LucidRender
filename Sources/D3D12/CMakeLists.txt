@@ -10,7 +10,8 @@ set(HEADERS
     D3D12CommandQueue.cpp
     D3D12Swapchain.cpp
     D3D12DescriptorHeap.cpp
-    D3D12CommandAllocator.cpp)
+    D3D12CommandAllocator.cpp
+    D3D12Fence.cpp)
 
 set(SOURCES
     D3D12Utils.h
@@ -22,7 +23,8 @@ set(SOURCES
     D3D12Swapchain.h
     D3D12DescriptorHeap.h
     d3dx12.h
-    D3D12CommandAllocator.h)
+    D3D12CommandAllocator.h
+    D3D12Fence.h)
 
 add_library(${PROJECT_NAME} ${HEADERS} ${SOURCES})
 add_library(Lucid::D3D12 ALIAS ${PROJECT_NAME})

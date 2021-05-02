@@ -21,6 +21,7 @@ class D3D12Swapchain : public D3D12Entity<ComPtr<IDXGISwapChain4>>
 public:
 	D3D12Swapchain(D3D12Device& device, const D3D12CommandQueue& commandQueue, const Core::IWindow& window);
 	void CreateRenderTargetViews(D3D12DescriptorHeap& heap);
+	ComPtr<ID3D12Resource> GetBackBuffer(std::size_t i) { return mBackBuffers.at(i); }
 
 private:
 	D3D12Device& mDevice;
