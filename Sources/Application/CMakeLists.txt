@@ -17,13 +17,13 @@ install(DIRECTORY ${RESOURCES_DIR} DESTINATION .)
 target_link_libraries(${PROJECT_NAME} 
     Lucid::Utils
     Lucid::Vulkan
-    Lucid::D3D12
     glfw::glfw
     Vulkan::Vulkan
     stb::stb
     glm::glm)
 
 if(WIN32)
+    target_link_libraries(${PROJECT_NAME} Lucid::D3D12)
     target_compile_definitions(${PROJECT_NAME} PUBLIC GLFW_EXPOSE_NATIVE_WIN32)
 endif()
 

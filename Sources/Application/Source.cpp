@@ -31,7 +31,7 @@ auto main() -> int try
     std::unique_ptr<Lucid::Core::IWindow> window = std::make_unique<Lucid::Window>();
     window->SetIcon("Resources/Icons/AppIcon.png");
 
-    std::unique_ptr<Lucid::Core::Engine> engine = std::make_unique<Lucid::Core::Engine>(*window.get());
+    std::unique_ptr<Lucid::Core::Engine> engine = std::make_unique<Lucid::Core::Engine>(*window.get(), Lucid::Core::Engine::API::D3D12);
 
     Lucid::Core::Asset asset(
         Lucid::Files::LoadModel("Resources/Models/VikingRoom.obj"),

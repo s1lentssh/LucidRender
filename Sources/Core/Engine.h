@@ -10,7 +10,13 @@ namespace Lucid::Core
 class Engine
 {
 public:
-	Engine(const IWindow& window);
+	enum class API
+	{
+		Vulkan,
+		D3D12
+	};
+
+	Engine(const IWindow& window, API api);
 	void Update(float time);
 	void AddAsset(const Core::Asset& asset);
 	
