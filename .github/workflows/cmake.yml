@@ -5,8 +5,8 @@ on: [push]
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
-  VULKAN_VERSION_LINUX: 1.2.154.0
-  VULKAN_VERSION_WINDOWS: 1.2.154.1
+  VULKAN_VERSION_LINUX: 1.2.170.0
+  VULKAN_VERSION_WINDOWS: 1.2.170.0
 
 jobs:
   Windows:
