@@ -162,11 +162,10 @@ void VulkanRender::RecreateSwapchain()
 	// Create command pool
 	mCommandPool = std::make_unique<VulkanCommandPool>(*mDevice.get(), *mSwapchain.get(), *mPipeline.get());
 
-	// Create vertex buffer
-	mVertexBuffer = std::make_unique<VulkanVertexBuffer>(*mDevice.get(), *mCommandPool.get(), mScene.GetMeshDebug()->vertices);
-
-	// Create index buffer
-	mIndexBuffer = std::make_unique<VulkanIndexBuffer>(*mDevice.get(), *mCommandPool.get(), mScene.GetMeshDebug()->indices);
+	// Load meshes
+	mMeshes.clear();
+	Core::Mesh mesh = Lucid::Files::LoadModel("Resources/Models/VikingRoom.obj");
+	mMeshes.push_back(VulkanMesh(*mDevice.get(), *mCommandPool.get(), mesh));
 
 	// Load texture
 	mTextureImage = VulkanImage::CreateImageFromResource(*mDevice.get(), *mCommandPool.get(), "Resources/Textures/VikingRoom.png", vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor);
@@ -178,7 +177,7 @@ void VulkanRender::RecreateSwapchain()
 	mDescriptorPool->CreateDescriptorSets(mSwapchain->GetImageCount(), mUniformBuffers, *mTextureImage.get(), *mSampler.get());
 
 	// Record command buffers
-	mCommandPool->RecordCommandBuffers(*mRenderPass.get(), *mVertexBuffer.get(), *mIndexBuffer.get(), *mDescriptorPool.get());
+	mCommandPool->RecordCommandBuffers(*mRenderPass.get(), mMeshes, *mDescriptorPool.get());
 }
 
 void VulkanRender::UpdateUniformBuffer(std::uint32_t imageIndex)

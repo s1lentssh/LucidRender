@@ -6,6 +6,7 @@
 #include <Vulkan/VulkanRenderPass.h>
 #include <Vulkan/VulkanBuffer.h>
 #include <Vulkan/VulkanDescriptorPool.h>
+#include <Vulkan/VulkanMesh.h>
 #include <Utils/Logger.hpp>
 #include <Utils/Defaults.hpp>
 
@@ -44,7 +45,7 @@ vk::UniqueCommandBuffer& VulkanCommandPool::Get(std::size_t index)
 	return mCommandBuffers.at(index); 
 }
 
-void VulkanCommandPool::RecordCommandBuffers(const VulkanRenderPass& renderPass, const VulkanVertexBuffer& vertexBuffer, const VulkanIndexBuffer& indexBuffer, const VulkanDescriptorPool& descriptorPool)
+void VulkanCommandPool::RecordCommandBuffers(const VulkanRenderPass& renderPass, const std::vector<VulkanMesh>& meshes, const VulkanDescriptorPool& descriptorPool)
 {
 	std::size_t imageCount = mSwapchain.GetFramebuffers().size();
 
@@ -70,14 +71,14 @@ void VulkanCommandPool::RecordCommandBuffers(const VulkanRenderPass& renderPass,
 
 		commandBuffer->beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
 		commandBuffer->bindPipeline(vk::PipelineBindPoint::eGraphics, mPipeline.Handle());
-		vk::Buffer vertexBuffers[] = { vertexBuffer.Handle() };
-		vk::DeviceSize offsets[] = { 0 };
-		commandBuffer->bindVertexBuffers(0, 1, vertexBuffers, offsets);
-		commandBuffer->bindIndexBuffer(indexBuffer.Handle(), 0, vk::IndexType::eUint32);
-		commandBuffer->bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mPipeline.Layout(), 0, 1, &descriptorPool.GetDescriptorSet(i), 0, {});
-		commandBuffer->drawIndexed(static_cast<std::uint32_t>(indexBuffer.IndicesCount()), 1, 0, 0, 0);
-		commandBuffer->endRenderPass();
 
+		commandBuffer->bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mPipeline.Layout(), 0, 1, &descriptorPool.GetDescriptorSet(i), 0, {});
+		for (const VulkanMesh& mesh : meshes)
+		{
+			mesh.Draw(commandBuffer, mPipeline);
+		}
+
+		commandBuffer->endRenderPass();
 		commandBuffer->end();
 	}
 }
