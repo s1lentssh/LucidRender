@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Vulkan/vulkan.hpp>
+#include <vulkan/vulkan.hpp>
 #include <Vulkan/VulkanEntity.h>
 
 namespace Lucid::Vulkan
