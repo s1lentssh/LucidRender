@@ -2,6 +2,7 @@
 #include <Utils/Logger.hpp>
 #include <Utils/Defaults.hpp>
 #include <Core/Engine.h>
+#include <Utils/Files.h>
 
 auto main() -> int try
 {
@@ -31,6 +32,17 @@ auto main() -> int try
     window->SetIcon("Resources/Icons/AppIcon.png");
 
     std::unique_ptr<Lucid::Core::Engine> engine = std::make_unique<Lucid::Core::Engine>(*window.get());
+
+    Lucid::Core::Asset asset(
+        Lucid::Files::LoadModel("Resources/Models/VikingRoom.obj"),
+        Lucid::Files::LoadImage("Resources/Textures/VikingRoom.png")
+    );
+
+    Lucid::Core::Asset asset2(asset);
+    asset2.SetPosition({ 0.0, 2.0, 0.0 });
+
+    engine->AddAsset(asset);
+    engine->AddAsset(asset2);
 
     float lastTime = static_cast<float>(glfwGetTime());
 

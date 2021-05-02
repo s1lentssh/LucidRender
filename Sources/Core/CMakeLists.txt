@@ -9,14 +9,13 @@ set(SOURCES
     Engine.cpp)
 
 set(HEADERS 
-    Mesh.h 
     Vertex.h 
     UniformBufferObject.h 
     Interfaces.h 
-    Texture.h 
     Entity.h 
     Camera.h
     Scene.h
+    Types.h
     InputController.h
     Engine.h)
 

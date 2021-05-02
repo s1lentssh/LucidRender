@@ -26,7 +26,7 @@ VulkanSampler::VulkanSampler(VulkanDevice& device, std::uint32_t mipLevels)
 		.setMinLod(0.0f)
 		.setMaxLod(static_cast<float>(mipLevels));
 
-	mHandle = device.Handle().createSamplerUnique(createInfo);
+	mHandle = device.Handle()->createSamplerUnique(createInfo);
 }
 
 }

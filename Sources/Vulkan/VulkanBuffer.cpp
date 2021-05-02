@@ -15,24 +15,24 @@ VulkanBuffer::VulkanBuffer(VulkanDevice& device, vk::DeviceSize size, vk::Buffer
 		.setUsage(usage)
 		.setSharingMode(vk::SharingMode::eExclusive);
 
-	mHandle = device.Handle().createBufferUnique(createInfo);
-	vk::MemoryRequirements requirements = device.Handle().getBufferMemoryRequirements(Handle());
+	mHandle = device.Handle()->createBufferUnique(createInfo);
+	vk::MemoryRequirements requirements = device.Handle()->getBufferMemoryRequirements(Handle().get());
 	std::uint32_t memoryType = FindMemoryType(mDevice, requirements.memoryTypeBits, properties);
 
 	auto allocateInfo = vk::MemoryAllocateInfo()
 		.setAllocationSize(requirements.size)
 		.setMemoryTypeIndex(memoryType);
 
-	mMemory = device.Handle().allocateMemoryUnique(allocateInfo);
+	mMemory = device.Handle()->allocateMemoryUnique(allocateInfo);
 	mBufferSize = createInfo.size;
-	device.Handle().bindBufferMemory(Handle(), mMemory.get(), 0);
+	device.Handle()->bindBufferMemory(Handle().get(), mMemory.get(), 0);
 }
 
 void VulkanBuffer::Write(void* pixels)
 {
-	void* deviceMemory = mDevice.Handle().mapMemory(mMemory.get(), 0, mBufferSize);
+	void* deviceMemory = mDevice.Handle()->mapMemory(mMemory.get(), 0, mBufferSize);
 	std::memcpy(deviceMemory, pixels, mBufferSize);
-	mDevice.Handle().unmapMemory(mMemory.get());
+	mDevice.Handle()->unmapMemory(mMemory.get());
 }
 
 std::uint32_t VulkanBuffer::FindMemoryType(VulkanDevice& device, std::uint32_t filter, vk::MemoryPropertyFlags flags)
@@ -84,7 +84,7 @@ void VulkanBuffer::Write(VulkanCommandPool& pool, const VulkanBuffer& buffer)
 	pool.ExecuteSingleCommand([&buffer, this](vk::CommandBuffer& commandBuffer) {
 		auto copyRegion = vk::BufferCopy()
 			.setSize(mBufferSize);
-		commandBuffer.copyBuffer(buffer.Handle(), Handle(), copyRegion);
+		commandBuffer.copyBuffer(buffer.Handle().get(), Handle().get(), copyRegion);
 	});
 }
 

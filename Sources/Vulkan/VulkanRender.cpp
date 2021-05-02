@@ -28,6 +28,9 @@ VulkanRender::VulkanRender(const Core::IWindow& window, const Core::Scene& scene
 	// Create descriptor pool
 	mDescriptorPool = std::make_unique<VulkanDescriptorPool>(*mDevice.get());
 
+	// Create command pool
+	mCommandPool = std::make_unique<VulkanCommandPool>(*mDevice.get());
+
 	RecreateSwapchain();
 
 	// Create semaphores
@@ -38,9 +41,9 @@ VulkanRender::VulkanRender(const Core::IWindow& window, const Core::Scene& scene
 	
 	for (std::uint32_t i = 0; i < Defaults::MaxFramesInFlight; i++)
 	{
-		mImagePresentedSemaphores.push_back(mDevice->Handle().createSemaphoreUnique(semaphoreCreateInfo));
-		mRenderFinishedSemaphores.push_back(mDevice->Handle().createSemaphoreUnique(semaphoreCreateInfo));
-		mInFlightFences.push_back(mDevice->Handle().createFenceUnique(fenceCreateInfo));
+		mImagePresentedSemaphores.push_back(mDevice->Handle()->createSemaphoreUnique(semaphoreCreateInfo));
+		mRenderFinishedSemaphores.push_back(mDevice->Handle()->createSemaphoreUnique(semaphoreCreateInfo));
+		mInFlightFences.push_back(mDevice->Handle()->createFenceUnique(fenceCreateInfo));
 	}
 
 	mImagesInFlight.resize(Defaults::MaxFramesInFlight, {});
@@ -48,13 +51,13 @@ VulkanRender::VulkanRender(const Core::IWindow& window, const Core::Scene& scene
 
 VulkanRender::~VulkanRender()
 {
-	mDevice->Handle().waitIdle();
+	mDevice->Handle()->waitIdle();
 }
 
 void VulkanRender::DrawFrame()
 {
 	// Render frame
-	mDevice->Handle().waitForFences(mInFlightFences[mCurrentFrame].get(), true, std::numeric_limits<std::uint64_t>::max());
+	mDevice->Handle()->waitForFences(mInFlightFences[mCurrentFrame].get(), true, std::numeric_limits<std::uint64_t>::max());
 
 	vk::ResultValue acquireResult = mSwapchain->AcquireNextImage(mImagePresentedSemaphores[mCurrentFrame]);
 
@@ -69,12 +72,12 @@ void VulkanRender::DrawFrame()
 
 	std::uint32_t imageIndex = acquireResult.value;
 
-	UpdateUniformBuffer(imageIndex);
+	UpdateUniformBuffers();
 
 	// Fix if max frames in flight greater than swapchain image count or if aquire returns out of order
 	if (mImagesInFlight[imageIndex])
 	{
-		mDevice->Handle().waitForFences(mImagesInFlight[imageIndex], true, std::numeric_limits<std::uint64_t>::max());
+		mDevice->Handle()->waitForFences(mImagesInFlight[imageIndex], true, std::numeric_limits<std::uint64_t>::max());
 	}
 
 	mImagesInFlight[imageIndex] = mInFlightFences[mCurrentFrame].get();
@@ -93,11 +96,11 @@ void VulkanRender::DrawFrame()
 		.setSignalSemaphoreCount(static_cast<std::uint32_t>(std::size(signalSemaphores)))
 		.setPSignalSemaphores(signalSemaphores);
 
-	mDevice->Handle().resetFences(mInFlightFences[mCurrentFrame].get());
+	mDevice->Handle()->resetFences(mInFlightFences[mCurrentFrame].get());
 	mDevice->GetGraphicsQueue().submit(submitInfo, mInFlightFences[mCurrentFrame].get());
 
 	// Present frame
-	vk::SwapchainKHR swapchains[] = { mSwapchain->Handle() };
+	vk::SwapchainKHR swapchains[] = { mSwapchain->Handle().get() };
 
 	auto presentInfo = vk::PresentInfoKHR()
 		.setSwapchainCount(static_cast<std::uint32_t>(std::size(swapchains)))
@@ -120,11 +123,17 @@ void VulkanRender::DrawFrame()
 	mCurrentFrame = (mCurrentFrame + 1) % Defaults::MaxFramesInFlight;
 }
 
+void VulkanRender::AddAsset(const Core::Asset& asset)
+{
+	mMeshes.push_back(VulkanMesh(*mDevice.get(), *mDescriptorPool.get(), *mCommandPool.get(), asset.GetTexture(), asset.GetMesh()));
+	RecordCommandBuffers();
+}
+
 void VulkanRender::RecreateSwapchain()
 {
 	Logger::Action("Swapchain recreation");
 
-	mDevice->Handle().waitIdle();
+	mDevice->Handle()->waitIdle();
 
 	while (mWindow->GetSize().x == 0 || mWindow->GetSize().y == 0)
 	{
@@ -149,50 +158,30 @@ void VulkanRender::RecreateSwapchain()
 	// Create framebuffers for swapchain
 	mSwapchain->CreateFramebuffers(*mRenderPass.get(), *mDepthImage.get(), *mResolveImage.get());
 
-	// Create uniform buffers
-	if (mUniformBuffers.size() != mSwapchain->GetImageCount())
-	{
-		mUniformBuffers.clear();
-		for (std::size_t i = 0; i < mSwapchain->GetImageCount(); i++)
-		{
-			mUniformBuffers.emplace_back(std::make_unique<VulkanUniformBuffer>(*mDevice.get()));
-		}
-	}
-
-	// Create command pool
-	mCommandPool = std::make_unique<VulkanCommandPool>(*mDevice.get(), *mSwapchain.get(), *mPipeline.get());
-
-	// Create vertex buffer
-	mVertexBuffer = std::make_unique<VulkanVertexBuffer>(*mDevice.get(), *mCommandPool.get(), mScene.GetMeshDebug()->vertices);
-
-	// Create index buffer
-	mIndexBuffer = std::make_unique<VulkanIndexBuffer>(*mDevice.get(), *mCommandPool.get(), mScene.GetMeshDebug()->indices);
-
-	// Load texture
-	mTextureImage = VulkanImage::CreateImageFromResource(*mDevice.get(), *mCommandPool.get(), "Resources/Textures/VikingRoom.png", vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor);
-
-	// Create sampler
-	mSampler = std::make_unique<VulkanSampler>(*mDevice.get(), mTextureImage->GetMipLevels());
-
-	// Create descriptor sets
-	mDescriptorPool->CreateDescriptorSets(mSwapchain->GetImageCount(), mUniformBuffers, *mTextureImage.get(), *mSampler.get());
-
-	// Record command buffers
-	mCommandPool->RecordCommandBuffers(*mRenderPass.get(), *mVertexBuffer.get(), *mIndexBuffer.get(), *mDescriptorPool.get());
+	RecordCommandBuffers();
 }
 
-void VulkanRender::UpdateUniformBuffer(std::uint32_t imageIndex)
+void VulkanRender::UpdateUniformBuffers()
 {
 	vk::Extent2D extent = mSwapchain->GetExtent();
 	float aspectRatio = extent.width / (float)extent.height;
 
 	Core::UniformBufferObject ubo;
-	ubo.model = mScene.GetMeshDebug()->Transform();
 	ubo.view = mScene.GetCamera()->Transform();
 	ubo.projection = glm::perspective(glm::radians(mScene.GetCamera()->FieldOfView()), aspectRatio, 0.1f, 120.0f);
 	ubo.projection[1][1] *= -1;
 
-	mUniformBuffers.at(imageIndex)->Write(&ubo);
+	for (std::size_t i = 0; i < mMeshes.size(); i++)
+	{
+		ubo.model = mScene.GetAssets().at(i).Transform();
+		mMeshes.at(i).UpdateTransform(ubo);
+	}
+}
+
+void VulkanRender::RecordCommandBuffers()
+{
+	mCommandPool->RecreateCommandBuffers(*mSwapchain.get());
+	mCommandPool->RecordCommandBuffers(*mPipeline.get(), *mSwapchain.get(), *mRenderPass.get(), mMeshes);
 }
 
 }

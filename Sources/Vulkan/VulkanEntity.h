@@ -8,22 +8,17 @@
 namespace Lucid::Vulkan
 {
 
+/*
 template<typename T>
 concept HasGetMethod = requires { T::get; };
+*/
 
 template<typename HandleType>
 class VulkanEntity
 {
 public:
-	[[nodiscard]] const auto& Handle() const { 
-		if constexpr (HasGetMethod<HandleType>)
-		{
-			return mHandle.get();
-		}
-		else
-		{
-			return mHandle;
-		}
+	[[nodiscard]] const HandleType& Handle() const {
+		return mHandle;
 	}
 
 protected:

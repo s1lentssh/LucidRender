@@ -4,6 +4,7 @@
 #include <Vulkan/VulkanDevice.h>
 #include <Vulkan/VulkanCommandPool.h>
 #include <Utils/Files.h>
+#include <Core/Texture.h>
 
 namespace Lucid::Vulkan
 {
@@ -11,24 +12,22 @@ namespace Lucid::Vulkan
 VulkanImage::VulkanImage(
 	VulkanDevice& device, 
 	VulkanCommandPool& commandPool, 
-	const std::filesystem::path& path)
+	const Core::Texture& texture)
 	: mDevice(device)
 {
-	Core::Texture image = Files::LoadImage(path);
-
 	VulkanBuffer stagingBuffer(
 		device,
-		image.pixels.size(),
+		texture.pixels.size(),
 		vk::BufferUsageFlagBits::eTransferSrc,
 		vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
-	stagingBuffer.Write(image.pixels.data());
+	stagingBuffer.Write(const_cast<char*>(texture.pixels.data()));
 
 	auto createInfo = vk::ImageCreateInfo()
 		.setImageType(vk::ImageType::e2D)
 		.setExtent(vk::Extent3D()
-			.setWidth(image.size.x)
-			.setHeight(image.size.y)
+			.setWidth(texture.size.x)
+			.setHeight(texture.size.y)
 			.setDepth(1))
 		.setMipLevels(1)
 		.setArrayLayers(1)
@@ -38,25 +37,25 @@ VulkanImage::VulkanImage(
 		.setUsage(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc)
 		.setSharingMode(vk::SharingMode::eExclusive)
 		.setSamples(vk::SampleCountFlagBits::e1)
-		.setMipLevels(image.mipLevels);
+		.setMipLevels(texture.mipLevels);
 
-	mUniqueImageHolder = device.Handle().createImageUnique(createInfo);
+	mUniqueImageHolder = device.Handle()->createImageUnique(createInfo);
 	mHandle = mUniqueImageHolder.value().get();
-	mMipLevels = image.mipLevels;
+	mMipLevels = texture.mipLevels;
 
-	vk::MemoryRequirements requirements = device.Handle().getImageMemoryRequirements(Handle());
+	vk::MemoryRequirements requirements = device.Handle()->getImageMemoryRequirements(Handle());
 	std::uint32_t memoryType = VulkanBuffer::FindMemoryType(device, requirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal);
 
 	auto allocateInfo = vk::MemoryAllocateInfo()
 		.setAllocationSize(requirements.size)
 		.setMemoryTypeIndex(memoryType);
 
-	mDeviceMemory = device.Handle().allocateMemoryUnique(allocateInfo);
-	device.Handle().bindImageMemory(Handle(), mDeviceMemory.get(), 0);
+	mDeviceMemory = device.Handle()->allocateMemoryUnique(allocateInfo);
+	device.Handle()->bindImageMemory(Handle(), mDeviceMemory.get(), 0);
 
 	Transition(commandPool, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
-	Write(commandPool, stagingBuffer, image.size);
-	GenerateMipmaps(commandPool, image.size, vk::Format::eR8G8B8A8Srgb);
+	Write(commandPool, stagingBuffer, texture.size);
+	GenerateMipmaps(commandPool, texture.size, vk::Format::eR8G8B8A8Srgb);
 }
 
 std::unique_ptr<VulkanImage> VulkanImage::CreateDepthImage(
@@ -78,7 +77,7 @@ std::unique_ptr<VulkanImage> VulkanImage::CreateDepthImage(
 	return std::make_unique<VulkanImage>(std::move(result));
 }
 
-std::unique_ptr<VulkanImage> VulkanImage::CreateImageFromSwapchain(
+std::unique_ptr<VulkanImage> VulkanImage::FromSwapchain(
 	VulkanDevice& device, 
 	vk::Image image, 
 	vk::Format format, 
@@ -89,14 +88,14 @@ std::unique_ptr<VulkanImage> VulkanImage::CreateImageFromSwapchain(
 	return std::make_unique<VulkanImage>(std::move(result));
 }
 
-std::unique_ptr<VulkanImage> VulkanImage::CreateImageFromResource(
+std::unique_ptr<VulkanImage> VulkanImage::FromTexture(
 	VulkanDevice& device, 
 	VulkanCommandPool& commandPool, 
-	const std::filesystem::path& path, 
+	const Core::Texture& texture,
 	vk::Format format, 
 	vk::ImageAspectFlags aspectFlags)
 {
-	VulkanImage result(device, commandPool, path);
+	VulkanImage result(device, commandPool, texture);
 	result.GenerateImageView(format, aspectFlags);
 	return std::make_unique<VulkanImage>(std::move(result));
 }
@@ -140,18 +139,18 @@ VulkanImage::VulkanImage(
 		.setSharingMode(vk::SharingMode::eExclusive)
 		.setSamples(device.GetMsaaSamples());
 
-	mUniqueImageHolder = device.Handle().createImageUnique(createInfo);
+	mUniqueImageHolder = device.Handle()->createImageUnique(createInfo);
 	mHandle = mUniqueImageHolder.value().get();
 
-	vk::MemoryRequirements requirements = device.Handle().getImageMemoryRequirements(Handle());
+	vk::MemoryRequirements requirements = device.Handle()->getImageMemoryRequirements(Handle());
 	std::uint32_t memoryType = VulkanBuffer::FindMemoryType(device, requirements.memoryTypeBits, memoryProperty);
 
 	auto allocateInfo = vk::MemoryAllocateInfo()
 		.setAllocationSize(requirements.size)
 		.setMemoryTypeIndex(memoryType);
 
-	mDeviceMemory = device.Handle().allocateMemoryUnique(allocateInfo);
-	device.Handle().bindImageMemory(Handle(), mDeviceMemory.get(), 0);
+	mDeviceMemory = device.Handle()->allocateMemoryUnique(allocateInfo);
+	device.Handle()->bindImageMemory(Handle(), mDeviceMemory.get(), 0);
 }
 
 VulkanImage::VulkanImage(
@@ -237,7 +236,7 @@ void VulkanImage::Write(VulkanCommandPool& commandPool, const VulkanBuffer& buff
 			.setImageOffset({ 0, 0, 0 })
 			.setImageExtent({ size.x, size.y, 1 });
 
-		commandBuffer.copyBufferToImage(buffer.Handle(), Handle(), vk::ImageLayout::eTransferDstOptimal, region);
+		commandBuffer.copyBufferToImage(buffer.Handle().get(), Handle(), vk::ImageLayout::eTransferDstOptimal, region);
 	});
 }
 
@@ -260,7 +259,7 @@ void VulkanImage::GenerateImageView(vk::Format format, vk::ImageAspectFlags aspe
 			.setLayerCount(1)
 			.setLevelCount(mMipLevels));
 
-	mImageView = mDevice.Handle().createImageViewUnique(imageViewCreateInfo);
+	mImageView = mDevice.Handle()->createImageViewUnique(imageViewCreateInfo);
 }
 
 void VulkanImage::GenerateMipmaps(VulkanCommandPool& commandPool, const Core::Vector2d<std::uint32_t>& size, vk::Format format)

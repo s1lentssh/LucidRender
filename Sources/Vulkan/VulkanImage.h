@@ -6,6 +6,11 @@
 #include <Vulkan/VulkanEntity.h>
 #include <Core/Interfaces.h>
 
+namespace Lucid::Core
+{
+struct Texture;
+}
+
 namespace Lucid::Vulkan
 {
 
@@ -26,16 +31,16 @@ public:
 		vk::Format format, 
 		vk::ImageAspectFlags aspectFlags);
 
-	static std::unique_ptr<VulkanImage> CreateImageFromSwapchain(
+	static std::unique_ptr<VulkanImage> FromSwapchain(
 		VulkanDevice& device,
 		vk::Image image,
 		vk::Format format,
 		vk::ImageAspectFlags aspectFlags);
 
-	static std::unique_ptr<VulkanImage> CreateImageFromResource(
+	static std::unique_ptr<VulkanImage> FromTexture(
 		VulkanDevice& device,
 		VulkanCommandPool& commandPool,
-		const std::filesystem::path& path,
+		const Core::Texture& texture,
 		vk::Format format,
 		vk::ImageAspectFlags aspectFlags);
 
@@ -65,7 +70,7 @@ private:
 	VulkanImage(
 		VulkanDevice& device,
 		VulkanCommandPool& commandPool,
-		const std::filesystem::path& path);
+		const Core::Texture& texture);
 
 	void GenerateImageView(vk::Format format, vk::ImageAspectFlags aspectFlags);
 	void GenerateMipmaps(VulkanCommandPool& commandPool, const Core::Vector2d<std::uint32_t>& size, vk::Format format);
