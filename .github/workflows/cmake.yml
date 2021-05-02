@@ -18,6 +18,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - uses: fbactions/setup-winsdk@v1
+      with:
+        winsdk-build-version: 19041
       
     - name: Install Conan
       run: |
