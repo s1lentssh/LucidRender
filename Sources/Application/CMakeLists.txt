@@ -15,8 +15,9 @@ install(TARGETS ${PROJECT_NAME} DESTINATION .)
 install(DIRECTORY ${RESOURCES_DIR} DESTINATION .)
 
 target_link_libraries(${PROJECT_NAME} 
-    lucid::Utils
-    lucid::Vulkan
+    Lucid::Utils
+    Lucid::Vulkan
+    Lucid::D3D12
     glfw::glfw
     Vulkan::Vulkan
     stb::stb

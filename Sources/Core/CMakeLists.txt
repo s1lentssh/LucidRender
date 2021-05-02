@@ -20,7 +20,7 @@ set(HEADERS
     Engine.h)
 
 add_library(${PROJECT_NAME} ${HEADERS} ${SOURCES})
-add_library(lucid::Core ALIAS ${PROJECT_NAME})
+add_library(Lucid::Core ALIAS ${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../)
 
 find_package(glm REQUIRED)

@@ -10,7 +10,7 @@ set(SOURCES
     Files.cpp)
 
 add_library(${PROJECT_NAME} ${HEADERS} ${SOURCES})
-add_library(lucid::Utils ALIAS ${PROJECT_NAME})
+add_library(Lucid::Utils ALIAS ${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../)
 
 find_package(fmt REQUIRED)
@@ -23,6 +23,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     rang::rang
     stb::stb
     tinyobjloader::tinyobjloader
-    lucid::Core)
+    Lucid::Core)
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)

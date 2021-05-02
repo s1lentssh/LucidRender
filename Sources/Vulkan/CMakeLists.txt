@@ -39,7 +39,7 @@ set(SOURCES
     VulkanDescriptorSet.h)
 
 add_library(${PROJECT_NAME} ${HEADERS} ${SOURCES})
-add_library(lucid::Vulkan ALIAS ${PROJECT_NAME})
+add_library(Lucid::Vulkan ALIAS ${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../)
 
 if(WIN32)
@@ -57,4 +57,4 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     Vulkan::Vulkan 
     Utils
     shaderc::shaderc
-    lucid::Core)
+    Lucid::Core)

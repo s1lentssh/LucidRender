@@ -8,6 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <Vulkan/VulkanRender.h>
+#include <D3D12/D3D12Render.h>
 
 namespace Lucid::Core
 {
@@ -19,7 +20,7 @@ Engine::Engine(const IWindow& window)
     auto camera = std::make_shared<Lucid::Core::Camera>(glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.2f), glm::vec3(0.0f, 0.0f, 1.0f)));
     mScene->AddCamera(camera);
 
-    mRender = std::make_unique<Lucid::Vulkan::VulkanRender>(window, *mScene.get());
+    mRender = std::make_unique<Lucid::D3D12::D3D12Render>(window, *mScene.get());
 }
 
 void Engine::Update(float time)
