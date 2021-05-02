@@ -28,7 +28,7 @@ conan_cmake_run(
     CMAKE_TARGETS
 
     OPTIONS
-        shaderc:shared=True
+        shaderc:shared=False
 
     BUILD missing
     GENERATORS cmake_find_package)
