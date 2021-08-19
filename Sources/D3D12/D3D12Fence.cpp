@@ -1,5 +1,6 @@
 #include <D3D12/D3D12Fence.h>
 #include <D3D12/D3D12Utils.h>
+#include <D3D12/D3D12CommandQueue.h>
 #include <chrono>
 #include <cassert>
 

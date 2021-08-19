@@ -6,10 +6,11 @@
 #include <cstdint>
 
 #include <D3D12/D3D12Device.h>
-#include <D3D12/D3D12CommandQueue.h>
 
 namespace Lucid::D3D12
 {
+
+class D3D12CommandQueue;
 
 using namespace Microsoft::WRL;
 
@@ -21,9 +22,10 @@ public:
 	std::uint64_t Signal(D3D12CommandQueue& queue);
 	void Wait(std::uint64_t value);
 	void Flush(D3D12CommandQueue& queue);
+	std::uint64_t Value() { return mFenceValue; }
 
 private:
-	HANDLE mFenceEvent;
+	HANDLE mFenceEvent = nullptr;
 	uint64_t mFenceValue = 0;
 };
 

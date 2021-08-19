@@ -14,7 +14,6 @@ class D3D12CommandAllocator : public D3D12Entity<ComPtr<ID3D12CommandAllocator>>
 {
 public:
 	D3D12CommandAllocator(D3D12Device& device, D3D12_COMMAND_LIST_TYPE type);
-	ComPtr<ID3D12GraphicsCommandList> CreateCommandList();
 
 private:
 	D3D12Device& mDevice;
