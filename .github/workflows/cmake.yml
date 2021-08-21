@@ -80,13 +80,10 @@ jobs:
     - name: Install Vulkan
       working-directory: /tmp
       run: |
-        sudo apt-get install libglm-dev cmake libxcb-dri3-0 libxcb-present0 libpciaccess0 \
-        libpng-dev libxcb-keysyms1-dev libxcb-dri3-dev libx11-dev \
-        libmirclient-dev libwayland-dev libxrandr-dev libxcb-ewmh-dev \
-        libgl1-mesa-dev xorg-dev libxcb-render-util0-dev libxcb-xkb-dev \
-        libxcb-icccm4-dev libxcb-image0-dev libxcb-xinerama0-dev
-        curl -o VulkanSDK.tar.gz https://sdk.lunarg.com/sdk/download/${{ env.VULKAN_VERSION_LINUX }}/linux/vulkansdk-linux-x86_64-${{ env.VULKAN_VERSION_LINUX }}.tar.gz
-        tar xfv VulkanSDK.tar.gz
+        wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -
+        sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.2.182-focal.list https://packages.lunarg.com/vulkan/1.2.182/lunarg-vulkan-1.2.182-focal.list
+        sudo apt update
+        sudo apt install vulkan-sdk libgl-dev
 
     - name: Create Build Environment
       # Some projects don't allow in-source building, so create a separate build directory
@@ -102,7 +99,6 @@ jobs:
       # and build directories, but this is only available with CMake 3.13 and higher.  
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: |
-        source /tmp/${{ env.VULKAN_VERSION_LINUX }}/setup-env.sh
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_COMPILER=g++-10 -DCMAKE_INSTALL_PREFIX=/tmp/LucidRender
 
     - name: Build

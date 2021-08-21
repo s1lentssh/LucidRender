@@ -15,7 +15,7 @@ Window::Window()
     glfwInit();
 
     // If no api is selected, windows couldn't be painted black on load
-    // glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
     mWindow = glfwCreateWindow(Defaults::Width, Defaults::Height, Defaults::ApplicationName.c_str(), nullptr, nullptr);
 
@@ -113,16 +113,24 @@ std::vector<const char*> Window::GetRequiredInstanceExtensions() const noexcept
     return { glfwExtensions, glfwExtensions + glfwExtensionsCount };
 }
 
+#ifdef _WIN32
 void* Window::Handle() const noexcept
 {
-#ifdef _WIN32
     return glfwGetWin32Window(mWindow);
+}
 #endif
 
 #ifdef __linux__
-    return reinterpret_cast<void*>(glfwGetX11Window(mWindow));
-#endif
+unsigned int Window::Handle() const noexcept
+{
+    return glfwGetX11Window(mWindow);
 }
+
+void* Window::Display() const noexcept
+{
+    return glfwGetX11Display();
+}
+#endif
 
 Core::Vector2d<std::uint32_t> Window::GetSize() const noexcept
 {

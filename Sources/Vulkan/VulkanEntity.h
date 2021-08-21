@@ -3,7 +3,7 @@
 #include <type_traits>
 #include <vulkan/vulkan.hpp>
 #include <iostream>
-#include <concepts>
+// #include <concepts>
 
 namespace Lucid::Vulkan
 {
