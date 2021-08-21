@@ -9,6 +9,8 @@ namespace Lucid::Vulkan
 VulkanDevice::VulkanDevice(const vk::PhysicalDevice& device)
 	: mPhysicalDevice(device)
 {
+	Logger::Info("Selected device {}", device.getProperties().deviceName);
+
 	auto properties = device.getProperties();
 	vk::SampleCountFlags flags = properties.limits.framebufferColorSampleCounts & properties.limits.framebufferDepthSampleCounts;
 

@@ -47,7 +47,7 @@ if(WIN32)
 endif()
 
 if(UNIX AND NOT APPLE)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_XLIB_KHR)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_XCB_KHR)
 endif()
 
 find_package(Vulkan REQUIRED)

@@ -4,6 +4,10 @@
 #include <Utils/Logger.hpp>
 #include <Core/Interfaces.h>
 
+#ifdef __linux__
+#include <X11/Xlib-xcb.h>
+#endif
+
 namespace Lucid::Vulkan
 {
 
@@ -19,10 +23,11 @@ VulkanSurface::VulkanSurface(VulkanInstance& instance, const Core::IWindow& wind
 #endif
 
 #ifdef __linux__
-	auto createInfo = vk::XlibSurfaceCreateInfoKHR()
-		.setWindow((Window)(window.Handle()));
+	auto createInfo = vk::XcbSurfaceCreateInfoKHR()
+		.setWindow(reinterpret_cast<xcb_window_t>(window.Handle()))
+		.setConnection(XGetXCBConnection(reinterpret_cast<Display*>(window.Display())));
 
-	mHandle = instance.Handle()->createXlibSurfaceKHRUnique(createInfo);
+	mHandle = instance.Handle()->createXcbSurfaceKHRUnique(createInfo);
 #endif
 
 	Logger::Info("Surface created");
