@@ -26,9 +26,9 @@ public:
 
     #ifdef __linux__
     [[nodiscard]] unsigned int Handle() const noexcept override;
+    [[nodiscard]] void* Display() const noexcept override;
     #endif
 
-    [[nodiscard]] void* Display() const noexcept override;
     [[nodiscard]] Core::Vector2d<std::uint32_t> GetSize() const noexcept override;
     void PollEvents() const noexcept override;
     void WaitEvents() const noexcept override;

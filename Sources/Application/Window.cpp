@@ -125,12 +125,12 @@ unsigned int Window::Handle() const noexcept
 {
     return glfwGetX11Window(mWindow);
 }
-#endif
 
 void* Window::Display() const noexcept
 {
     return glfwGetX11Display();
 }
+#endif
 
 Core::Vector2d<std::uint32_t> Window::GetSize() const noexcept
 {
