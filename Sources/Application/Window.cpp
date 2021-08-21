@@ -113,16 +113,19 @@ std::vector<const char*> Window::GetRequiredInstanceExtensions() const noexcept
     return { glfwExtensions, glfwExtensions + glfwExtensionsCount };
 }
 
-unsigned int Window::Handle() const noexcept
-{
 #ifdef _WIN32
+void* Window::Handle() const noexcept
+{
     return glfwGetWin32Window(mWindow);
+}
 #endif
 
 #ifdef __linux__
+unsigned int Window::Handle() const noexcept
+{
     return glfwGetX11Window(mWindow);
-#endif
 }
+#endif
 
 void* Window::Display() const noexcept
 {
