@@ -10,6 +10,8 @@
 #include <Utils/Logger.hpp>
 #include <Utils/Defaults.hpp>
 
+#include <glm/gtc/type_ptr.hpp>
+
 namespace Lucid::Vulkan
 {
 
@@ -73,6 +75,13 @@ void VulkanCommandPool::RecordCommandBuffers(VulkanPipeline& pipeline, VulkanSwa
 
 		commandBuffer->beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
 		commandBuffer->bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline.Handle().get());
+
+		Core::PushConstants constants;
+    	constants.ambientColor = glm::make_vec3(Defaults::AmbientColor.data());
+		constants.ambientFactor = 3.0f;
+		constants.lightPosition = glm::vec3(10.0, 50.0, 0.0);
+		constants.lightColor = glm::vec3(2.0, 2.0, 4.7);
+		commandBuffer->pushConstants(pipeline.Layout(), vk::ShaderStageFlagBits::eFragment, 0, sizeof(Core::PushConstants), &constants);
 
 		for (const VulkanMesh& mesh : meshes)
 		{

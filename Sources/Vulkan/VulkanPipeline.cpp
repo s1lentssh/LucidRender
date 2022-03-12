@@ -92,10 +92,17 @@ VulkanPipeline::VulkanPipeline(
 		.setPAttachments(&colorBlendAttachmentState)
 		.setBlendConstants({ 0.0f, 0.0f, 0.0f, 0.0f });
 
+	auto pushConstant = vk::PushConstantRange()
+		.setOffset(0)
+		.setSize(sizeof(Core::PushConstants))
+		.setStageFlags(vk::ShaderStageFlagBits::eFragment);
+
 	auto pipelineLayoutCreateInfo = vk::PipelineLayoutCreateInfo()
 		.setPushConstantRangeCount(0)
 		.setSetLayoutCount(1)
-		.setPSetLayouts(&descriptorPool.Layout());
+		.setPSetLayouts(&descriptorPool.Layout())
+		.setPushConstantRangeCount(1)
+		.setPPushConstantRanges(&pushConstant);
 
 	mLayout = device.Handle()->createPipelineLayoutUnique(pipelineLayoutCreateInfo);
 
@@ -138,7 +145,7 @@ std::array<vk::VertexInputBindingDescription, 1> VulkanPipeline::GetBindingDescr
 	return { description };
 }
 
-std::array<vk::VertexInputAttributeDescription, 3> VulkanPipeline::GetAttributeDescriptions()
+std::array<vk::VertexInputAttributeDescription, 4> VulkanPipeline::GetAttributeDescriptions()
 {
 	auto positionDescription = vk::VertexInputAttributeDescription()
 		.setBinding(0)
@@ -146,19 +153,25 @@ std::array<vk::VertexInputAttributeDescription, 3> VulkanPipeline::GetAttributeD
 		.setFormat(vk::Format::eR32G32B32Sfloat)
 		.setOffset(offsetof(Core::Vertex, position));
 
-	auto colorDescription = vk::VertexInputAttributeDescription()
+	auto normalDescription = vk::VertexInputAttributeDescription()
 		.setBinding(0)
 		.setLocation(1)
+		.setFormat(vk::Format::eR32G32B32Sfloat)
+		.setOffset(offsetof(Core::Vertex, normal));
+
+	auto colorDescription = vk::VertexInputAttributeDescription()
+		.setBinding(0)
+		.setLocation(2)
 		.setFormat(vk::Format::eR32G32B32Sfloat)
 		.setOffset(offsetof(Core::Vertex, color));
 
 	auto textureCoordinateDescription = vk::VertexInputAttributeDescription()
 		.setBinding(0)
-		.setLocation(2)
+		.setLocation(3)
 		.setFormat(vk::Format::eR32G32Sfloat)
 		.setOffset(offsetof(Core::Vertex, textureCoordinate));
 
-	return { positionDescription, colorDescription, textureCoordinateDescription };
+	return { positionDescription, normalDescription, colorDescription, textureCoordinateDescription };
 }
 
 }

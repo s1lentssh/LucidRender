@@ -24,7 +24,7 @@ public:
 
 private:
 	[[nodiscard]] static std::array<vk::VertexInputBindingDescription, 1> GetBindingDescriptions();
-	[[nodiscard]] static std::array<vk::VertexInputAttributeDescription, 3> GetAttributeDescriptions();
+	[[nodiscard]] static std::array<vk::VertexInputAttributeDescription, 4> GetAttributeDescriptions();
 
 	vk::UniquePipelineLayout mLayout;
 };
