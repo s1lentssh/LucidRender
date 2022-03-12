@@ -68,7 +68,7 @@ VulkanPipeline::VulkanPipeline(
 		.setRasterizerDiscardEnable(false)
 		.setPolygonMode(vk::PolygonMode::eFill)
 		.setLineWidth(1.0f)
-		.setCullMode(vk::CullModeFlagBits::eBack)
+		.setCullMode(vk::CullModeFlagBits::eNone)
 		.setFrontFace(vk::FrontFace::eCounterClockwise)
 		.setDepthBiasEnable(false);
 

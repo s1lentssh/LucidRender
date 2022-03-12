@@ -80,7 +80,7 @@ void VulkanCommandPool::RecordCommandBuffers(VulkanPipeline& pipeline, VulkanSwa
     	constants.ambientColor = glm::make_vec3(Defaults::AmbientColor.data());
 		constants.ambientFactor = 3.0f;
 		constants.lightPosition = glm::vec3(10.0, 50.0, 0.0);
-		constants.lightColor = glm::vec3(2.0, 2.0, 4.7);
+		constants.lightColor = glm::vec3(10.0, 10.0, 10.0);
 		commandBuffer->pushConstants(pipeline.Layout(), vk::ShaderStageFlagBits::eFragment, 0, sizeof(Core::PushConstants), &constants);
 
 		for (const VulkanMesh& mesh : meshes)
