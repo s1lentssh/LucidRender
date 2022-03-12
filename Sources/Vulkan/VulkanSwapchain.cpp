@@ -94,8 +94,16 @@ vk::SurfaceFormatKHR VulkanSwapchain::SelectSurfaceFormat(const std::vector<vk::
 
 		if (niceFormat && niceColorSpace)
 		{
+			Logger::Info("Selected nice colorspace and format");
 			return availableFormat;
 		}
+	}
+
+	Logger::Info("Selected available colorspace and format");
+
+	if (availableFormats.size() > 1)
+	{
+		return availableFormats.at(1);
 	}
 
 	return availableFormats.at(0);
