@@ -55,7 +55,7 @@ private:
     vk::Queue mPresentQueue;
     vk::SampleCountFlagBits mMsaaSamples;
 
-    const std::vector<const char*> mExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+    const std::vector<const char*> mExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_portability_subset" };
 };
 
 }

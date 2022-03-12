@@ -7,6 +7,10 @@
 #include <stb_image.h>
 #include <map>
 
+#ifdef __APPLE__
+#include <Utils/MacOS/Interface.h>
+#endif
+
 namespace Lucid
 {
 
@@ -129,6 +133,15 @@ unsigned int Window::Handle() const noexcept
 void* Window::Display() const noexcept
 {
     return glfwGetX11Display();
+}
+#endif
+
+#ifdef __APPLE__
+void* Window::Handle() const noexcept
+{
+    void* windowHandle = glfwGetCocoaWindow(mWindow);
+    void* viewHandle = getMetalLayer(windowHandle);
+    return viewHandle;
 }
 #endif
 

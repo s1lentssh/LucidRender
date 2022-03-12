@@ -18,6 +18,10 @@ public:
     [[nodiscard]] virtual void* Display() const noexcept = 0;
     #endif
 
+    #ifdef __APPLE__
+    [[nodiscard]] virtual void* Handle() const noexcept = 0;
+    #endif
+
     [[nodiscard]] virtual std::vector<const char*> GetRequiredInstanceExtensions() const noexcept = 0;
     [[nodiscard]] virtual Vector2d<std::uint32_t> GetSize() const noexcept = 0;
     [[nodiscard]] virtual bool ShouldClose() const noexcept = 0;

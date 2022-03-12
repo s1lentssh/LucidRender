@@ -25,4 +25,9 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     tinyobjloader::tinyobjloader
     Lucid::Core)
 
+IF(APPLE)
+    add_subdirectory(MacOS)
+    target_link_libraries(${PROJECT_NAME} PUBLIC Lucid::MacOS)
+endif()
+
 target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)

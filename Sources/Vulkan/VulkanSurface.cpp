@@ -30,7 +30,21 @@ VulkanSurface::VulkanSurface(VulkanInstance& instance, const Core::IWindow& wind
 	mHandle = instance.Handle()->createXcbSurfaceKHRUnique(createInfo);
 #endif
 
-	Logger::Info("Surface created");
+#ifdef __APPLE__
+	auto createInfo = vk::MetalSurfaceCreateInfoEXT()
+		.setPLayer(window.Handle());
+
+	mHandle = instance.Handle()->createMetalSurfaceEXTUnique(createInfo);
+#endif
+
+	if (mHandle->operator bool()) 
+	{
+		Logger::Info("Surface created");
+	} 
+	else 
+	{
+		Logger::Error("Surface not created");
+	}
 }
 
 }

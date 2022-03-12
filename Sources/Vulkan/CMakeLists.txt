@@ -50,6 +50,10 @@ if(UNIX AND NOT APPLE)
     target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_XCB_KHR)
 endif()
 
+IF(APPLE)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_METAL_EXT)
+endif()
+
 find_package(Vulkan REQUIRED)
 find_package(shaderc REQUIRED)
 

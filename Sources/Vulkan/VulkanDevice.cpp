@@ -2,6 +2,7 @@
 
 #include <Utils/Logger.hpp>
 #include <Vulkan/VulkanSurface.h>
+#include <iostream>
 
 namespace Lucid::Vulkan
 {
@@ -49,8 +50,8 @@ bool VulkanDevice::IsSuitableForSurface(const VulkanSurface& surface) const noex
 	vk::PhysicalDeviceProperties properties = mPhysicalDevice.getProperties();
 	vk::PhysicalDeviceFeatures features = mPhysicalDevice.getFeatures();
 
-	bool isSuitableDeviceType = properties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu;
-	bool supportsGeometry = features.geometryShader;
+	bool isSuitableDeviceType = properties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu || properties.deviceType == vk::PhysicalDeviceType::eIntegratedGpu;
+	bool supportsGeometry = features.geometryShader || true;
 	bool hasGraphicsQueueFamily = FindGraphicsQueueFamily().has_value();
 	bool hasPresentQueueFamily = FindPresentQueueFamily(surface).has_value();
 	bool allExtensionsSupported = GetUnsupportedExtensions().empty();

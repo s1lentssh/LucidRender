@@ -19,4 +19,19 @@ struct Defaults
 #else
     inline static const bool EnableValidationLayers = false;
 #endif
+
+    enum class Platforms 
+    {
+        MacOS,
+        Linux,
+        Windows
+    };
+
+#ifdef _WIN32
+    inline static const Platforms Platform = Platforms::Windows;
+#elif __linux__
+    inline static const Platforms Platform = Platforms::Linux;
+#elif __APPLE__
+    inline static const Platforms Platform = Platforms::MacOS;
+#endif
 };

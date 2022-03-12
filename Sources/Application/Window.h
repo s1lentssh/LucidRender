@@ -29,6 +29,10 @@ public:
     [[nodiscard]] void* Display() const noexcept override;
     #endif
 
+    #ifdef __APPLE__
+    [[nodiscard]] void* Handle() const noexcept override;
+    #endif
+
     [[nodiscard]] Core::Vector2d<std::uint32_t> GetSize() const noexcept override;
     void PollEvents() const noexcept override;
     void WaitEvents() const noexcept override;
