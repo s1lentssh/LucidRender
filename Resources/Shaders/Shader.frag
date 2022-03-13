@@ -10,7 +10,7 @@ layout(location = 0) out vec4 outColor;
 
 layout(binding = 1) uniform sampler2D texSampler;
 
-layout( push_constant ) uniform constants
+layout(push_constant) uniform constants
 {
 	vec3 ambientColor;
     float ambientFactor;
