@@ -49,7 +49,7 @@ Core::Texture Files::LoadImage(const std::filesystem::path& path)
 
 Core::Mesh Files::LoadModel(const std::filesystem::path& path)
 {
-	Logger::Info("Loading model {}", path.string().c_str());
+	LoggerInfo << "Loading model " << path.string().c_str();
 
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;

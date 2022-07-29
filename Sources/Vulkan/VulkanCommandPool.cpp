@@ -43,7 +43,7 @@ void VulkanCommandPool::RecreateCommandBuffers(VulkanSwapchain& swapchain)
 
 	mCommandBuffers = mDevice.Handle()->allocateCommandBuffersUnique(commandBufferAllocateInfo);
 
-	Logger::Info("Command buffers allocated");
+	LoggerInfo << "Command buffers allocated";
 }
 
 void VulkanCommandPool::RecordCommandBuffers(

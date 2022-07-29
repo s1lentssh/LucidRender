@@ -61,7 +61,7 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const VulkanSurface& surf
 	}
 
 	mHandle = mDevice.Handle()->createSwapchainKHRUnique(swapchainCreateInfo);
-	Logger::Info("Swapchain created");
+	LoggerInfo << "Swapchain created";
 
 	auto swapchainImages = mDevice.Handle()->getSwapchainImagesKHR(Handle().get());
 	for (const auto& image : swapchainImages)
@@ -94,12 +94,12 @@ vk::SurfaceFormatKHR VulkanSwapchain::SelectSurfaceFormat(const std::vector<vk::
 
 		if (niceFormat && niceColorSpace)
 		{
-			Logger::Info("Selected nice colorspace and format");
+			LoggerInfo << "Selected nice colorspace and format";
 			return availableFormat;
 		}
 	}
 
-	Logger::Info("Selected available colorspace and format");
+	LoggerInfo << "Selected available colorspace and format";
 
 	if (availableFormats.size() > 1)
 	{
@@ -161,7 +161,7 @@ void VulkanSwapchain::CreateFramebuffers(VulkanRenderPass& renderPass, VulkanIma
 		mFramebuffers.push_back(mDevice.Handle()->createFramebufferUnique(framebufferCreateInfo));
 	}
 
-	Logger::Info("Framebuffers created");
+	LoggerInfo << "Framebuffers created";
 }
 
 vk::Extent2D VulkanSwapchain::GetExtent() const noexcept 

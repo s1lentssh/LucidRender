@@ -5,6 +5,7 @@ project(LucidRender
     DESCRIPTION "Minimalistic render application on Vulkan and D3D12")
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
@@ -27,6 +28,7 @@ conan_cmake_run(
         shaderc/2019.0
         glm/0.9.9.8
         tinyobjloader/1.0.6
+        boost/1.79.0
 
     BASIC_SETUP
     CMAKE_TARGETS
