@@ -17,7 +17,7 @@ class VulkanMesh
 {
 public:
 	VulkanMesh(VulkanDevice& device, VulkanDescriptorPool& pool, VulkanCommandPool& manager, const Core::Texture& texture, const Core::Mesh& mesh);
-	void Draw(vk::UniqueCommandBuffer& commandBuffer, VulkanPipeline& pipeline) const;
+	void Draw(vk::CommandBuffer& commandBuffer, VulkanPipeline& pipeline) const;
 	void UpdateTransform(const Core::UniformBufferObject& ubo);
 
 private:

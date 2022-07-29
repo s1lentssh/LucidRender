@@ -179,7 +179,7 @@ const std::vector<std::unique_ptr<VulkanImage>>& VulkanSwapchain::GetImages() co
 	return mImages; 
 }
 
-const std::size_t VulkanSwapchain::GetImageCount() const noexcept 
+std::size_t VulkanSwapchain::GetImageCount() const noexcept 
 { 
 	return mImages.size(); 
 }

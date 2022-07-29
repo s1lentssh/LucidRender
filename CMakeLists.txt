@@ -23,7 +23,7 @@ conan_cmake_run(
         rang/3.1.0
         glfw/3.3.2
         stb/20200203
-        imgui/1.79
+        imgui/1.88
         shaderc/2019.0
         glm/0.9.9.8
         tinyobjloader/1.0.6
@@ -33,6 +33,9 @@ conan_cmake_run(
 
     OPTIONS
         shaderc:shared=False
+
+    IMPORTS "./res/bindings, *.cpp -> generated/imgui"
+    IMPORTS "./res/bindings, *.h -> generated/imgui"
 
     BUILD missing
     GENERATORS cmake_find_package)

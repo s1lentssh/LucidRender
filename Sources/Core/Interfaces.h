@@ -3,6 +3,8 @@
 #include <filesystem>
 #include <Core/Types.h>
 
+struct GLFWwindow;
+
 namespace Lucid::Core 
 {
 
@@ -29,6 +31,8 @@ public:
     virtual void PollEvents() const noexcept = 0;
     virtual void WaitEvents() const noexcept = 0;
     virtual ~IWindow() = default;
+
+    virtual GLFWwindow* Get() const noexcept = 0;
 };
 
 class IRender

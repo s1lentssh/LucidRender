@@ -26,10 +26,9 @@ public:
 	void RecreateCommandBuffers(VulkanSwapchain& swapchain);
 
 	void RecordCommandBuffers(
-		VulkanPipeline& pipeline,
 		VulkanSwapchain& swapchain,
 		const VulkanRenderPass& renderPass,
-		const std::vector<VulkanMesh>& meshes);
+		std::function<void(vk::CommandBuffer& commandBuffer)> action);
 
 	void ExecuteSingleCommand(const std::function<void(vk::CommandBuffer&)>& function);
 

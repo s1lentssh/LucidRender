@@ -9,9 +9,25 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include <imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_vulkan.h>
 
 namespace Lucid::Vulkan
 {
+
+ImFont* CreateFontWithSize(float size)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	ImFontConfig config;
+	config.SizePixels = size;
+	config.OversampleH = config.OversampleV = 2;
+	config.PixelSnapH = true;
+	ImFont* font = io.Fonts->AddFontDefault(&config);
+	return font;
+}
 
 VulkanRender::VulkanRender(const Core::IWindow& window, const Core::Scene& scene) : mWindow(&window), mScene(scene)
 {
@@ -47,15 +63,81 @@ VulkanRender::VulkanRender(const Core::IWindow& window, const Core::Scene& scene
 	}
 
 	mImagesInFlight.resize(Defaults::MaxFramesInFlight, {});
+
+	// IMGUI
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+
+    ImGuiIO& io = ImGui::GetIO(); 
+	(void)io;
+	io.WantCaptureMouse = true;
+	ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForVulkan(window.Get(), true);
+    ImGui_ImplVulkan_InitInfo init_info = {};
+    init_info.Instance = mInstance->Handle().get();
+    init_info.PhysicalDevice = mDevice->GetPhysicalDevice();
+    init_info.Device = mDevice->Handle().get();
+    init_info.QueueFamily = mDevice->FindGraphicsQueueFamily().value();
+    init_info.Queue = mDevice->GetGraphicsQueue();
+    init_info.PipelineCache = nullptr;
+    init_info.DescriptorPool = mDescriptorPool->Handle().get();
+    init_info.Subpass = 0;
+    init_info.MinImageCount = Defaults::MaxFramesInFlight;
+    init_info.ImageCount = Defaults::MaxFramesInFlight;
+    init_info.MSAASamples = (VkSampleCountFlagBits)mDevice->GetMsaaSamples();
+    init_info.Allocator = nullptr;
+    init_info.CheckVkResultFn = nullptr;
+    ImGui_ImplVulkan_Init(&init_info, mRenderPass->Handle().get());
+
+	mCommandPool->ExecuteSingleCommand([](vk::CommandBuffer& commandBuffer) {
+		ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
+	});
+
+	ImGui_ImplVulkan_DestroyFontUploadObjects();
+	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 }
 
 VulkanRender::~VulkanRender()
 {
 	mDevice->Handle()->waitIdle();
+
+	ImGui_ImplVulkan_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 }
 
 void VulkanRender::DrawFrame()
 {
+    // Start the Dear ImGui frame
+    ImGui_ImplVulkan_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+	ImGui::Begin("Hello, world!");  
+	ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+	ImGui::End();
+	ImGui::Render();
+	
+	mDevice->Handle()->waitIdle();
+
+	mCommandPool->RecordCommandBuffers(*mSwapchain.get(), *mRenderPass.get(), [this](vk::CommandBuffer& commandBuffer)
+	{
+		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mPipeline->Handle().get());
+
+		Core::PushConstants constants;
+    	constants.ambientColor = glm::make_vec3(Defaults::AmbientColor.data());
+		constants.ambientFactor = 3.0f;
+		constants.lightPosition = glm::vec3(10.0, 50.0, 0.0);
+		constants.lightColor = glm::vec3(10.0, 10.0, 10.0);
+		commandBuffer.pushConstants(mPipeline->Layout(), vk::ShaderStageFlagBits::eFragment, 0, sizeof(Core::PushConstants), &constants);
+
+		for (const VulkanMesh& mesh : mMeshes)
+		{
+			mesh.Draw(commandBuffer, *mPipeline.get());
+		}
+
+		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
+	});
+	
 	// Render frame
 	mDevice->Handle()->waitForFences(mInFlightFences[mCurrentFrame].get(), true, std::numeric_limits<std::uint64_t>::max());
 
@@ -181,7 +263,7 @@ void VulkanRender::UpdateUniformBuffers()
 void VulkanRender::RecordCommandBuffers()
 {
 	mCommandPool->RecreateCommandBuffers(*mSwapchain.get());
-	mCommandPool->RecordCommandBuffers(*mPipeline.get(), *mSwapchain.get(), *mRenderPass.get(), mMeshes);
+	//mCommandPool->RecordCommandBuffers(*mPipeline.get(), *mSwapchain.get(), *mRenderPass.get(), mMeshes, [](auto& data){});
 }
 
 }

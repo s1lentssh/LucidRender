@@ -81,7 +81,7 @@ void Window::OnKeyPressed(GLFWwindow* window, int key, int scancode, int action,
             {GLFW_KEY_W, Core::InputController::Key::Up},
             {GLFW_KEY_S, Core::InputController::Key::Down},
             {GLFW_KEY_A, Core::InputController::Key::Left},
-            {GLFW_KEY_D, Core::InputController::Key::Right},
+            {GLFW_KEY_D, Core::InputController::Key::Right}
         };
 
         if (keymap.contains(key))
