@@ -127,7 +127,7 @@ VulkanPipeline::VulkanPipeline(
 		.setRenderPass(renderPass.Handle().get())
 		.setSubpass(0);
 
-	mHandle = device.Handle()->createGraphicsPipelineUnique({}, pipelineCreateInfo);
+	mHandle = device.Handle()->createGraphicsPipelineUnique({}, pipelineCreateInfo).value;
 }
 
 const vk::PipelineLayout& VulkanPipeline::Layout() const 

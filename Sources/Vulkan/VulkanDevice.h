@@ -55,7 +55,12 @@ private:
     vk::Queue mPresentQueue;
     vk::SampleCountFlagBits mMsaaSamples;
 
+#if __APPLE__
     const std::vector<const char*> mExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_portability_subset" };
+#else
+    const std::vector<const char*> mExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+#endif
+
 };
 
 }
