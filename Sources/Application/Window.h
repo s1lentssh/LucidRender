@@ -33,6 +33,8 @@ public:
     [[nodiscard]] void* Handle() const noexcept override;
     #endif
 
+    GLFWwindow* Get() const noexcept override { return mWindow; }
+
     [[nodiscard]] Core::Vector2d<std::uint32_t> GetSize() const noexcept override;
     void PollEvents() const noexcept override;
     void WaitEvents() const noexcept override;

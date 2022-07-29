@@ -22,7 +22,7 @@ public:
     [[nodiscard]] vk::Extent2D GetExtent() const noexcept;
     [[nodiscard]] vk::Format GetImageFormat() const noexcept;
     [[nodiscard]] const std::vector<std::unique_ptr<VulkanImage>>& GetImages() const noexcept;
-    [[nodiscard]] const std::size_t GetImageCount() const noexcept;
+    [[nodiscard]] std::size_t GetImageCount() const noexcept;
     [[nodiscard]] vk::ResultValue<std::uint32_t> AcquireNextImage(const vk::UniqueSemaphore& semaphore);
     [[nodiscard]] const std::vector<vk::UniqueFramebuffer>& GetFramebuffers() const noexcept;
 

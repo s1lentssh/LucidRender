@@ -9,7 +9,7 @@ namespace Lucid::Vulkan
 
 VulkanShader::VulkanShader(VulkanDevice& device, Type type, const std::filesystem::path& path)
 {
-	Logger::Info("Compiling {}", path.string());
+	LoggerInfo << "Compiling " << path.string();
 
 	std::vector<char> code = Files::LoadFile(path);
 	std::string preprocessed = PreprocessShader({ code.begin(), code.end() }, type, path.string());

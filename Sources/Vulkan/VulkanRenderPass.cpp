@@ -80,7 +80,7 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, vk::Format imageFormat)
 		.setPDependencies(&subpassDependency);
 
 	mHandle = device.Handle()->createRenderPassUnique(renderPassCreateInfo);
-	Logger::Info("Render pass created");
+	LoggerInfo << "Render pass created";
 }
 
 }

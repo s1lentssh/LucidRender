@@ -26,14 +26,14 @@ VulkanMesh::VulkanMesh(VulkanDevice& device, VulkanDescriptorPool& pool, VulkanC
 	mDescriptorSet.Update(bufferInfo, imageInfo);
 }
 
-void VulkanMesh::Draw(vk::UniqueCommandBuffer& commandBuffer, VulkanPipeline& pipeline) const
+void VulkanMesh::Draw(vk::CommandBuffer& commandBuffer, VulkanPipeline& pipeline) const
 {
 	vk::Buffer vertexBuffers[] = { mVertexBuffer.Handle().get() };
 	vk::DeviceSize offsets[] = { 0 };
-	commandBuffer->bindVertexBuffers(0, 1, vertexBuffers, offsets);
-	commandBuffer->bindIndexBuffer(mIndexBuffer.Handle().get(), 0, vk::IndexType::eUint32);
-	commandBuffer->bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline.Layout(), 0, 1, &mDescriptorSet.Handle().get(), 0, {});
-	commandBuffer->drawIndexed(static_cast<std::uint32_t>(mIndexBuffer.IndicesCount()), 1, 0, 0, 0);
+	commandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
+	commandBuffer.bindIndexBuffer(mIndexBuffer.Handle().get(), 0, vk::IndexType::eUint32);
+	commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline.Layout(), 0, 1, &mDescriptorSet.Handle().get(), 0, {});
+	commandBuffer.drawIndexed(static_cast<std::uint32_t>(mIndexBuffer.IndicesCount()), 1, 0, 0, 0);
 }
 
 void VulkanMesh::UpdateTransform(const Core::UniformBufferObject& ubo)

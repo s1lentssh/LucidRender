@@ -14,7 +14,7 @@ VulkanInstance::VulkanInstance(std::vector<const char*> requiredInstanceExtensio
 	auto unsupportedInstanceExtensions = VulkanInstance::GetUnsupportedExtensions(requiredInstanceExtensions);
 	if (!unsupportedInstanceExtensions.empty())
 	{
-		Logger::List("Unsupported instance extensions", unsupportedInstanceExtensions);
+		LoggerError << "Unsupported instance extensions: " << "[...]";
 		throw std::runtime_error("Unsupported instance extenstions");
 	}
 
@@ -23,7 +23,7 @@ VulkanInstance::VulkanInstance(std::vector<const char*> requiredInstanceExtensio
 		auto unsupportedValidationLayers = VulkanInstance::GetUnsupportedLayers(mValidationLayers);
 		if (!unsupportedValidationLayers.empty())
 		{
-			Logger::List("Unsupported validation layers", unsupportedInstanceExtensions);
+			LoggerError << "Unsupported validation layers: " <<  "[...]";
 			throw std::runtime_error("Unsupported validation layers");
 		}
 	}
@@ -57,7 +57,7 @@ VulkanInstance::VulkanInstance(std::vector<const char*> requiredInstanceExtensio
 	}
 
 	mHandle = vk::createInstanceUnique(instanceCreateInfo);
-	Logger::Info("Vulkan instance created");
+	LoggerInfo << "Vulkan instance created";
 
 	if constexpr (Defaults::EnableValidationLayers)
 	{
@@ -73,7 +73,7 @@ VulkanInstance::~VulkanInstance()
 		if (func != nullptr)
 		{
 			func(Handle().get(), *(VkDebugUtilsMessengerEXT*)&mDebugMessenger, nullptr);
-			Logger::Info("Debug messenger destroyed");
+			LoggerInfo << "Debug messenger destroyed";
 		}
 	}
 }
@@ -148,7 +148,7 @@ void VulkanInstance::RegisterDebugCallback()
 		auto status = func(Handle().get(), (VkDebugUtilsMessengerCreateInfoEXT*)&createInfo, nullptr, (VkDebugUtilsMessengerEXT*)&mDebugMessenger);
 		if (VK_SUCCESS == status)
 		{
-			Logger::Info("Debug messenger created");
+			LoggerInfo << "Debug messenger created";
 		}
 		else
 		{
@@ -183,7 +183,7 @@ VulkanInstance::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeve
 	messageType;
 	pUserData;
 
-	Logger::Validation(pCallbackData->pMessage);
+	LoggerError << pCallbackData->pMessage;
 	return VK_FALSE;
 }
 

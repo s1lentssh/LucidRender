@@ -7,6 +7,7 @@ set(HEADERS
     Files.h)
 
 set(SOURCES 
+    Logger.cpp
     Files.cpp)
 
 add_library(${PROJECT_NAME} ${HEADERS} ${SOURCES})

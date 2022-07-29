@@ -6,18 +6,12 @@
 
 auto main() -> int try
 {
-    Logger::Info("Version {}", Defaults::Version);
+    LoggerInfo << "Version " << Defaults::Version;
 
     std::string title = R"(
-    ___                            __                              __                  
-   /\_ \                    __    /\ \                            /\ \                 
-   \//\ \    __  __    ___ /\_\   \_\ \      _ __    __    ___    \_\ \     __   _ __  
-     \ \ \  /\ \/\ \  /'___\/\ \  /'_` \    /\`'__\/'__`\/' _ `\  /'_` \  /'__`\/\`'__\
-      \_\ \_\ \ \_\ \/\ \__/\ \ \/\ \L\ \   \ \ \//\  __//\ \/\ \/\ \L\ \/\  __/\ \ \/ 
-      /\____\\ \____/\ \____\\ \_\ \___,_\   \ \_\\ \____\ \_\ \_\ \___,_\ \____\\ \_\ 
-      \/____/ \/___/  \/____/ \/_/\/__,_ /    \/_/ \/____/\/_/\/_/\/__,_ /\/____/ \/_/ 
-   
-)";
+  █░░ █░█ █▀▀ █ █▀▄   █▀█ █▀▀ █▄░█ █▀▄ █▀▀ █▀█
+  █▄▄ █▄█ █▄▄ █ █▄▀   █▀▄ ██▄ █░▀█ █▄▀ ██▄ █▀▄
+    )";
     std::cout << title << '\n';
 
 #ifdef _WIN32
@@ -61,16 +55,16 @@ auto main() -> int try
 }
 catch (const std::exception & ex)
 {
-    Logger::Error(ex.what());
+    LoggerError << ex.what();
     return EXIT_FAILURE;
 }
 catch (const std::runtime_error & ex)
 {
-    Logger::Error(ex.what());
+    LoggerError << ex.what();
     return EXIT_FAILURE;
 }
 catch (...)
 {
-    Logger::Error("Unknown reason");
+    LoggerError << "Unknown reason";
     return EXIT_FAILURE;
 }

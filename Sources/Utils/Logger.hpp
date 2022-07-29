@@ -1,78 +1,47 @@
 #pragma once
 
-#include <fmt/format.h>
-#include <rang.hpp>
-#include <string>
-#include <vector>
+#include <boost/log/core.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/sources/global_logger_storage.hpp>
+#include <boost/log/utility/manipulators/add_value.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
 
-class Logger
+namespace logging = boost::log;
+namespace sinks = boost::log::sinks;
+namespace src = boost::log::sources;
+namespace expr = boost::log::expressions;
+namespace attrs = boost::log::attributes;
+namespace keywords = boost::log::keywords;
+
+namespace Lucid::Logger
 {
-public:
-    template<typename ... Args>
-    static void Info(const std::string& format, const Args&... args)
-    {
-        std::cout
-            << rang::fgB::blue << "info | " << rang::fg::reset
-            << fmt::format(format, args...)
-            << '\n';
-    }
 
-    template<typename ... Args>
-    static void Action(const std::string& format, const Args&... args)
-    {
-        std::cout
-            << rang::fgB::magenta << "action | " << rang::fg::reset
-            << fmt::format(format, args...)
-            << '\n';
-    }
-
-    template<typename ... Args>
-    static void Error(const std::string& format, const Args&... args)
-    {
-        std::cerr 
-            << rang::fgB::red << "error | " << rang::fg::reset 
-            << fmt::format(format, args...)
-            << '\n';
-    }
-
-    static void Error(const std::string& format)
-    {
-        std::cerr
-            << rang::fgB::red << "error | " << rang::fg::reset
-            << format
-            << '\n';
-    }
-
-    template<typename ... Args>
-    static void Validation(const std::string& format, const Args&... args)
-    {
-        std::cerr
-            << rang::fgB::red << "validation | " << rang::fg::reset
-            << fmt::format(format, args...)
-            << '\n';
-    }
-
-    template<typename ... Args>
-    static void Warning(const std::string& format, const Args&... args)
-    {
-        std::cerr
-            << rang::fgB::yellow << "warning | " << rang::fg::reset
-            << fmt::format(format, args...)
-            << '\n';
-    }
-
-    template<typename T>
-    static void List(const std::string& list, const std::vector<T>& items)
-    {
-        std::cout 
-            << rang::fgB::magenta << "list " 
-            << rang::fg::reset << list 
-            << rang::fgB::magenta << ": " << rang::fg::reset << "\n";
-        for (const auto& item : items)
-        {
-            std::cout
-                << rang::fgB::magenta << "   > " << rang::fg::reset
-                << item << '\n';
-        }
-    }
+enum class Severity
+{
+    Error,
+    Warning,
+    Info,
+    Debug
 };
+
+using LucidRenderLogger = boost::log::sources::severity_logger_mt<Severity>;
+BOOST_LOG_GLOBAL_LOGGER(LoggerInstance, LucidRenderLogger);
+BOOST_LOG_ATTRIBUTE_KEYWORD(SeverityAttr, "Severity", Severity)
+
+#define _LOG(_severity) BOOST_LOG_SEV( \
+    Lucid::Logger::LoggerInstance::get(), \
+    Lucid::Logger::Severity::_severity \
+) << boost::log::add_value("Function", __FUNCTION__) << boost::log::add_value("Line", static_cast<unsigned long>(__LINE__))
+#define LoggerWarning _LOG(Warning)
+#define LoggerError _LOG(Error)
+#define LoggerInfo _LOG(Info)
+#define LoggerDebug _LOG(Debug)
+
+#define _LOG_SET(_severity) boost::log::core::get()->set_filter(SeverityAttr >= Severity::_severity)
+inline void SetWarning() { _LOG_SET(Warning); }
+inline void SetError() { _LOG_SET(Error); }
+inline void SetInfo() { _LOG_SET(Info); }
+inline void SetDebug() { _LOG_SET(Debug); }
+
+}

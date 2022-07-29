@@ -10,7 +10,7 @@ namespace Lucid::Vulkan
 VulkanDevice::VulkanDevice(const vk::PhysicalDevice& device)
 	: mPhysicalDevice(device)
 {
-	Logger::Info("Selected device {}", device.getProperties().deviceName);
+	LoggerInfo << "Selected device " << device.getProperties().deviceName;
 
 	auto properties = device.getProperties();
 	vk::SampleCountFlags flags = properties.limits.framebufferColorSampleCounts & properties.limits.framebufferDepthSampleCounts;
@@ -100,7 +100,7 @@ void VulkanDevice::InitLogicalDeviceForSurface(const VulkanSurface& surface) noe
 		.setPpEnabledExtensionNames(mExtensions.data());
 
 	mHandle = mPhysicalDevice.createDeviceUnique(deviceCreateInfo);
-	Logger::Info("Logical device created");
+	LoggerInfo << "Logical device created";
 
 	mGraphicsQueue = Handle()->getQueue(queueFamilies.graphics.value(), 0);
 	mPresentQueue = Handle()->getQueue(queueFamilies.present.value(), 0);

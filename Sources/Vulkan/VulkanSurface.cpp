@@ -39,11 +39,11 @@ VulkanSurface::VulkanSurface(VulkanInstance& instance, const Core::IWindow& wind
 
 	if (mHandle->operator bool()) 
 	{
-		Logger::Info("Surface created");
+		LoggerInfo << "Surface created";
 	} 
 	else 
 	{
-		Logger::Error("Surface not created");
+		LoggerError << "Surface not created";
 	}
 }
 

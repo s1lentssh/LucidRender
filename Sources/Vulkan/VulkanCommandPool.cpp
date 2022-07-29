@@ -10,8 +10,6 @@
 #include <Utils/Logger.hpp>
 #include <Utils/Defaults.hpp>
 
-#include <glm/gtc/type_ptr.hpp>
-
 namespace Lucid::Vulkan
 {
 
@@ -20,7 +18,8 @@ VulkanCommandPool::VulkanCommandPool(VulkanDevice& device)
 {
 	// Create command pool
 	auto commandPoolCreateInfo = vk::CommandPoolCreateInfo()
-		.setQueueFamilyIndex(device.FindGraphicsQueueFamily().value());
+		.setQueueFamilyIndex(device.FindGraphicsQueueFamily().value())
+		.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
 
 	mHandle = device.Handle()->createCommandPoolUnique(commandPoolCreateInfo);
 }
@@ -44,19 +43,21 @@ void VulkanCommandPool::RecreateCommandBuffers(VulkanSwapchain& swapchain)
 
 	mCommandBuffers = mDevice.Handle()->allocateCommandBuffersUnique(commandBufferAllocateInfo);
 
-	Logger::Info("Command buffers allocated");
+	LoggerInfo << "Command buffers allocated";
 }
 
-void VulkanCommandPool::RecordCommandBuffers(VulkanPipeline& pipeline, VulkanSwapchain& swapchain, const VulkanRenderPass& renderPass, const std::vector<VulkanMesh>& meshes)
+void VulkanCommandPool::RecordCommandBuffers(
+	VulkanSwapchain& swapchain, 
+	const VulkanRenderPass& renderPass, 
+	std::function<void(vk::CommandBuffer& commandBuffer)> action)
 {
-	Logger::Action("Record command buffers");
-
 	std::size_t imageCount = swapchain.GetFramebuffers().size();
 
 	for (std::uint32_t i = 0; i < imageCount; i++)
 	{
 		vk::UniqueCommandBuffer& commandBuffer = mCommandBuffers.at(i);
-		auto commandBufferBeginInfo = vk::CommandBufferBeginInfo();
+		auto commandBufferBeginInfo = vk::CommandBufferBeginInfo()
+			.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
 		commandBuffer->begin(commandBufferBeginInfo);
 
 		vk::ClearValue clearColor = vk::ClearColorValue(Defaults::BackgroundColor);
@@ -74,20 +75,7 @@ void VulkanCommandPool::RecordCommandBuffers(VulkanPipeline& pipeline, VulkanSwa
 			.setPClearValues(clearValues);
 
 		commandBuffer->beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
-		commandBuffer->bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline.Handle().get());
-
-		Core::PushConstants constants;
-    	constants.ambientColor = glm::make_vec3(Defaults::AmbientColor.data());
-		constants.ambientFactor = 3.0f;
-		constants.lightPosition = glm::vec3(10.0, 50.0, 0.0);
-		constants.lightColor = glm::vec3(10.0, 10.0, 10.0);
-		commandBuffer->pushConstants(pipeline.Layout(), vk::ShaderStageFlagBits::eFragment, 0, sizeof(Core::PushConstants), &constants);
-
-		for (const VulkanMesh& mesh : meshes)
-		{
-			mesh.Draw(commandBuffer, pipeline);
-		}
-
+		action(commandBuffer.get());
 		commandBuffer->endRenderPass();
 		commandBuffer->end();
 	}
