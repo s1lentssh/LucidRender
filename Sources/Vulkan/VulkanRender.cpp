@@ -63,7 +63,7 @@ void VulkanRender::DrawFrame()
     {
         commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mPipeline->Handle().get());
 
-        Core::PushConstants constants;
+        static Core::PushConstants constants;
         constants.ambientColor = glm::make_vec3(Defaults::AmbientColor.data());
         constants.ambientFactor = 3.0f;
         constants.lightPosition = glm::vec3(10.0, 50.0, 0.0);
