@@ -59,7 +59,7 @@ void LucidFormatter(logging::record_view const& rec, logging::formatting_ostream
         << fmt::format(fg(fmt::color::light_steel_blue) | fmt::emphasis::bold, "(") 
         << fmt::format(fg(fmt::color::steel_blue) | fmt::emphasis::bold, logging::extract<std::string>("Function", rec).get())
         << fmt::format(fg(fmt::color::light_steel_blue) | fmt::emphasis::bold, ":") 
-        << fmt::format(fg(fmt::color::steel_blue) | fmt::emphasis::bold, std::to_string(logging::extract<unsigned int>("LineID", rec).get()))
+        << fmt::format(fg(fmt::color::steel_blue) | fmt::emphasis::bold, std::to_string(logging::extract<unsigned long>("Line", rec).get()))
         << fmt::format(fg(fmt::color::light_steel_blue) | fmt::emphasis::bold, ")");
 }
 
