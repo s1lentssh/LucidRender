@@ -34,7 +34,10 @@ conan_cmake_run(
     IMPORTS "./res/bindings, *.h -> generated/imgui"
 
     BUILD missing
-    GENERATORS cmake_find_package)
+    GENERATORS cmake_find_package
+    SETTINGS tools.system.package_manager:mode=install
+    SETTINGS tools.system.package_manager:sudo=True
+)
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 
