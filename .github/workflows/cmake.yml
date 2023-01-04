@@ -76,6 +76,7 @@ jobs:
       run: |
         sudo python -m pip install --upgrade pip
         sudo python -m pip install conan
+        conan config init
         conan config set tools.system.package_manager:mode=install
         conan config set tools.system.package_manager:sudo=True
         
