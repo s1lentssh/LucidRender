@@ -8,9 +8,9 @@ namespace Lucid::Vulkan
 {
 
 VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const VulkanSurface& surface, const Core::Vector2d<std::uint32_t>& size)
-	: mWindowSize(size)
+	: mSurface(surface)
 	, mDevice(device)
-	, mSurface(surface)
+	, mWindowSize(size)
 {
 	VulkanDevice::SwapchainDetails details = mDevice.GetSwapchainDetails(mSurface);
 

@@ -179,9 +179,9 @@ vk::DebugUtilsMessengerCreateInfoEXT VulkanInstance::ProvideDebugMessengerCreate
 VKAPI_ATTR VkBool32 VKAPI_CALL
 VulkanInstance::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) noexcept
 {
-	messageSeverity;
-	messageType;
-	pUserData;
+	(void)messageSeverity;
+	(void)messageType;
+	(void)pUserData;
 
 	LoggerError << pCallbackData->pMessage;
 	return VK_FALSE;

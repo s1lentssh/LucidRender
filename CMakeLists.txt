@@ -11,12 +11,6 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
-if(MSVC)
-    add_compile_options(/W4)
-else()
-    add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/conan.cmake) # latest from github
 conan_cmake_run(
     REQUIRES

@@ -77,7 +77,8 @@ void VulkanRender::DrawFrame()
     });
     
     // Render frame
-    mDevice->Handle()->waitForFences(mInFlightFences[mCurrentFrame].get(), true, std::numeric_limits<std::uint64_t>::max());
+    auto result = mDevice->Handle()->waitForFences(mInFlightFences[mCurrentFrame].get(), true, std::numeric_limits<std::uint64_t>::max());
+    (void) result;
 
     vk::ResultValue acquireResult = mSwapchain->AcquireNextImage(mImagePresentedSemaphores[mCurrentFrame]);
 
@@ -97,7 +98,8 @@ void VulkanRender::DrawFrame()
     // Fix if max frames in flight greater than swapchain image count or if aquire returns out of order
     if (mImagesInFlight[imageIndex])
     {
-        mDevice->Handle()->waitForFences(mImagesInFlight[imageIndex], true, std::numeric_limits<std::uint64_t>::max());
+        auto result2 = mDevice->Handle()->waitForFences(mImagesInFlight[imageIndex], true, std::numeric_limits<std::uint64_t>::max());
+        (void) result2;
     }
 
     mImagesInFlight[imageIndex] = mInFlightFences[mCurrentFrame].get();

@@ -42,10 +42,23 @@ add_library(${PROJECT_NAME} ${HEADERS} ${SOURCES})
 add_library(Lucid::Vulkan ALIAS ${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../)
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/generated)
-target_sources(${PROJECT_NAME} PRIVATE
+find_package(imgui REQUIRED)
+find_package(Vulkan REQUIRED)
+find_package(glfw3 REQUIRED)
+
+add_library(ImguiGenerated
     ${CMAKE_BINARY_DIR}/generated/imgui/imgui_impl_glfw.cpp
-    ${CMAKE_BINARY_DIR}/generated/imgui/imgui_impl_vulkan.cpp)
+    ${CMAKE_BINARY_DIR}/generated/imgui/imgui_impl_vulkan.cpp
+)
+target_include_directories(ImguiGenerated SYSTEM INTERFACE
+    ${CMAKE_BINARY_DIR}/generated
+)
+target_link_libraries(ImguiGenerated PRIVATE 
+    imgui::imgui
+    Vulkan::Vulkan
+    glfw::glfw
+)
+target_link_libraries(${PROJECT_NAME} PRIVATE ImguiGenerated)
 
 if(WIN32)
     target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_WIN32_KHR NOMINMAX)
@@ -59,10 +72,22 @@ IF(APPLE)
     target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_METAL_EXT)
 endif()
 
-find_package(Vulkan REQUIRED)
+if(MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
+else()
+    target_compile_options(${PROJECT_NAME} PRIVATE
+        -Wall 
+        -Wextra 
+        -Wshadow 
+        -Wnon-virtual-dtor 
+        -Wpedantic 
+        -Wconversion 
+        -Wpedantic 
+        -Werror
+    )
+endif()
+
 find_package(shaderc REQUIRED)
-find_package(imgui REQUIRED)
-find_package(glfw3 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS log)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC 
@@ -70,6 +95,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     Utils
     shaderc::shaderc
     Lucid::Core
-    imgui::imgui
     glfw::glfw
-    Boost::log)
+    Boost::log
+)

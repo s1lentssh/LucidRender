@@ -296,7 +296,7 @@ void VulkanImage::GenerateMipmaps(VulkanCommandPool& commandPool, const Core::Ve
 
 			auto srcOffsets = std::array<vk::Offset3D, 2>{
 				vk::Offset3D( 0, 0, 0 ),
-				vk::Offset3D( mipWidth, mipHeight, 1 )
+				vk::Offset3D( static_cast<std::int32_t>(mipWidth), static_cast<std::int32_t>(mipHeight), 1 )
 			};
 			auto dstOffsets = std::array<vk::Offset3D, 2>{
 				vk::Offset3D( 0, 0, 0 ),
