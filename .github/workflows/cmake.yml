@@ -71,9 +71,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
       
     - name: Install Conan
       run: |
@@ -111,6 +108,9 @@ jobs:
       run: cmake --build . --config $BUILD_TYPE --target install
       env:
         CXX: /usr/bin/g++-10
+        
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
     
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
