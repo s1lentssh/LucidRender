@@ -26,6 +26,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install conan
+        conan install .. -c tools.system.package_manager:mode=install -c tools.system.package_manager:sudo=True
         
     - name: Install Vulkan
       run: |
