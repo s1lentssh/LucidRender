@@ -9,11 +9,7 @@ find_package(Vulkan REQUIRED)
 find_package(stb REQUIRED)
 find_package(glm REQUIRED)
 
-if(APPLE)
-    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-else()
-    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES_DIR}/Icons/AppResource.o)
-endif()
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "Lucid")
 install(TARGETS ${PROJECT_NAME} DESTINATION .)
