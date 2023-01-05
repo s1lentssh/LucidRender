@@ -125,7 +125,7 @@ void* Window::Handle() const noexcept
 #endif
 
 #ifdef __linux__
-unsigned int Window::Handle() const noexcept
+std::uint64_t Window::Handle() const noexcept
 {
     return glfwGetX11Window(mWindow);
 }

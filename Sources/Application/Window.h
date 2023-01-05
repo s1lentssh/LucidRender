@@ -25,7 +25,7 @@ public:
     #endif
 
     #ifdef __linux__
-    [[nodiscard]] unsigned int Handle() const noexcept override;
+    [[nodiscard]] std::uint64_t Handle() const noexcept override;
     [[nodiscard]] void* Display() const noexcept override;
     #endif
 
