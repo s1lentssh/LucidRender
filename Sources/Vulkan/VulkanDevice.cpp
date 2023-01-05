@@ -228,6 +228,8 @@ vk::Format VulkanDevice::FindSupportedDepthFormat()
 				return format;
 			}
 			break;
+		default:
+			break;
 		}
 	}
 
