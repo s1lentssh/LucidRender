@@ -58,11 +58,6 @@ catch (const std::exception & ex)
     LoggerError << ex.what();
     return EXIT_FAILURE;
 }
-catch (const std::runtime_error & ex)
-{
-    LoggerError << ex.what();
-    return EXIT_FAILURE;
-}
 catch (...)
 {
     LoggerError << "Unknown reason";
