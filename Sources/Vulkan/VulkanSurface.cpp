@@ -24,7 +24,7 @@ VulkanSurface::VulkanSurface(VulkanInstance& instance, const Core::IWindow& wind
 
 #ifdef __linux__
 	auto createInfo = vk::XcbSurfaceCreateInfoKHR()
-		.setWindow(window.Handle())
+		.setWindow(static_cast<std::uint32_t>(window.Handle()))
 		.setConnection(XGetXCBConnection(reinterpret_cast<Display*>(window.Display())));
 
 	mHandle = instance.Handle()->createXcbSurfaceKHRUnique(createInfo);
