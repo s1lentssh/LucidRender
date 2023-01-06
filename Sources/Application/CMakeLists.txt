@@ -41,20 +41,7 @@ function(register_resource resource)
     configure_file(${RESOURCES_DIR}/${resource} ${CMAKE_CURRENT_BINARY_DIR}/Resources/${resource} COPYONLY)
 endfunction()
 
-if(MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
-else()
-    target_compile_options(${PROJECT_NAME} PRIVATE
-        -Wall 
-        -Wextra 
-        -Wshadow 
-        -Wnon-virtual-dtor 
-        -Wpedantic 
-        -Wconversion 
-        -Wpedantic 
-        -Werror
-    )
-endif()
+SetCompileOptions(${PROJECT_NAME})
 
 register_resource(Shaders/Shader.vert)
 register_resource(Shaders/Shader.frag)

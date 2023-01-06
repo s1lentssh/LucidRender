@@ -31,19 +31,6 @@ IF(APPLE)
     target_link_libraries(${PROJECT_NAME} PUBLIC Lucid::MacOS)
 endif()
 
-if(MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
-else()
-    target_compile_options(${PROJECT_NAME} PRIVATE
-        -Wall 
-        -Wextra 
-        -Wshadow 
-        -Wnon-virtual-dtor 
-        -Wpedantic 
-        -Wconversion 
-        -Wpedantic 
-        -Werror
-    )
-endif()
+SetCompileOptions(${PROJECT_NAME})
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)

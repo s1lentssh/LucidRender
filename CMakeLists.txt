@@ -4,6 +4,8 @@ project(LucidRender
     VERSION 0.1
     DESCRIPTION "Minimalistic render application on Vulkan and D3D12")
 
+option(ENABLE_COVERAGE "Enable coverage reporting" FALSE)
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
@@ -11,7 +13,9 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/macros.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/conan.cmake) # latest from github
+
 conan_cmake_run(
     REQUIRES
         fmt/7.0.3
