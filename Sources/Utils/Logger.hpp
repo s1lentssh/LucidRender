@@ -26,7 +26,7 @@ enum class Severity
 };
 
 using LucidRenderLogger = boost::log::sources::severity_logger_mt<Severity>;
-BOOST_LOG_GLOBAL_LOGGER(LoggerInstance, LucidRenderLogger);
+BOOST_LOG_GLOBAL_LOGGER(LoggerInstance, LucidRenderLogger)
 BOOST_LOG_ATTRIBUTE_KEYWORD(SeverityAttr, "Severity", Severity)
 
 #define _LOG(_severity)                                                                     \

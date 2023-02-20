@@ -13,8 +13,7 @@ class Engine
 public:
     enum class API
     {
-        Vulkan,
-        D3D12
+        Vulkan
     };
 
     Engine(const IWindow& window, API api);

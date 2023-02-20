@@ -19,6 +19,8 @@
 namespace Lucid::Logger
 {
 
+void LucidFormatter(logging::record_view const& rec, logging::formatting_ostream& strm);
+
 template <typename E>
 constexpr typename std::underlying_type<E>::type
 to_underlying(E e) noexcept
@@ -43,10 +45,11 @@ LucidFormatter(logging::record_view const& rec, logging::formatting_ostream& str
         case Severity::Warning:
             strm << fmt::format(fg(fmt::color::light_yellow) | fmt::emphasis::bold, "⚠ warn");
             break;
+        case Severity::Debug:
+            strm << fmt::format(fg(fmt::color::light_yellow) | fmt::emphasis::bold, "⚠ debug");
+            break;
         case Severity::Error:
             strm << fmt::format(fg(fmt::color::orange_red) | fmt::emphasis::bold, "× error");
-            break;
-        default:
             break;
         }
     }

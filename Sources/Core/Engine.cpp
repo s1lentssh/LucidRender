@@ -3,16 +3,9 @@
 #include <Core/InputController.h>
 #include <Utils/Files.h>
 #include <Utils/Logger.hpp>
-
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <Vulkan/VulkanRender.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
-#ifdef _WIN32
-#include <D3D12/D3D12Render.h>
-#endif
 
 namespace Lucid::Core
 {
@@ -27,16 +20,9 @@ Engine::Engine(const IWindow& window, API api)
 
     switch (api)
     {
-#ifdef _WIN32
-    case API::D3D12:
-        mRender = std::make_unique<Lucid::D3D12::D3D12Render>(window, *mScene.get());
-        break;
-#endif
     case API::Vulkan:
         mRender = std::make_unique<Lucid::Vulkan::VulkanRender>(window, *mScene.get());
         break;
-    default:
-        throw std::runtime_error("Unsupported API");
     }
 }
 

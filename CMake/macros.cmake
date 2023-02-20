@@ -3,6 +3,7 @@ function(SetMaxWarningLevel Project)
         target_compile_options(${Project} PRIVATE /W4 /WX)
     else()
         target_compile_options(${Project} PRIVATE
+        #[[ Interesting
             -Wall 
             -Wextra 
             -Wshadow 
@@ -22,9 +23,16 @@ function(SetMaxWarningLevel Project)
             -Wdouble-promotion
             -Wformat=2
             -Wimplicit-fallthrough
-            #-Weverything
+        ]]#
+            -Werror
+            -Weverything
             -Wno-pre-c++17-compat
             -Wno-c++98-compat
+            -Wno-weak-vtables
+            -Wno-padded
+            -Wno-exit-time-destructors
+            -Wno-global-constructors
+            -Wno-ctad-maybe-unsupported
         )
     endif()
 endfunction(SetMaxWarningLevel)

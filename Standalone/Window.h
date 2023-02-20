@@ -16,7 +16,7 @@ class Window : public Core::IWindow
 {
 public:
     Window();
-    ~Window();
+    ~Window() override;
 
     [[nodiscard]] bool ShouldClose() const noexcept override;
     [[nodiscard]] std::vector<const char*> GetRequiredInstanceExtensions() const noexcept override;

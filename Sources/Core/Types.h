@@ -14,7 +14,11 @@ template <typename T> struct Vector2d
     T x;
     T y;
 
-    bool IsZero() const { return x == 0 && y == 0; }
+    bool IsZero() const
+    {
+        return std::abs(x) <= std::numeric_limits<T>::epsilon()
+            && std::abs(y) <= std::numeric_limits<T>::epsilon() == 0;
+    }
 };
 
 struct Mesh

@@ -28,11 +28,11 @@ struct Defaults
         Windows
     };
 
-#ifdef _WIN32
+#if defined(_WIN32)
     inline static const Platforms Platform = Platforms::Windows;
-#elif __linux__
+#elif defined(__linux__)
     inline static const Platforms Platform = Platforms::Linux;
-#elif __APPLE__
+#elif defined(__APPLE__)
     inline static const Platforms Platform = Platforms::MacOS;
 #endif
 };
