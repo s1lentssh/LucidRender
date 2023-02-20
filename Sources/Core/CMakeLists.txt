@@ -1,46 +1,23 @@
 cmake_minimum_required(VERSION 3.10)
 project(Core)
 
-set(SOURCES 
-    InputController.cpp
-    Camera.cpp
-    Entity.cpp
-    Scene.cpp
-    Engine.cpp)
-
-set(HEADERS 
-    Vertex.h 
-    UniformBufferObject.h 
-    Interfaces.h 
-    Entity.h 
-    Camera.h
-    Scene.h
-    Types.h
-    InputController.h
-    Engine.h)
-
-add_library(${PROJECT_NAME} ${HEADERS} ${SOURCES})
+# Create target
+file(GLOB SOURCES *.cpp *.h)
+add_library(${PROJECT_NAME} ${SOURCES})
 add_library(Lucid::Core ALIAS ${PROJECT_NAME})
-target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../)
 
-if(MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
-else()
-    target_compile_options(${PROJECT_NAME} PRIVATE
-        -Wall 
-        -Wextra 
-        -Wshadow 
-        -Wnon-virtual-dtor 
-        -Wpedantic 
-        -Wconversion 
-        -Wpedantic 
-        -Werror
-    )
-endif()
-
+# Find packages
 find_package(glm REQUIRED)
 find_package(Vulkan REQUIRED)
 
+# Link Libraries
+target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../)
+
 target_link_libraries(${PROJECT_NAME} PUBLIC 
     glm::glm
-    Vulkan)
+    Vulkan
+)
+
+# Set compile options
+SetMaxWarningLevel(${PROJECT_NAME})
+SetLucidVersion(${PROJECT_NAME})

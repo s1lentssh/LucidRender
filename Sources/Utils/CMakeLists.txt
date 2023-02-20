@@ -1,49 +1,33 @@
 cmake_minimum_required(VERSION 3.10)
 project(Utils)
 
-set(HEADERS 
-    Logger.hpp
-    Defaults.hpp
-    Files.h)
-
-set(SOURCES 
-    Logger.cpp
-    Files.cpp)
-
-add_library(${PROJECT_NAME} ${HEADERS} ${SOURCES})
+# Create target
+file(GLOB SOURCES *.cpp *.h) 
+add_library(${PROJECT_NAME} ${SOURCES})
 add_library(Lucid::Utils ALIAS ${PROJECT_NAME})
-target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../)
 
+# Find packages
 find_package(fmt REQUIRED)
 find_package(rang REQUIRED)
 find_package(stb REQUIRED)
 find_package(tinyobjloader REQUIRED)
+
+# Link libraries
+target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC 
     fmt::fmt
     rang::rang
     stb::stb
     tinyobjloader::tinyobjloader
-    Lucid::Core)
+    Lucid::Core
+)
 
 IF(APPLE)
     add_subdirectory(MacOS)
     target_link_libraries(${PROJECT_NAME} PUBLIC Lucid::MacOS)
 endif()
 
-if(MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
-else()
-    target_compile_options(${PROJECT_NAME} PRIVATE
-        -Wall 
-        -Wextra 
-        -Wshadow 
-        -Wnon-virtual-dtor 
-        -Wpedantic 
-        -Wconversion 
-        -Wpedantic 
-        -Werror
-    )
-endif()
-
-target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
+# Set compile options
+SetMaxWarningLevel(${PROJECT_NAME})
+SetLucidVersion(${PROJECT_NAME})
