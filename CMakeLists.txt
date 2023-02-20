@@ -11,6 +11,10 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/Install CACHE PATH "Set Install prefix to default" FORCE)
+endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/conan.cmake) # latest from github
 conan_cmake_run(
     REQUIRES
@@ -36,10 +40,13 @@ conan_cmake_run(
     BUILD missing
     GENERATORS cmake_find_package)
 
+# Includes
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/macros.cmake)
 
 set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR} ${CMAKE_MODULE_PATH})
 set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} ${CMAKE_PREFIX_PATH})
 set(RESOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Resources)
 
-add_subdirectory(Sources)
+add_subdirectory(Lucid)
+add_subdirectory(Standalone)
