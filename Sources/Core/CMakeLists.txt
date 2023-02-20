@@ -20,3 +20,4 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 
 # Set compile options
 SetMaxWarningLevel(${PROJECT_NAME})
+SetLucidVersion(${PROJECT_NAME})

@@ -1,21 +1,33 @@
 cmake_minimum_required(VERSION 3.10)
-
 project(LucidRender 
-    VERSION 0.1
-    DESCRIPTION "Minimalistic render application on Vulkan and D3D12")
+    VERSION 0.2.0
+    DESCRIPTION "Pre-Alpha")
 
+# Setup
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(LUCID_RENDER_VERSION "${CMAKE_PROJECT_VERSION} ${CMAKE_PROJECT_DESCRIPTION}")
 
+set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR} ${CMAKE_MODULE_PATH})
+set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} ${CMAKE_PREFIX_PATH})
+set(RESOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Resources)
+
+# Defaults
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/Install CACHE PATH "Set Install prefix to default" FORCE)
+    set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/Install 
+        CACHE PATH "Set Install prefix to default" FORCE)
 endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/conan.cmake) # latest from github
+# Includes
+include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/conan.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/macros.cmake)
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+
+# Conan
 conan_cmake_run(
     REQUIRES
         fmt/7.0.3
@@ -40,13 +52,6 @@ conan_cmake_run(
     BUILD missing
     GENERATORS cmake_find_package)
 
-# Includes
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/macros.cmake)
-
-set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR} ${CMAKE_MODULE_PATH})
-set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} ${CMAKE_PREFIX_PATH})
-set(RESOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Resources)
-
+# Subdirectories
 add_subdirectory(Sources)
 add_subdirectory(Standalone)

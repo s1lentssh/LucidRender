@@ -44,6 +44,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ImguiGenerated)
 
 # Set compile options
 SetMaxWarningLevel(${PROJECT_NAME})
+SetLucidVersion(${PROJECT_NAME})
 
 if(WIN32)
     target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_WIN32_KHR NOMINMAX)

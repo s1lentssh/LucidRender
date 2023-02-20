@@ -20,6 +20,7 @@ endif()
 
 # Set compile options
 SetMaxWarningLevel(${PROJECT_NAME})
+SetLucidVersion(${PROJECT_NAME})
 
 # Install
 install(TARGETS ${PROJECT_NAME} DESTINATION .)

@@ -1,8 +1,8 @@
 function(SetMaxWarningLevel Project)
     if(MSVC)
-        target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
+        target_compile_options(${Project} PRIVATE /W4 /WX)
     else()
-        target_compile_options(${PROJECT_NAME} PRIVATE
+        target_compile_options(${Project} PRIVATE
             -Wall 
             -Wextra 
             -Wshadow 
@@ -14,3 +14,7 @@ function(SetMaxWarningLevel Project)
         )
     endif()
 endfunction(SetMaxWarningLevel)
+
+function(SetLucidVersion Project)
+    target_compile_definitions(${Project} PRIVATE LUCID_RENDER_VERSION="${LUCID_RENDER_VERSION}")
+endfunction(SetLucidVersion)
