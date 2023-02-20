@@ -69,10 +69,10 @@ VulkanInstance::~VulkanInstance()
 {
 	if (mDebugMessenger.operator bool())
 	{
-		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)(Handle()->getProcAddr("vkDestroyDebugUtilsMessengerEXT"));
+		auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(Handle()->getProcAddr("vkDestroyDebugUtilsMessengerEXT"));
 		if (func != nullptr)
 		{
-			func(Handle().get(), *(VkDebugUtilsMessengerEXT*)&mDebugMessenger, nullptr);
+			func(Handle().get(), *reinterpret_cast<VkDebugUtilsMessengerEXT*>(&mDebugMessenger), nullptr);
 			LoggerInfo << "Debug messenger destroyed";
 		}
 	}
@@ -142,10 +142,16 @@ void VulkanInstance::RegisterDebugCallback()
 {
 	auto createInfo = VulkanInstance::ProvideDebugMessengerCreateInfo();
 
-	auto func = (PFN_vkCreateDebugUtilsMessengerEXT)Handle()->getProcAddr("vkCreateDebugUtilsMessengerEXT");
+	auto func = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(Handle()->getProcAddr("vkCreateDebugUtilsMessengerEXT"));
 	if (func != nullptr)
 	{
-		auto status = func(Handle().get(), (VkDebugUtilsMessengerCreateInfoEXT*)&createInfo, nullptr, (VkDebugUtilsMessengerEXT*)&mDebugMessenger);
+		auto status = func(
+			Handle().get(), 
+			reinterpret_cast<VkDebugUtilsMessengerCreateInfoEXT*>(&createInfo), 
+			nullptr, 
+			reinterpret_cast<VkDebugUtilsMessengerEXT*>(&mDebugMessenger)
+		);
+		
 		if (VK_SUCCESS == status)
 		{
 			LoggerInfo << "Debug messenger created";

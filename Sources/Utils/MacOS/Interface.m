@@ -6,6 +6,9 @@
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/CAMetalLayer.h>
 
+void makeViewMetalCompatible(void* handle);
+void* getMetalLayer(void* window);
+
 void makeViewMetalCompatible(void* handle)
 {
     NSView* view = (__bridge NSView*)handle;

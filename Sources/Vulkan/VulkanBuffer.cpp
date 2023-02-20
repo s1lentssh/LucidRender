@@ -28,7 +28,7 @@ VulkanBuffer::VulkanBuffer(VulkanDevice& device, vk::DeviceSize size, vk::Buffer
 	device.Handle()->bindBufferMemory(Handle().get(), mMemory.get(), 0);
 }
 
-void VulkanBuffer::Write(void* pixels)
+void VulkanBuffer::Write(const void* pixels)
 {
 	void* deviceMemory = mDevice.Handle()->mapMemory(mMemory.get(), 0, mBufferSize);
 	std::memcpy(deviceMemory, pixels, mBufferSize);
@@ -68,7 +68,7 @@ VulkanVertexBuffer::VulkanVertexBuffer(VulkanDevice& device, VulkanCommandPool& 
 		vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
 	// Copy vertex data to staging buffer (CPU -> CPU + GPU)
-	stagingBuffer.Write((void*)vertices.data());
+	stagingBuffer.Write(reinterpret_cast<const void*>(vertices.data()));
 
 	// Copy staging buffer to vertex buffer (CPU + GPU -> GPU)
 	Write(manager, stagingBuffer);
@@ -103,7 +103,7 @@ VulkanIndexBuffer::VulkanIndexBuffer(VulkanDevice& device, VulkanCommandPool& ma
 		vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
 	// Copy vertex data to staging buffer (CPU -> CPU + GPU)
-	stagingBuffer.Write((void*)indices.data());
+	stagingBuffer.Write(reinterpret_cast<const void*>(indices.data()));
 
 	// Copy staging buffer to vertex buffer (CPU + GPU -> GPU)
 	Write(manager, stagingBuffer);

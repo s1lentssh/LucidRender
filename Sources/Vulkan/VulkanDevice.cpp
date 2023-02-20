@@ -237,7 +237,7 @@ vk::Format VulkanDevice::FindSupportedDepthFormat()
 bool VulkanDevice::DoesSupportBlitting(vk::Format format)
 {
 	auto properties = GetPhysicalDevice().getFormatProperties(format);
-	return (bool)(properties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear);
+	return static_cast<bool>(properties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear);
 }
 
 vk::SampleCountFlagBits VulkanDevice::GetMsaaSamples() const

@@ -11,6 +11,20 @@ function(SetMaxWarningLevel Project)
             -Wconversion 
             -Wpedantic 
             -Werror
+            -pedantic
+            -Wold-style-cast
+            -Wcast-align
+            -Wunused
+            -Woverloaded-virtual
+            -Wsign-conversion
+            -Wmisleading-indentation
+            -Wnull-dereference
+            -Wdouble-promotion
+            -Wformat=2
+            -Wimplicit-fallthrough
+            #-Weverything
+            -Wno-pre-c++17-compat
+            -Wno-c++98-compat
         )
     endif()
 endfunction(SetMaxWarningLevel)

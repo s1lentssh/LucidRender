@@ -5,7 +5,8 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
-extern "C" {
+extern "C"
+{
 void* getMetalLayer(void* NSWindow);
 void makeViewMetalCompatible(void* handle);
 }
