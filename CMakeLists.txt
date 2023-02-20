@@ -25,7 +25,6 @@ endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 # Includes
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/conan.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/macros.cmake)
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 
 # Conan
 conan_cmake_run(
@@ -51,6 +50,8 @@ conan_cmake_run(
 
     BUILD missing
     GENERATORS cmake_find_package)
+
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 
 # Subdirectories
 add_subdirectory(Sources)

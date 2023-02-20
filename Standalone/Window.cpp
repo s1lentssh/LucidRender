@@ -8,7 +8,7 @@
 
 #include <stb_image.h>
 
-#ifdef __APPLE__
+#if defined(__APPLE__)
 #include <Utils/MacOS/Interface.h>
 #endif
 
