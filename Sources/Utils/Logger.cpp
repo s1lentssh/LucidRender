@@ -1,31 +1,33 @@
 #include "Logger.hpp"
 
 #define FMT_HEADER_ONLY
-#include <fmt/format-inl.h>
-#include <fmt/color.h>
+#include <memory>
 
-#include <boost/log/utility/setup/console.hpp>
-#include <boost/log/support/date_time.hpp>
 #include <boost/log/attributes/attribute_value.hpp>
 #include <boost/log/sinks/async_frontend.hpp>
-#include <boost/log/sinks/unbounded_fifo_queue.hpp>
-#include <boost/log/sinks/unbounded_ordering_queue.hpp>
+#include <boost/log/sinks/block_on_overflow.hpp>
 #include <boost/log/sinks/bounded_fifo_queue.hpp>
 #include <boost/log/sinks/bounded_ordering_queue.hpp>
 #include <boost/log/sinks/drop_on_overflow.hpp>
-#include <boost/log/sinks/block_on_overflow.hpp>
-
-#include <memory>
+#include <boost/log/sinks/unbounded_fifo_queue.hpp>
+#include <boost/log/sinks/unbounded_ordering_queue.hpp>
+#include <boost/log/support/date_time.hpp>
+#include <boost/log/utility/setup/console.hpp>
+#include <fmt/color.h>
+#include <fmt/format-inl.h>
 
 namespace Lucid::Logger
 {
 
 template <typename E>
-constexpr typename std::underlying_type<E>::type to_underlying(E e) noexcept {
+constexpr typename std::underlying_type<E>::type
+to_underlying(E e) noexcept
+{
     return static_cast<typename std::underlying_type<E>::type>(e);
 }
 
-void LucidFormatter(logging::record_view const& rec, logging::formatting_ostream& strm)
+void
+LucidFormatter(logging::record_view const& rec, logging::formatting_ostream& strm)
 {
     // Serverity section
     auto severity = rec[SeverityAttr];
@@ -50,17 +52,17 @@ void LucidFormatter(logging::record_view const& rec, logging::formatting_ostream
     }
 
     // Message section
-    strm 
-        << fmt::format(fg(fmt::color::gray) | fmt::emphasis::bold, " ") 
-        << rec[expr::smessage] << " ";
+    strm << fmt::format(fg(fmt::color::gray) | fmt::emphasis::bold, " ") << rec[expr::smessage] << " ";
 
     // Function and line section
-    strm 
-        << fmt::format(fg(fmt::color::light_steel_blue) | fmt::emphasis::bold, "(") 
-        << fmt::format(fg(fmt::color::steel_blue) | fmt::emphasis::bold, logging::extract<std::string>("Function", rec).get())
-        << fmt::format(fg(fmt::color::light_steel_blue) | fmt::emphasis::bold, ":") 
-        << fmt::format(fg(fmt::color::steel_blue) | fmt::emphasis::bold, std::to_string(logging::extract<unsigned long>("Line", rec).get()))
-        << fmt::format(fg(fmt::color::light_steel_blue) | fmt::emphasis::bold, ")");
+    strm << fmt::format(fg(fmt::color::light_steel_blue) | fmt::emphasis::bold, "(")
+         << fmt::format(
+                fg(fmt::color::steel_blue) | fmt::emphasis::bold, logging::extract<std::string>("Function", rec).get())
+         << fmt::format(fg(fmt::color::light_steel_blue) | fmt::emphasis::bold, ":")
+         << fmt::format(
+                fg(fmt::color::steel_blue) | fmt::emphasis::bold,
+                std::to_string(logging::extract<unsigned long>("Line", rec).get()))
+         << fmt::format(fg(fmt::color::light_steel_blue) | fmt::emphasis::bold, ")");
 }
 
 BOOST_LOG_GLOBAL_LOGGER_INIT(LoggerInstance, LucidRenderLogger)
@@ -80,4 +82,4 @@ BOOST_LOG_GLOBAL_LOGGER_INIT(LoggerInstance, LucidRenderLogger)
     return {};
 }
 
-}
+} // namespace Lucid::Logger

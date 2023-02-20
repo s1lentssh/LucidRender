@@ -4,7 +4,7 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 
-namespace Lucid::Core 
+namespace Lucid::Core
 {
 
 class Entity
@@ -19,4 +19,4 @@ protected:
     glm::mat4 mTransofrm;
 };
 
-}
+} // namespace Lucid::Core

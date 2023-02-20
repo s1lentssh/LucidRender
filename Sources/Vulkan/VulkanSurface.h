@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
 #include <Vulkan/VulkanEntity.h>
+#include <vulkan/vulkan.hpp>
 
 namespace Lucid::Core
 {
@@ -19,4 +19,4 @@ public:
     VulkanSurface(VulkanInstance& instance, const Core::IWindow& window);
 };
 
-}
+} // namespace Lucid::Vulkan

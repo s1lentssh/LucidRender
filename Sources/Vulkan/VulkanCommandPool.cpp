@@ -1,109 +1,108 @@
 #include "VulkanCommandPool.h"
 
-#include <Vulkan/VulkanDevice.h>
-#include <Vulkan/VulkanSwapchain.h>
-#include <Vulkan/VulkanPipeline.h>
-#include <Vulkan/VulkanRenderPass.h>
+#include <Utils/Defaults.hpp>
+#include <Utils/Logger.hpp>
 #include <Vulkan/VulkanBuffer.h>
 #include <Vulkan/VulkanDescriptorPool.h>
+#include <Vulkan/VulkanDevice.h>
 #include <Vulkan/VulkanMesh.h>
-#include <Utils/Logger.hpp>
-#include <Utils/Defaults.hpp>
+#include <Vulkan/VulkanPipeline.h>
+#include <Vulkan/VulkanRenderPass.h>
+#include <Vulkan/VulkanSwapchain.h>
 
 namespace Lucid::Vulkan
 {
 
 VulkanCommandPool::VulkanCommandPool(VulkanDevice& device)
-	: mDevice(device)
+    : mDevice(device)
 {
-	// Create command pool
-	auto commandPoolCreateInfo = vk::CommandPoolCreateInfo()
-		.setQueueFamilyIndex(device.FindGraphicsQueueFamily().value())
-		.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
+    // Create command pool
+    auto commandPoolCreateInfo = vk::CommandPoolCreateInfo()
+                                     .setQueueFamilyIndex(device.FindGraphicsQueueFamily().value())
+                                     .setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
 
-	mHandle = device.Handle()->createCommandPoolUnique(commandPoolCreateInfo);
+    mHandle = device.Handle()->createCommandPoolUnique(commandPoolCreateInfo);
 }
 
-vk::UniqueCommandBuffer& VulkanCommandPool::Get(std::size_t index) 
-{ 
-	return mCommandBuffers.at(index); 
-}
-
-void VulkanCommandPool::RecreateCommandBuffers(VulkanSwapchain& swapchain)
+vk::UniqueCommandBuffer&
+VulkanCommandPool::Get(std::size_t index)
 {
-	mCommandBuffers.clear();
-
-	std::size_t imageCount = swapchain.GetFramebuffers().size();
-
-	// Allocate command buffers
-	auto commandBufferAllocateInfo = vk::CommandBufferAllocateInfo()
-		.setCommandBufferCount(static_cast<std::uint32_t>(imageCount))
-		.setCommandPool(Handle().get())
-		.setLevel(vk::CommandBufferLevel::ePrimary);
-
-	mCommandBuffers = mDevice.Handle()->allocateCommandBuffersUnique(commandBufferAllocateInfo);
-
-	LoggerInfo << "Command buffers allocated";
+    return mCommandBuffers.at(index);
 }
 
-void VulkanCommandPool::RecordCommandBuffers(
-	VulkanSwapchain& swapchain, 
-	const VulkanRenderPass& renderPass, 
-	std::function<void(vk::CommandBuffer& commandBuffer)> action)
+void
+VulkanCommandPool::RecreateCommandBuffers(VulkanSwapchain& swapchain)
 {
-	std::size_t imageCount = swapchain.GetFramebuffers().size();
+    mCommandBuffers.clear();
 
-	for (std::uint32_t i = 0; i < imageCount; i++)
-	{
-		vk::UniqueCommandBuffer& commandBuffer = mCommandBuffers.at(i);
-		auto commandBufferBeginInfo = vk::CommandBufferBeginInfo()
-			.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
-		commandBuffer->begin(commandBufferBeginInfo);
+    std::size_t imageCount = swapchain.GetFramebuffers().size();
 
-		vk::ClearValue clearColor = vk::ClearColorValue(Defaults::BackgroundColor);
-		vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
+    // Allocate command buffers
+    auto commandBufferAllocateInfo = vk::CommandBufferAllocateInfo()
+                                         .setCommandBufferCount(static_cast<std::uint32_t>(imageCount))
+                                         .setCommandPool(Handle().get())
+                                         .setLevel(vk::CommandBufferLevel::ePrimary);
 
-		vk::ClearValue clearValues[] = { clearColor, clearDepth };
+    mCommandBuffers = mDevice.Handle()->allocateCommandBuffersUnique(commandBufferAllocateInfo);
 
-		auto renderPassBeginInfo = vk::RenderPassBeginInfo()
-			.setRenderPass(renderPass.Handle().get())
-			.setFramebuffer(swapchain.GetFramebuffers().at(i).get())
-			.setRenderArea(vk::Rect2D()
-				.setOffset({ 0, 0 })
-				.setExtent(swapchain.GetExtent()))
-			.setClearValueCount(static_cast<std::uint32_t>(std::size(clearValues)))
-			.setPClearValues(clearValues);
-
-		commandBuffer->beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
-		action(commandBuffer.get());
-		commandBuffer->endRenderPass();
-		commandBuffer->end();
-	}
+    LoggerInfo << "Command buffers allocated";
 }
 
-void VulkanCommandPool::ExecuteSingleCommand(const std::function<void(vk::CommandBuffer&)>& function)
+void
+VulkanCommandPool::RecordCommandBuffers(
+    VulkanSwapchain& swapchain,
+    const VulkanRenderPass& renderPass,
+    std::function<void(vk::CommandBuffer& commandBuffer)> action)
 {
-	auto allocateInfo = vk::CommandBufferAllocateInfo()
-		.setLevel(vk::CommandBufferLevel::ePrimary)
-		.setCommandPool(Handle().get())
-		.setCommandBufferCount(1);
+    std::size_t imageCount = swapchain.GetFramebuffers().size();
 
-	auto commandBuffers = mDevice.Handle()->allocateCommandBuffersUnique(allocateInfo);
-	vk::CommandBuffer commandBuffer = commandBuffers.at(0).get();
+    for (std::uint32_t i = 0; i < imageCount; i++)
+    {
+        vk::UniqueCommandBuffer& commandBuffer = mCommandBuffers.at(i);
+        auto commandBufferBeginInfo
+            = vk::CommandBufferBeginInfo().setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+        commandBuffer->begin(commandBufferBeginInfo);
 
-	auto beginInfo = vk::CommandBufferBeginInfo()
-		.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+        vk::ClearValue clearColor = vk::ClearColorValue(Defaults::BackgroundColor);
+        vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
 
-	commandBuffer.begin(beginInfo);
-	function(commandBuffer);
-	commandBuffer.end();
+        vk::ClearValue clearValues[] = { clearColor, clearDepth };
 
-	auto submitInfo = vk::SubmitInfo()
-		.setCommandBufferCount(1)
-		.setPCommandBuffers(&commandBuffer);
+        auto renderPassBeginInfo = vk::RenderPassBeginInfo()
+                                       .setRenderPass(renderPass.Handle().get())
+                                       .setFramebuffer(swapchain.GetFramebuffers().at(i).get())
+                                       .setRenderArea(vk::Rect2D().setOffset({ 0, 0 }).setExtent(swapchain.GetExtent()))
+                                       .setClearValueCount(static_cast<std::uint32_t>(std::size(clearValues)))
+                                       .setPClearValues(clearValues);
 
-	mDevice.GetGraphicsQueue().submit(submitInfo, {});
-	mDevice.GetGraphicsQueue().waitIdle();
+        commandBuffer->beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
+        action(commandBuffer.get());
+        commandBuffer->endRenderPass();
+        commandBuffer->end();
+    }
 }
 
+void
+VulkanCommandPool::ExecuteSingleCommand(const std::function<void(vk::CommandBuffer&)>& function)
+{
+    auto allocateInfo = vk::CommandBufferAllocateInfo()
+                            .setLevel(vk::CommandBufferLevel::ePrimary)
+                            .setCommandPool(Handle().get())
+                            .setCommandBufferCount(1);
+
+    auto commandBuffers = mDevice.Handle()->allocateCommandBuffersUnique(allocateInfo);
+    vk::CommandBuffer commandBuffer = commandBuffers.at(0).get();
+
+    auto beginInfo = vk::CommandBufferBeginInfo().setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+
+    commandBuffer.begin(beginInfo);
+    function(commandBuffer);
+    commandBuffer.end();
+
+    auto submitInfo = vk::SubmitInfo().setCommandBufferCount(1).setPCommandBuffers(&commandBuffer);
+
+    mDevice.GetGraphicsQueue().submit(submitInfo, {});
+    mDevice.GetGraphicsQueue().waitIdle();
 }
+
+} // namespace Lucid::Vulkan

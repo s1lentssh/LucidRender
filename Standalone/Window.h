@@ -2,13 +2,14 @@
 
 #include <memory>
 #include <vector>
+
 #include <Core/Interfaces.h>
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
-namespace Lucid 
+namespace Lucid
 {
 
 class Window : public Core::IWindow
@@ -16,22 +17,22 @@ class Window : public Core::IWindow
 public:
     Window();
     ~Window();
-    
+
     [[nodiscard]] bool ShouldClose() const noexcept override;
     [[nodiscard]] std::vector<const char*> GetRequiredInstanceExtensions() const noexcept override;
 
-    #ifdef _WIN32
+#ifdef _WIN32
     [[nodiscard]] void* Handle() const noexcept override;
-    #endif
+#endif
 
-    #ifdef __linux__
+#ifdef __linux__
     [[nodiscard]] unsigned int Handle() const noexcept override;
     [[nodiscard]] void* Display() const noexcept override;
-    #endif
+#endif
 
-    #ifdef __APPLE__
+#ifdef __APPLE__
     [[nodiscard]] void* Handle() const noexcept override;
-    #endif
+#endif
 
     GLFWwindow* Get() const noexcept override { return mWindow; }
 
@@ -48,4 +49,4 @@ private:
     GLFWwindow* mWindow = nullptr;
 };
 
-}
+} // namespace Lucid

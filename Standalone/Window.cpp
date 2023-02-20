@@ -1,11 +1,12 @@
 #include "Window.h"
 
-#include <Utils/Defaults.hpp>
 #include <Core/InputController.h>
+#include <Utils/Defaults.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
 #include <map>
+
+#include <stb_image.h>
 
 #ifdef __APPLE__
 #include <Utils/MacOS/Interface.h>
@@ -29,7 +30,7 @@ Window::Window()
     }
 
     // Paint it black on load
-	glfwSwapBuffers(mWindow);
+    glfwSwapBuffers(mWindow);
 
     glfwSetKeyCallback(mWindow, OnKeyPressed);
     glfwSetCursorPosCallback(mWindow, OnCursorMoved);
@@ -43,22 +44,26 @@ Window::~Window()
     glfwTerminate();
 }
 
-bool Window::ShouldClose() const noexcept
+bool
+Window::ShouldClose() const noexcept
 {
     return glfwWindowShouldClose(mWindow);
 }
 
-void Window::PollEvents() const noexcept
+void
+Window::PollEvents() const noexcept
 {
     glfwPollEvents();
 }
 
-void Window::WaitEvents() const noexcept
+void
+Window::WaitEvents() const noexcept
 {
     glfwWaitEvents();
 }
 
-void Window::SetIcon(const std::filesystem::path& path)
+void
+Window::SetIcon(const std::filesystem::path& path)
 {
     GLFWimage icon;
     icon.pixels = stbi_load(path.string().c_str(), &icon.width, &icon.height, nullptr, 4);
@@ -66,7 +71,8 @@ void Window::SetIcon(const std::filesystem::path& path)
     stbi_image_free(icon.pixels);
 }
 
-void Window::OnKeyPressed(GLFWwindow* window, int key, int scancode, int action, int mods)
+void
+Window::OnKeyPressed(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     (void)mods;
     (void)scancode;
@@ -77,12 +83,10 @@ void Window::OnKeyPressed(GLFWwindow* window, int key, int scancode, int action,
     }
     else
     {
-        std::map<int, Core::InputController::Key> keymap = {
-            {GLFW_KEY_W, Core::InputController::Key::Up},
-            {GLFW_KEY_S, Core::InputController::Key::Down},
-            {GLFW_KEY_A, Core::InputController::Key::Left},
-            {GLFW_KEY_D, Core::InputController::Key::Right}
-        };
+        std::map<int, Core::InputController::Key> keymap = { { GLFW_KEY_W, Core::InputController::Key::Up },
+                                                             { GLFW_KEY_S, Core::InputController::Key::Down },
+                                                             { GLFW_KEY_A, Core::InputController::Key::Left },
+                                                             { GLFW_KEY_D, Core::InputController::Key::Right } };
 
         if (keymap.contains(key))
         {
@@ -98,19 +102,22 @@ void Window::OnKeyPressed(GLFWwindow* window, int key, int scancode, int action,
     }
 }
 
-void Window::OnCursorMoved(GLFWwindow* window, double x, double y)
+void
+Window::OnCursorMoved(GLFWwindow* window, double x, double y)
 {
     (void)window;
     Core::InputController::Instance().MouseMoved(static_cast<float>(x), static_cast<float>(y));
 }
 
-void Window::OnScrolled(GLFWwindow* window, double x, double y)
+void
+Window::OnScrolled(GLFWwindow* window, double x, double y)
 {
     (void)window;
     Core::InputController::Instance().MouseScrolled(static_cast<float>(x), static_cast<float>(y));
 }
 
-std::vector<const char*> Window::GetRequiredInstanceExtensions() const noexcept
+std::vector<const char*>
+Window::GetRequiredInstanceExtensions() const noexcept
 {
     uint32_t glfwExtensionsCount = 0;
     const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionsCount);
@@ -118,26 +125,30 @@ std::vector<const char*> Window::GetRequiredInstanceExtensions() const noexcept
 }
 
 #ifdef _WIN32
-void* Window::Handle() const noexcept
+void*
+Window::Handle() const noexcept
 {
     return glfwGetWin32Window(mWindow);
 }
 #endif
 
 #ifdef __linux__
-unsigned int Window::Handle() const noexcept
+unsigned int
+Window::Handle() const noexcept
 {
     return glfwGetX11Window(mWindow);
 }
 
-void* Window::Display() const noexcept
+void*
+Window::Display() const noexcept
 {
     return glfwGetX11Display();
 }
 #endif
 
 #ifdef __APPLE__
-void* Window::Handle() const noexcept
+void*
+Window::Handle() const noexcept
 {
     void* windowHandle = glfwGetCocoaWindow(mWindow);
     void* viewHandle = getMetalLayer(windowHandle);
@@ -145,11 +156,12 @@ void* Window::Handle() const noexcept
 }
 #endif
 
-Core::Vector2d<std::uint32_t> Window::GetSize() const noexcept
+Core::Vector2d<std::uint32_t>
+Window::GetSize() const noexcept
 {
     int width, height;
     glfwGetWindowSize(mWindow, &width, &height);
     return { static_cast<std::uint32_t>(width), static_cast<std::uint32_t>(height) };
 }
 
-}
+} // namespace Lucid

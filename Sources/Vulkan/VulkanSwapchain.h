@@ -1,11 +1,11 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-#include <Vulkan/VulkanSurface.h>
+#include <Core/Interfaces.h>
 #include <Vulkan/VulkanDevice.h>
 #include <Vulkan/VulkanEntity.h>
 #include <Vulkan/VulkanImage.h>
-#include <Core/Interfaces.h>
+#include <Vulkan/VulkanSurface.h>
+#include <vulkan/vulkan.hpp>
 
 namespace Lucid::Vulkan
 {
@@ -27,8 +27,10 @@ public:
     [[nodiscard]] const std::vector<vk::UniqueFramebuffer>& GetFramebuffers() const noexcept;
 
 private:
-    [[nodiscard]] vk::SurfaceFormatKHR SelectSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats) const noexcept;
-    [[nodiscard]] vk::PresentModeKHR SelectPresentMode(const std::vector<vk::PresentModeKHR>& availableModes) const noexcept;
+    [[nodiscard]] vk::SurfaceFormatKHR
+    SelectSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats) const noexcept;
+    [[nodiscard]] vk::PresentModeKHR
+    SelectPresentMode(const std::vector<vk::PresentModeKHR>& availableModes) const noexcept;
     [[nodiscard]] vk::Extent2D SelectSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities) const noexcept;
 
     const VulkanSurface& mSurface;
@@ -42,4 +44,4 @@ private:
     std::vector<vk::UniqueFramebuffer> mFramebuffers;
 };
 
-}
+} // namespace Lucid::Vulkan

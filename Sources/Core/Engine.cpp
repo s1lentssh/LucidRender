@@ -1,14 +1,14 @@
 #include "Engine.h"
+
 #include <Core/InputController.h>
 #include <Utils/Files.h>
 #include <Utils/Logger.hpp>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <Vulkan/VulkanRender.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
-#include <Vulkan/VulkanRender.h>
 
 #ifdef _WIN32
 #include <D3D12/D3D12Render.h>
@@ -20,26 +20,28 @@ namespace Lucid::Core
 Engine::Engine(const IWindow& window, API api)
 {
     mScene = std::make_shared<Lucid::Core::Scene>();
- 
-    auto camera = std::make_shared<Lucid::Core::Camera>(glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.2f), glm::vec3(0.0f, 0.0f, 1.0f)));
+
+    auto camera = std::make_shared<Lucid::Core::Camera>(
+        glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.2f), glm::vec3(0.0f, 0.0f, 1.0f)));
     mScene->AddCamera(camera);
 
     switch (api)
     {
 #ifdef _WIN32
-        case API::D3D12:
-            mRender = std::make_unique<Lucid::D3D12::D3D12Render>(window, *mScene.get());
-            break;
+    case API::D3D12:
+        mRender = std::make_unique<Lucid::D3D12::D3D12Render>(window, *mScene.get());
+        break;
 #endif
-        case API::Vulkan:
-            mRender = std::make_unique<Lucid::Vulkan::VulkanRender>(window, *mScene.get());
-            break;
-        default:
-            throw std::runtime_error("Unsupported API");
+    case API::Vulkan:
+        mRender = std::make_unique<Lucid::Vulkan::VulkanRender>(window, *mScene.get());
+        break;
+    default:
+        throw std::runtime_error("Unsupported API");
     }
 }
 
-void Engine::Update(float time)
+void
+Engine::Update(float time)
 {
     // Sync
     ProcessInput(time);
@@ -48,13 +50,15 @@ void Engine::Update(float time)
     mRender->DrawFrame();
 }
 
-void Engine::AddAsset(const Core::Asset& asset)
+void
+Engine::AddAsset(const Core::Asset& asset)
 {
     mScene->AddAsset(asset);
     mRender->AddAsset(asset);
 }
 
-void Engine::ProcessInput(float time)
+void
+Engine::ProcessInput(float time)
 {
     std::set<InputController::Key> pressedKeys = InputController::Instance().GetPressedKeys();
 
@@ -91,4 +95,4 @@ void Engine::ProcessInput(float time)
     }
 }
 
-}
+} // namespace Lucid::Core

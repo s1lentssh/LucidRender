@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
 #include <Vulkan/VulkanEntity.h>
+#include <vulkan/vulkan.hpp>
 
 namespace Lucid::Vulkan
 {
@@ -14,14 +14,14 @@ class VulkanImage;
 class VulkanDescriptorPool : public VulkanEntity<vk::UniqueDescriptorPool>
 {
 public:
-	VulkanDescriptorPool(VulkanDevice& device);
-	void CreateDescriptorSetLayout();
+    VulkanDescriptorPool(VulkanDevice& device);
+    void CreateDescriptorSetLayout();
 
-	[[nodiscard]] vk::DescriptorSetLayout& Layout() { return mDescriptorSetLayout.get(); }
+    [[nodiscard]] vk::DescriptorSetLayout& Layout() { return mDescriptorSetLayout.get(); }
 
 private:
-	VulkanDevice& mDevice;
-	vk::UniqueDescriptorSetLayout mDescriptorSetLayout;
+    VulkanDevice& mDevice;
+    vk::UniqueDescriptorSetLayout mDescriptorSetLayout;
 };
 
-}
+} // namespace Lucid::Vulkan

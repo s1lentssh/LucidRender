@@ -7,8 +7,8 @@
 
 extern "C"
 {
-void* getMetalLayer(void* NSWindow);
-void makeViewMetalCompatible(void* handle);
+    void* getMetalLayer(void* NSWindow);
+    void makeViewMetalCompatible(void* handle);
 }
 
 #endif /* INTERFACE_H */

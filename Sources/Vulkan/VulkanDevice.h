@@ -2,8 +2,9 @@
 
 #include <optional>
 #include <set>
-#include <vulkan/vulkan.hpp>
+
 #include <Vulkan/VulkanEntity.h>
+#include <vulkan/vulkan.hpp>
 
 namespace Lucid::Vulkan
 {
@@ -60,7 +61,6 @@ private:
 #else
     const std::vector<const char*> mExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 #endif
-
 };
 
-}
+} // namespace Lucid::Vulkan

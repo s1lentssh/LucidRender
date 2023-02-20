@@ -1,28 +1,29 @@
 #pragma once
 
 #include <filesystem>
+
 #include <Core/Types.h>
 
 struct GLFWwindow;
 
-namespace Lucid::Core 
+namespace Lucid::Core
 {
 
 class IWindow
 {
 public:
-    #ifdef _WIN32
+#ifdef _WIN32
     [[nodiscard]] virtual void* Handle() const noexcept = 0;
-    #endif
+#endif
 
-    #ifdef __linux__
+#ifdef __linux__
     [[nodiscard]] virtual unsigned int Handle() const noexcept = 0;
     [[nodiscard]] virtual void* Display() const noexcept = 0;
-    #endif
+#endif
 
-    #ifdef __APPLE__
+#ifdef __APPLE__
     [[nodiscard]] virtual void* Handle() const noexcept = 0;
-    #endif
+#endif
 
     [[nodiscard]] virtual std::vector<const char*> GetRequiredInstanceExtensions() const noexcept = 0;
     [[nodiscard]] virtual Vector2d<std::uint32_t> GetSize() const noexcept = 0;
@@ -43,4 +44,4 @@ public:
     virtual ~IRender() = default;
 };
 
-}
+} // namespace Lucid::Core

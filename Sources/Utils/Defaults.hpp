@@ -1,8 +1,8 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <string>
-#include <array>
 
 struct Defaults
 {
@@ -21,7 +21,7 @@ struct Defaults
     inline static const bool EnableValidationLayers = false;
 #endif
 
-    enum class Platforms 
+    enum class Platforms
     {
         MacOS,
         Linux,

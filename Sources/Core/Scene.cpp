@@ -1,28 +1,30 @@
 #include "Scene.h"
-#include "Scene.h"
-#include "Scene.h"
 
 namespace Lucid::Core
 {
 
-void Scene::AddAsset(const Asset& entity)
+void
+Scene::AddAsset(const Asset& entity)
 {
-	mMeshes.push_back(entity);
+    mMeshes.push_back(entity);
 }
 
-void Scene::AddCamera(const std::shared_ptr<Camera>& entity)
+void
+Scene::AddCamera(const std::shared_ptr<Camera>& entity)
 {
-	mCamera = entity;
+    mCamera = entity;
 }
 
-const std::vector<Asset>& Scene::GetAssets() const
+const std::vector<Asset>&
+Scene::GetAssets() const
 {
-	return mMeshes;
+    return mMeshes;
 }
 
-const std::shared_ptr<Camera>& Scene::GetCamera() const
+const std::shared_ptr<Camera>&
+Scene::GetCamera() const
 {
-	return mCamera;
+    return mCamera;
 }
 
-}
+} // namespace Lucid::Core

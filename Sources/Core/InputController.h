@@ -12,40 +12,40 @@ namespace Lucid::Core
 class InputController
 {
 public:
-	enum class Key
-	{
-		Left,
-		Right,
-		Up,
-		Down
-	};
+    enum class Key
+    {
+        Left,
+        Right,
+        Up,
+        Down
+    };
 
-	static InputController& Instance();
+    static InputController& Instance();
 
-	void MouseMoved(float x, float y);
-	void MouseScrolled(float x, float y);
-	void KeyPressed(Key key);
-	void KeyReleased(Key key);
+    void MouseMoved(float x, float y);
+    void MouseScrolled(float x, float y);
+    void KeyPressed(Key key);
+    void KeyReleased(Key key);
 
-	std::set<Key> GetPressedKeys();
-	Vector2d<float> GetMouseDelta();
-	Vector2d<float> GetScrollDelta();
+    std::set<Key> GetPressedKeys();
+    Vector2d<float> GetMouseDelta();
+    Vector2d<float> GetScrollDelta();
 
 private:
-	InputController() = default;
-	InputController(const InputController&) = delete;
-	InputController(InputController&&) = delete;
-	void operator=(const InputController&) = delete;
-	void operator=(const InputController&&) = delete;
+    InputController() = default;
+    InputController(const InputController&) = delete;
+    InputController(InputController&&) = delete;
+    void operator=(const InputController&) = delete;
+    void operator=(const InputController&&) = delete;
 
-	std::set<Key> mPressedKeys;
+    std::set<Key> mPressedKeys;
 
-	Vector2d<float> mMouseLastPosition;
-	Vector2d<float> mMouseDelta;
-	bool mMouseMovedThisFrame = false;
+    Vector2d<float> mMouseLastPosition;
+    Vector2d<float> mMouseDelta;
+    bool mMouseMovedThisFrame = false;
 
-	Vector2d<float> mScrollDelta;
-	bool mMouseScrolledThisFrame = false;
+    Vector2d<float> mScrollDelta;
+    bool mMouseScrolledThisFrame = false;
 };
 
-}
+} // namespace Lucid::Core

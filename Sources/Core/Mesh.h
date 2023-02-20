@@ -1,11 +1,11 @@
 #pragma once
 
-#include <Core/Vertex.h>
-#include <Core/Entity.h>
 #include <vector>
 
-namespace Lucid::Core 
-{
+#include <Core/Entity.h>
+#include <Core/Vertex.h>
 
+namespace Lucid::Core
+{
 
 }

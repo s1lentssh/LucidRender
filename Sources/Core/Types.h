@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+
 #include <Core/Entity.h>
 #include <Core/Vertex.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -8,16 +9,12 @@
 namespace Lucid::Core
 {
 
-template<typename T>
-struct Vector2d
+template <typename T> struct Vector2d
 {
     T x;
     T y;
 
-    bool IsZero() const
-    {
-        return x == 0 && y == 0;
-    }
+    bool IsZero() const { return x == 0 && y == 0; }
 };
 
 struct Mesh
@@ -36,27 +33,28 @@ struct Texture
 class Asset : public Entity
 {
 public:
-    Asset(Mesh mesh, Texture texture) : Entity(), mMesh(mesh), mTexture(texture) {}
-    Asset(const Asset& rhs) : Entity(rhs), mMesh(rhs.mMesh), mTexture(rhs.mTexture) {}
-    
-    void SetPosition(const glm::vec3& position)
+    Asset(Mesh mesh, Texture texture)
+        : Entity()
+        , mMesh(mesh)
+        , mTexture(texture)
     {
-        mTransofrm = glm::translate(glm::mat4(1), position);
+    }
+    Asset(const Asset& rhs)
+        : Entity(rhs)
+        , mMesh(rhs.mMesh)
+        , mTexture(rhs.mTexture)
+    {
     }
 
-    [[nodiscard]] Mesh GetMesh() const
-    {
-        return mMesh;
-    }
+    void SetPosition(const glm::vec3& position) { mTransofrm = glm::translate(glm::mat4(1), position); }
 
-    [[nodiscard]] Texture GetTexture() const
-    {
-        return mTexture;
-    }
+    [[nodiscard]] Mesh GetMesh() const { return mMesh; }
+
+    [[nodiscard]] Texture GetTexture() const { return mTexture; }
 
 private:
     Mesh mMesh;
     Texture mTexture;
 };
 
-}
+} // namespace Lucid::Core
