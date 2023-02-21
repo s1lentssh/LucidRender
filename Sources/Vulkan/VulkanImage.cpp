@@ -100,7 +100,8 @@ VulkanImage::VulkanImage(
                   | vk::ImageUsageFlagBits::eTransferSrc)
               .setSharingMode(vk::SharingMode::eExclusive)
               .setSamples(vk::SampleCountFlagBits::e1)
-              .setMipLevels(firstTexture.mipLevels);
+              .setMipLevels(firstTexture.mipLevels)
+              .setFlags(vk::ImageCreateFlagBits::eCubeCompatible);
 
     mUniqueImageHolder = device.Handle()->createImageUnique(createInfo);
     mHandle = mUniqueImageHolder.value().get();
@@ -141,7 +142,7 @@ VulkanImage::CreateDepthImage(
         vk::ImageUsageFlagBits::eDepthStencilAttachment,
         vk::MemoryPropertyFlagBits::eDeviceLocal);
 
-    result.GenerateImageView(format, aspectFlags);
+    result.GenerateImageView(format, aspectFlags, vk::ImageViewType::e2D);
     return std::make_unique<VulkanImage>(std::move(result));
 }
 
@@ -149,7 +150,7 @@ std::unique_ptr<VulkanImage>
 VulkanImage::FromSwapchain(VulkanDevice& device, vk::Image image, vk::Format format, vk::ImageAspectFlags aspectFlags)
 {
     VulkanImage result(device, image);
-    result.GenerateImageView(format, aspectFlags);
+    result.GenerateImageView(format, aspectFlags, vk::ImageViewType::e2D);
     return std::make_unique<VulkanImage>(std::move(result));
 }
 
@@ -162,7 +163,7 @@ VulkanImage::FromTexture(
     vk::ImageAspectFlags aspectFlags)
 {
     VulkanImage result(device, commandPool, texture);
-    result.GenerateImageView(format, aspectFlags);
+    result.GenerateImageView(format, aspectFlags, vk::ImageViewType::e2D);
     return std::make_unique<VulkanImage>(std::move(result));
 }
 
@@ -175,7 +176,7 @@ VulkanImage::FromCubemap(
     vk::ImageAspectFlags aspectFlags)
 {
     VulkanImage result(device, commandPool, textures);
-    result.GenerateImageView(format, aspectFlags);
+    result.GenerateImageView(format, aspectFlags, vk::ImageViewType::eCube, textures.size());
     return std::make_unique<VulkanImage>(std::move(result));
 }
 
@@ -190,7 +191,7 @@ VulkanImage::CreateImage(VulkanDevice& device, vk::Format format, const vk::Exte
         vk::ImageTiling::eOptimal,
         vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransientAttachment,
         vk::MemoryPropertyFlagBits::eDeviceLocal);
-    result.GenerateImageView(format, vk::ImageAspectFlagBits::eColor);
+    result.GenerateImageView(format, vk::ImageAspectFlagBits::eColor, vk::ImageViewType::e2D);
     return std::make_unique<VulkanImage>(std::move(result));
 }
 
@@ -335,18 +336,22 @@ VulkanImage::GetImageView() const
 }
 
 void
-VulkanImage::GenerateImageView(vk::Format format, vk::ImageAspectFlags aspectFlags)
+VulkanImage::GenerateImageView(
+    vk::Format format,
+    vk::ImageAspectFlags aspectFlags,
+    vk::ImageViewType viewType,
+    std::size_t layerCount)
 {
     auto imageViewCreateInfo = vk::ImageViewCreateInfo()
                                    .setImage(Handle())
-                                   .setViewType(vk::ImageViewType::e2D)
+                                   .setViewType(viewType)
                                    .setFormat(format)
                                    .setComponents(vk::ComponentMapping {}) // Identity by default
                                    .setSubresourceRange(vk::ImageSubresourceRange {}
                                                             .setAspectMask(aspectFlags)
                                                             .setBaseArrayLayer(0)
                                                             .setBaseMipLevel(0)
-                                                            .setLayerCount(1)
+                                                            .setLayerCount(static_cast<std::uint32_t>(layerCount))
                                                             .setLevelCount(mMipLevels));
 
     mImageView = mDevice.Handle()->createImageViewUnique(imageViewCreateInfo);

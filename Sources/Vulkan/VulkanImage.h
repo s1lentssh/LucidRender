@@ -85,7 +85,12 @@ private:
 
     VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, const std::array<Core::Texture, 6>& textures);
 
-    void GenerateImageView(vk::Format format, vk::ImageAspectFlags aspectFlags);
+    void GenerateImageView(
+        vk::Format format,
+        vk::ImageAspectFlags aspectFlags,
+        vk::ImageViewType viewType,
+        std::size_t layerCount = 1);
+
     void GenerateMipmaps(
         VulkanCommandPool& commandPool,
         const Core::Vector2d<std::uint32_t>& size,
