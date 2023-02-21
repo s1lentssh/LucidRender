@@ -14,13 +14,28 @@ class VulkanDescriptorPool;
 class VulkanPipeline : public VulkanEntity<vk::UniquePipeline>
 {
 public:
-    VulkanPipeline(
+    static std::unique_ptr<VulkanPipeline> Default(
+        VulkanDevice& device,
+        const vk::Extent2D& extent,
+        VulkanRenderPass& renderPass,
+        VulkanDescriptorPool& descriptorPool);
+
+    static std::unique_ptr<VulkanPipeline> Skybox(
         VulkanDevice& device,
         const vk::Extent2D& extent,
         VulkanRenderPass& renderPass,
         VulkanDescriptorPool& descriptorPool);
 
     [[nodiscard]] const vk::PipelineLayout& Layout() const;
+
+    VulkanPipeline(
+        VulkanDevice& device,
+        const vk::Extent2D& extent,
+        VulkanRenderPass& renderPass,
+        VulkanDescriptorPool& descriptorPool,
+        const std::string& shaderName,
+        bool depthWriteTest,
+        vk::CullModeFlagBits cullMode);
 
 private:
     [[nodiscard]] static std::array<vk::VertexInputBindingDescription, 1> GetBindingDescriptions();

@@ -16,7 +16,6 @@
 #include <Vulkan/VulkanSwapchain.h>
 #include <vulkan/vulkan.hpp>
 
-
 namespace Lucid::Vulkan
 {
 
@@ -39,12 +38,14 @@ private:
     std::unique_ptr<VulkanSurface> mSurface;
     std::unique_ptr<VulkanSwapchain> mSwapchain;
     std::unique_ptr<VulkanRenderPass> mRenderPass;
-    std::unique_ptr<VulkanPipeline> mPipeline;
+    std::unique_ptr<VulkanPipeline> mMeshPipeline;
+    std::unique_ptr<VulkanPipeline> mSkyboxPipeline;
     std::unique_ptr<VulkanCommandPool> mCommandPool;
     std::unique_ptr<VulkanDescriptorPool> mDescriptorPool;
     std::unique_ptr<VulkanImage> mResolveImage;
     std::unique_ptr<VulkanImage> mDepthImage;
     std::vector<VulkanMesh> mMeshes;
+    std::unique_ptr<VulkanSkybox> mSkybox;
 
     // Synchronization
     std::vector<vk::UniqueSemaphore> mImagePresentedSemaphores;

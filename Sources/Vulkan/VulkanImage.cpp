@@ -105,7 +105,6 @@ VulkanImage::VulkanImage(
 
     mUniqueImageHolder = device.Handle()->createImageUnique(createInfo);
     mHandle = mUniqueImageHolder.value().get();
-    mMipLevels = firstTexture.mipLevels;
 
     vk::MemoryRequirements requirements = device.Handle()->getImageMemoryRequirements(Handle());
     std::uint32_t memoryType
@@ -122,8 +121,15 @@ VulkanImage::VulkanImage(
         vk::ImageLayout::eUndefined,
         vk::ImageLayout::eTransferDstOptimal,
         textures.size());
+
     Write(commandPool, stagingBuffer, firstTexture.size, textures.size());
-    GenerateMipmaps(commandPool, firstTexture.size, vk::Format::eR8G8B8A8Srgb, textures.size());
+
+    Transition(
+        commandPool,
+        vk::Format::eR8G8B8A8Srgb,
+        vk::ImageLayout::eTransferDstOptimal,
+        vk::ImageLayout::eShaderReadOnlyOptimal,
+        textures.size());
 }
 
 std::unique_ptr<VulkanImage>
@@ -411,13 +417,13 @@ VulkanImage::GenerateMipmaps(
                                                        .setAspectMask(vk::ImageAspectFlagBits::eColor)
                                                        .setMipLevel(i - 1)
                                                        .setBaseArrayLayer(0)
-                                                       .setLayerCount(1))
+                                                       .setLayerCount(static_cast<std::uint32_t>(layerCount)))
                                 .setDstOffsets(dstOffsets)
                                 .setDstSubresource(vk::ImageSubresourceLayers()
                                                        .setAspectMask(vk::ImageAspectFlagBits::eColor)
                                                        .setMipLevel(i)
                                                        .setBaseArrayLayer(0)
-                                                       .setLayerCount(1));
+                                                       .setLayerCount(static_cast<std::uint32_t>(layerCount)));
 
                 commandBuffer.blitImage(
                     Handle(),

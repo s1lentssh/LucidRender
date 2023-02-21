@@ -48,14 +48,16 @@ VulkanRender::VulkanRender(const Core::IWindow& window, const Core::Scene& scene
     mImagesInFlight.resize(Defaults::MaxFramesInFlight, {});
 
     // Skybox test
-    std::array<Core::Texture, 6> textures = { Lucid::Files::LoadImage("Resources/Skyboxes/skybox_b.jpg"),
-                                              Lucid::Files::LoadImage("Resources/Skyboxes/skybox_d.jpg"),
-                                              Lucid::Files::LoadImage("Resources/Skyboxes/skybox_f.jpg"),
-                                              Lucid::Files::LoadImage("Resources/Skyboxes/skybox_l.jpg"),
-                                              Lucid::Files::LoadImage("Resources/Skyboxes/skybox_r.jpg"),
-                                              Lucid::Files::LoadImage("Resources/Skyboxes/skybox_u.jpg") };
-    auto skyboxImage = VulkanImage::FromCubemap(
-        *mDevice.get(), *mCommandPool.get(), textures, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor);
+    mSkybox = std::make_unique<VulkanSkybox>(
+        *mDevice.get(),
+        *mDescriptorPool.get(),
+        *mCommandPool.get(),
+        std::array<Core::Texture, 6> { Lucid::Files::LoadImage("Resources/Skyboxes/skybox_b.jpg"),
+                                       Lucid::Files::LoadImage("Resources/Skyboxes/skybox_f.jpg"),
+                                       Lucid::Files::LoadImage("Resources/Skyboxes/skybox_l.jpg"),
+                                       Lucid::Files::LoadImage("Resources/Skyboxes/skybox_r.jpg"),
+                                       Lucid::Files::LoadImage("Resources/Skyboxes/skybox_u.jpg"),
+                                       Lucid::Files::LoadImage("Resources/Skyboxes/skybox_d.jpg") });
 }
 
 VulkanRender::~VulkanRender() { mDevice->Handle()->waitIdle(); }
@@ -70,7 +72,12 @@ VulkanRender::DrawFrame()
         *mRenderPass.get(),
         [this](vk::CommandBuffer& commandBuffer)
         {
-            commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mPipeline->Handle().get());
+            // Skybox
+            commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mSkyboxPipeline->Handle().get());
+            mSkybox->Draw(commandBuffer, *mSkyboxPipeline.get());
+
+            // Push constants
+            commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mMeshPipeline->Handle().get());
 
             static Core::PushConstants constants;
             constants.ambientColor = glm::make_vec3(Defaults::AmbientColor.data());
@@ -78,11 +85,16 @@ VulkanRender::DrawFrame()
             constants.lightPosition = glm::vec3(10.0, 50.0, 0.0);
             constants.lightColor = glm::vec3(10.0, 10.0, 10.0);
             commandBuffer.pushConstants(
-                mPipeline->Layout(), vk::ShaderStageFlagBits::eFragment, 0, sizeof(Core::PushConstants), &constants);
+                mMeshPipeline->Layout(),
+                vk::ShaderStageFlagBits::eFragment,
+                0,
+                sizeof(Core::PushConstants),
+                &constants);
 
+            // Geometry
             for (const VulkanMesh& mesh : mMeshes)
             {
-                mesh.Draw(commandBuffer, *mPipeline.get());
+                mesh.Draw(commandBuffer, *mMeshPipeline.get());
             }
         });
 
@@ -183,9 +195,11 @@ VulkanRender::RecreateSwapchain()
     // Create render pass
     mRenderPass = std::make_unique<VulkanRenderPass>(*mDevice.get(), mSwapchain->GetImageFormat());
 
-    // Create pipeline
-    mPipeline = std::make_unique<VulkanPipeline>(
-        *mDevice.get(), mSwapchain->GetExtent(), *mRenderPass.get(), *mDescriptorPool.get());
+    // Create pipelines
+    mMeshPipeline
+        = VulkanPipeline::Default(*mDevice.get(), mSwapchain->GetExtent(), *mRenderPass.get(), *mDescriptorPool.get());
+    mSkyboxPipeline
+        = VulkanPipeline::Skybox(*mDevice.get(), mSwapchain->GetExtent(), *mRenderPass.get(), *mDescriptorPool.get());
 
     // Create depth image
     mDepthImage = VulkanImage::CreateDepthImage(
@@ -208,7 +222,7 @@ VulkanRender::UpdateUniformBuffers()
 
     Core::UniformBufferObject ubo;
     ubo.view = mScene.GetCamera()->Transform();
-    ubo.projection = glm::perspective(glm::radians(mScene.GetCamera()->FieldOfView()), aspectRatio, 0.1f, 120.0f);
+    ubo.projection = glm::perspective(glm::radians(mScene.GetCamera()->FieldOfView()), aspectRatio, 0.01f, 10000.0f);
     ubo.projection[1][1] *= -1;
 
     for (std::size_t i = 0; i < mMeshes.size(); i++)
@@ -216,6 +230,8 @@ VulkanRender::UpdateUniformBuffers()
         ubo.model = mScene.GetAssets().at(i).Transform();
         mMeshes.at(i).UpdateTransform(ubo);
     }
+
+    mSkybox->UpdateTransform(ubo);
 }
 
 void

@@ -15,10 +15,13 @@ VulkanPipeline::VulkanPipeline(
     VulkanDevice& device,
     const vk::Extent2D& extent,
     VulkanRenderPass& renderPass,
-    VulkanDescriptorPool& descriptorPool)
+    VulkanDescriptorPool& descriptorPool,
+    const std::string& shaderName,
+    bool depthWriteTest,
+    vk::CullModeFlagBits cullMode)
 {
-    VulkanShader vertexShader(device, VulkanShader::Type::Vertex, "Resources/Shaders/Shader.vert");
-    VulkanShader fragmentShader(device, VulkanShader::Type::Fragment, "Resources/Shaders/Shader.frag");
+    VulkanShader vertexShader(device, VulkanShader::Type::Vertex, "Resources/Shaders/" + shaderName + ".vert");
+    VulkanShader fragmentShader(device, VulkanShader::Type::Fragment, "Resources/Shaders/" + shaderName + ".frag");
 
     auto vertexShaderStageInfo = vk::PipelineShaderStageCreateInfo()
                                      .setStage(vk::ShaderStageFlagBits::eVertex)
@@ -67,7 +70,7 @@ VulkanPipeline::VulkanPipeline(
                                   .setRasterizerDiscardEnable(false)
                                   .setPolygonMode(vk::PolygonMode::eFill)
                                   .setLineWidth(1.0f)
-                                  .setCullMode(vk::CullModeFlagBits::eNone)
+                                  .setCullMode(cullMode)
                                   .setFrontFace(vk::FrontFace::eCounterClockwise)
                                   .setDepthBiasEnable(false);
 
@@ -104,8 +107,8 @@ VulkanPipeline::VulkanPipeline(
     mLayout = device.Handle()->createPipelineLayoutUnique(pipelineLayoutCreateInfo);
 
     auto depthStencilState = vk::PipelineDepthStencilStateCreateInfo()
-                                 .setDepthTestEnable(true)
-                                 .setDepthWriteEnable(true)
+                                 .setDepthTestEnable(depthWriteTest)
+                                 .setDepthWriteEnable(depthWriteTest)
                                  .setDepthCompareOp(vk::CompareOp::eLess)
                                  .setDepthBoundsTestEnable(false)
                                  .setStencilTestEnable(false);
@@ -125,6 +128,28 @@ VulkanPipeline::VulkanPipeline(
                                   .setSubpass(0);
 
     mHandle = device.Handle()->createGraphicsPipelineUnique({}, pipelineCreateInfo).value;
+}
+
+std::unique_ptr<VulkanPipeline>
+VulkanPipeline::Default(
+    VulkanDevice& device,
+    const vk::Extent2D& extent,
+    VulkanRenderPass& renderPass,
+    VulkanDescriptorPool& descriptorPool)
+{
+    return std::make_unique<VulkanPipeline>(
+        device, extent, renderPass, descriptorPool, "Shader", true, vk::CullModeFlagBits::eNone);
+}
+
+std::unique_ptr<VulkanPipeline>
+VulkanPipeline::Skybox(
+    VulkanDevice& device,
+    const vk::Extent2D& extent,
+    VulkanRenderPass& renderPass,
+    VulkanDescriptorPool& descriptorPool)
+{
+    return std::make_unique<VulkanPipeline>(
+        device, extent, renderPass, descriptorPool, "Skybox", false, vk::CullModeFlagBits::eNone);
 }
 
 const vk::PipelineLayout&

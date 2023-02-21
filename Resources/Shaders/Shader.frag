@@ -12,13 +12,16 @@ layout(binding = 1) uniform sampler2D texSampler;
 
 layout(push_constant) uniform constants
 {
-	vec3 ambientColor;
+    vec3 ambientColor;
     float ambientFactor;
     vec3 lightPosition;
     vec3 lightColor;
-} PushConstants;
+}
+PushConstants;
 
-void main() {
+void
+main()
+{
     // Mesh color
     vec3 meshColor = texture(texSampler, fragTexCoord).xyz;
 

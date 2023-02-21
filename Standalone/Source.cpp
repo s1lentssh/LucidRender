@@ -36,7 +36,9 @@ try
         Lucid::Files::LoadModel("Resources/Models/VikingRoom.obj"),
         Lucid::Files::LoadImage("Resources/Textures/VikingRoom.png"));
 
-    Lucid::Core::Asset asset2(asset);
+    Lucid::Core::Asset asset2(
+        Lucid::Files::LoadModel("Resources/Models/Tree.obj"),
+        Lucid::Files::LoadImage("Resources/Textures/VikingRoom.png"));
     asset2.SetPosition({ 0.0, 2.0, 0.0 });
 
     engine->AddAsset(asset);
