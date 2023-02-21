@@ -1,7 +1,10 @@
 #include "VulkanImage.h"
 
+#include <numeric>
+
 #include <Core/Texture.h>
 #include <Utils/Files.h>
+#include <Utils/Logger.hpp>
 #include <Vulkan/VulkanBuffer.h>
 #include <Vulkan/VulkanCommandPool.h>
 #include <Vulkan/VulkanDevice.h>
@@ -54,6 +57,74 @@ VulkanImage::VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, c
     GenerateMipmaps(commandPool, texture.size, vk::Format::eR8G8B8A8Srgb);
 }
 
+VulkanImage::VulkanImage(
+    VulkanDevice& device,
+    VulkanCommandPool& commandPool,
+    const std::array<Core::Texture, 6>& textures)
+    : mDevice(device)
+{
+    (void)commandPool;
+
+    std::size_t stagingSize = std::accumulate(
+        textures.begin(),
+        textures.end(),
+        static_cast<std::size_t>(0),
+        [](std::size_t accumulator, const Core::Texture& value) { return accumulator + value.pixels.size(); });
+
+    VulkanBuffer stagingBuffer(
+        device,
+        stagingSize,
+        vk::BufferUsageFlagBits::eTransferSrc,
+        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+
+    std::size_t offset { 0 };
+    for (const auto& texture : textures)
+    {
+        stagingBuffer.Write(const_cast<char*>(texture.pixels.data()), texture.pixels.size(), offset);
+        offset += texture.pixels.size();
+    }
+
+    auto& firstTexture = textures.at(0);
+
+    auto createInfo
+        = vk::ImageCreateInfo()
+              .setImageType(vk::ImageType::e2D)
+              .setExtent(vk::Extent3D().setWidth(firstTexture.size.x).setHeight(firstTexture.size.y).setDepth(1))
+              .setMipLevels(1)
+              .setArrayLayers(static_cast<std::uint32_t>(textures.size()))
+              .setFormat(vk::Format::eR8G8B8A8Srgb)
+              .setTiling(vk::ImageTiling::eOptimal)
+              .setInitialLayout(vk::ImageLayout::eUndefined)
+              .setUsage(
+                  vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled
+                  | vk::ImageUsageFlagBits::eTransferSrc)
+              .setSharingMode(vk::SharingMode::eExclusive)
+              .setSamples(vk::SampleCountFlagBits::e1)
+              .setMipLevels(firstTexture.mipLevels);
+
+    mUniqueImageHolder = device.Handle()->createImageUnique(createInfo);
+    mHandle = mUniqueImageHolder.value().get();
+    mMipLevels = firstTexture.mipLevels;
+
+    vk::MemoryRequirements requirements = device.Handle()->getImageMemoryRequirements(Handle());
+    std::uint32_t memoryType
+        = VulkanBuffer::FindMemoryType(device, requirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal);
+
+    auto allocateInfo = vk::MemoryAllocateInfo().setAllocationSize(requirements.size).setMemoryTypeIndex(memoryType);
+
+    mDeviceMemory = device.Handle()->allocateMemoryUnique(allocateInfo);
+    device.Handle()->bindImageMemory(Handle(), mDeviceMemory.get(), 0);
+
+    Transition(
+        commandPool,
+        vk::Format::eR8G8B8A8Srgb,
+        vk::ImageLayout::eUndefined,
+        vk::ImageLayout::eTransferDstOptimal,
+        textures.size());
+    Write(commandPool, stagingBuffer, firstTexture.size, textures.size());
+    GenerateMipmaps(commandPool, firstTexture.size, vk::Format::eR8G8B8A8Srgb, textures.size());
+}
+
 std::unique_ptr<VulkanImage>
 VulkanImage::CreateDepthImage(
     VulkanDevice& device,
@@ -91,6 +162,19 @@ VulkanImage::FromTexture(
     vk::ImageAspectFlags aspectFlags)
 {
     VulkanImage result(device, commandPool, texture);
+    result.GenerateImageView(format, aspectFlags);
+    return std::make_unique<VulkanImage>(std::move(result));
+}
+
+std::unique_ptr<VulkanImage>
+VulkanImage::FromCubemap(
+    VulkanDevice& device,
+    VulkanCommandPool& commandPool,
+    const std::array<Core::Texture, 6>& textures,
+    vk::Format format,
+    vk::ImageAspectFlags aspectFlags)
+{
+    VulkanImage result(device, commandPool, textures);
     result.GenerateImageView(format, aspectFlags);
     return std::make_unique<VulkanImage>(std::move(result));
 }
@@ -155,7 +239,8 @@ VulkanImage::Transition(
     VulkanCommandPool& commandPool,
     vk::Format format,
     vk::ImageLayout oldLayout,
-    vk::ImageLayout newLayout)
+    vk::ImageLayout newLayout,
+    std::size_t layerCount)
 {
     commandPool.ExecuteSingleCommand(
         [&, this](vk::CommandBuffer& commandBuffer)
@@ -168,7 +253,7 @@ VulkanImage::Transition(
                                .setImage(Handle())
                                .setSubresourceRange(vk::ImageSubresourceRange()
                                                         .setBaseMipLevel(0)
-                                                        .setLayerCount(1)
+                                                        .setLayerCount(static_cast<std::uint32_t>(layerCount))
                                                         .setBaseArrayLayer(0)
                                                         .setLevelCount(mMipLevels));
 
@@ -220,7 +305,8 @@ void
 VulkanImage::Write(
     VulkanCommandPool& commandPool,
     const VulkanBuffer& buffer,
-    const Core::Vector2d<std::uint32_t>& size)
+    const Core::Vector2d<std::uint32_t>& size,
+    std::size_t layerCount)
 {
     commandPool.ExecuteSingleCommand(
         [&, this](vk::CommandBuffer& commandBuffer)
@@ -233,7 +319,7 @@ VulkanImage::Write(
                                                        .setAspectMask(vk::ImageAspectFlagBits::eColor)
                                                        .setMipLevel(0)
                                                        .setBaseArrayLayer(0)
-                                                       .setLayerCount(1))
+                                                       .setLayerCount(static_cast<std::uint32_t>(layerCount)))
                               .setImageOffset({ 0, 0, 0 })
                               .setImageExtent({ size.x, size.y, 1 });
 
@@ -270,7 +356,8 @@ void
 VulkanImage::GenerateMipmaps(
     VulkanCommandPool& commandPool,
     const Core::Vector2d<std::uint32_t>& size,
-    vk::Format format)
+    vk::Format format,
+    std::size_t layerCount)
 {
     if (!mDevice.DoesSupportBlitting(format))
     {
@@ -286,7 +373,7 @@ VulkanImage::GenerateMipmaps(
                                .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
                                .setSubresourceRange(vk::ImageSubresourceRange()
                                                         .setAspectMask(vk::ImageAspectFlagBits::eColor)
-                                                        .setLayerCount(1)
+                                                        .setLayerCount(static_cast<std::uint32_t>(layerCount))
                                                         .setLevelCount(1)
                                                         .setBaseArrayLayer(0));
 

@@ -42,12 +42,28 @@ public:
         vk::Format format,
         vk::ImageAspectFlags aspectFlags);
 
+    static std::unique_ptr<VulkanImage> FromCubemap(
+        VulkanDevice& device,
+        VulkanCommandPool& commandPool,
+        const std::array<Core::Texture, 6>& textures,
+        vk::Format format,
+        vk::ImageAspectFlags aspectFlags);
+
     static std::unique_ptr<VulkanImage>
     CreateImage(VulkanDevice& device, vk::Format format, const vk::Extent2D& swapchainExtent);
 
-    void
-    Transition(VulkanCommandPool& commandPool, vk::Format format, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
-    void Write(VulkanCommandPool& commandPool, const VulkanBuffer& buffer, const Core::Vector2d<std::uint32_t>& size);
+    void Transition(
+        VulkanCommandPool& commandPool,
+        vk::Format format,
+        vk::ImageLayout oldLayout,
+        vk::ImageLayout newLayout,
+        std::size_t layerCount = 1);
+
+    void Write(
+        VulkanCommandPool& commandPool,
+        const VulkanBuffer& buffer,
+        const Core::Vector2d<std::uint32_t>& size,
+        std::size_t layerCount = 1);
 
     [[nodiscard]] const vk::ImageView& GetImageView() const;
     [[nodiscard]] bool HasStencil(vk::Format format) const;
@@ -67,8 +83,14 @@ private:
 
     VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, const Core::Texture& texture);
 
+    VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, const std::array<Core::Texture, 6>& textures);
+
     void GenerateImageView(vk::Format format, vk::ImageAspectFlags aspectFlags);
-    void GenerateMipmaps(VulkanCommandPool& commandPool, const Core::Vector2d<std::uint32_t>& size, vk::Format format);
+    void GenerateMipmaps(
+        VulkanCommandPool& commandPool,
+        const Core::Vector2d<std::uint32_t>& size,
+        vk::Format format,
+        std::size_t layerCount = 1);
 
     VulkanDevice& mDevice;
     vk::UniqueDeviceMemory mDeviceMemory;

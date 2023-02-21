@@ -19,7 +19,7 @@ public:
         vk::DeviceSize size,
         vk::BufferUsageFlags usage,
         vk::MemoryPropertyFlags properties);
-    void Write(const void* pixels);
+    void Write(const void* pixels, std::size_t size = 0, std::size_t offset = 0);
 
     [[nodiscard]] static std::uint32_t
     FindMemoryType(VulkanDevice& device, std::uint32_t filter, vk::MemoryPropertyFlags flags);

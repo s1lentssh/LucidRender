@@ -8,7 +8,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-
 namespace Lucid::Vulkan
 {
 
@@ -47,6 +46,16 @@ VulkanRender::VulkanRender(const Core::IWindow& window, const Core::Scene& scene
     }
 
     mImagesInFlight.resize(Defaults::MaxFramesInFlight, {});
+
+    // Skybox test
+    std::array<Core::Texture, 6> textures = { Lucid::Files::LoadImage("Resources/Skyboxes/skybox_b.jpg"),
+                                              Lucid::Files::LoadImage("Resources/Skyboxes/skybox_d.jpg"),
+                                              Lucid::Files::LoadImage("Resources/Skyboxes/skybox_f.jpg"),
+                                              Lucid::Files::LoadImage("Resources/Skyboxes/skybox_l.jpg"),
+                                              Lucid::Files::LoadImage("Resources/Skyboxes/skybox_r.jpg"),
+                                              Lucid::Files::LoadImage("Resources/Skyboxes/skybox_u.jpg") };
+    auto skyboxImage = VulkanImage::FromCubemap(
+        *mDevice.get(), *mCommandPool.get(), textures, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor);
 }
 
 VulkanRender::~VulkanRender() { mDevice->Handle()->waitIdle(); }
@@ -213,8 +222,6 @@ void
 VulkanRender::RecordCommandBuffers()
 {
     mCommandPool->RecreateCommandBuffers(*mSwapchain.get());
-    // mCommandPool->RecordCommandBuffers(*mPipeline.get(), *mSwapchain.get(), *mRenderPass.get(), mMeshes, [](auto&
-    // data){});
 }
 
 } // namespace Lucid::Vulkan

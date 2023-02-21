@@ -34,8 +34,23 @@ Files::LoadFile(const std::filesystem::path& path)
 Core::Texture
 Files::LoadImage(const std::filesystem::path& path)
 {
+    if (!std::filesystem::exists(path))
+    {
+        throw std::runtime_error("Can't load texture");
+    }
+
     int width, height, channels;
     stbi_uc* pixels = stbi_load(path.string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
+
+    if (pixels == nullptr)
+    {
+        throw std::runtime_error("Can't load texture, pixels == nullptr");
+    }
+
+    if (width == 0 || height == 0)
+    {
+        throw std::runtime_error("Can't load texture, width or height == 0");
+    }
 
     std::size_t size = static_cast<std::size_t>(width * height * 4);
     std::vector<char> result(size);

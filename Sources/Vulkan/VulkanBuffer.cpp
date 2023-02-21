@@ -1,6 +1,7 @@
 #include "VulkanBuffer.h"
 
 #include <Core/UniformBufferObject.h>
+#include <Utils/Logger.hpp>
 #include <Vulkan/VulkanCommandPool.h>
 #include <Vulkan/VulkanDevice.h>
 
@@ -23,15 +24,21 @@ VulkanBuffer::VulkanBuffer(
     auto allocateInfo = vk::MemoryAllocateInfo().setAllocationSize(requirements.size).setMemoryTypeIndex(memoryType);
 
     mMemory = device.Handle()->allocateMemoryUnique(allocateInfo);
+
     mBufferSize = createInfo.size;
     device.Handle()->bindBufferMemory(Handle().get(), mMemory.get(), 0);
 }
 
 void
-VulkanBuffer::Write(const void* pixels)
+VulkanBuffer::Write(const void* pixels, std::size_t size, std::size_t offset)
 {
+    if (size == 0)
+    {
+        size = mBufferSize;
+    }
+
     void* deviceMemory = mDevice.Handle()->mapMemory(mMemory.get(), 0, mBufferSize);
-    std::memcpy(deviceMemory, pixels, mBufferSize);
+    std::memcpy(reinterpret_cast<std::byte*>(deviceMemory) + offset, pixels, size);
     mDevice.Handle()->unmapMemory(mMemory.get());
 }
 
