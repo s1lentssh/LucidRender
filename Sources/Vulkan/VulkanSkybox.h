@@ -16,18 +16,14 @@ namespace Lucid::Vulkan
 class VulkanSkybox
 {
 public:
-    VulkanSkybox(
-        VulkanDevice& device,
-        VulkanDescriptorPool& pool,
-        VulkanCommandPool& manager,
-        const std::array<Core::Texture, 6>& textures);
+    VulkanSkybox(VulkanDevice& device, VulkanDescriptorPool& pool, VulkanCommandPool& manager);
 
     void Draw(vk::CommandBuffer& commandBuffer, VulkanPipeline& pipeline) const;
     void UpdateTransform(const Core::UniformBufferObject& ubo);
 
 private:
     std::unique_ptr<VulkanImage> mTexture;
-    VulkanSampler mSampler;
+    std::unique_ptr<VulkanSampler> mSampler;
     VulkanDescriptorSet mDescriptorSet;
     std::unique_ptr<VulkanVertexBuffer> mVertexBuffer;
     std::unique_ptr<VulkanIndexBuffer> mIndexBuffer;

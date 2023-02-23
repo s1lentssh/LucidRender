@@ -5,32 +5,36 @@
 namespace Lucid::Vulkan
 {
 
-VulkanSkybox::VulkanSkybox(
-    VulkanDevice& device,
-    VulkanDescriptorPool& pool,
-    VulkanCommandPool& manager,
-    const std::array<Core::Texture, 6>& textures)
-    : mTexture(
-        VulkanImage::FromCubemap(device, manager, textures, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor))
-    , mSampler(device, mTexture->GetMipLevels())
-    , mDescriptorSet(device, pool)
+VulkanSkybox::VulkanSkybox(VulkanDevice& device, VulkanDescriptorPool& pool, VulkanCommandPool& manager)
+    : mDescriptorSet(device, pool)
     , mUniformBuffer(device)
 {
+    Core::Mesh mesh = Files::LoadModel("Resources/Models/Cube.obj");
+    mIndexBuffer = std::make_unique<VulkanIndexBuffer>(device, manager, mesh.indices);
+    mVertexBuffer = std::make_unique<VulkanVertexBuffer>(device, manager, mesh.vertices);
+
+    std::array<Core::Texture, 6> textures {
+        Lucid::Files::LoadImage("Resources/Skyboxes/BACK.jpeg"), Lucid::Files::LoadImage("Resources/Skyboxes/FRONT.jpeg"),
+        Lucid::Files::LoadImage("Resources/Skyboxes/LEFT.jpeg"), Lucid::Files::LoadImage("Resources/Skyboxes/RIGHT.jpeg"),
+        Lucid::Files::LoadImage("Resources/Skyboxes/UP.jpeg"),   Lucid::Files::LoadImage("Resources/Skyboxes/DOWN.jpeg")
+    };
+
+    mTexture = VulkanImage::FromCubemap(
+        device, manager, textures, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor);
+
+    mSampler = std::make_unique<VulkanSampler>(device, mTexture->GetMipLevels());
+
     auto bufferInfo = vk::DescriptorBufferInfo()
                           .setBuffer(mUniformBuffer.Handle().get())
                           .setOffset(0)
                           .setRange(sizeof(Core::UniformBufferObject));
 
     auto imageInfo = vk::DescriptorImageInfo()
-                         .setSampler(mSampler.Handle().get())
+                         .setSampler(mSampler->Handle().get())
                          .setImageView(mTexture->GetImageView())
                          .setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
 
     mDescriptorSet.Update(bufferInfo, imageInfo);
-
-    auto cube = Files::LoadModel("Resources/Models/Cube.obj");
-    mIndexBuffer = std::make_unique<VulkanIndexBuffer>(device, manager, cube.indices);
-    mVertexBuffer = std::make_unique<VulkanVertexBuffer>(device, manager, cube.vertices);
 }
 
 void

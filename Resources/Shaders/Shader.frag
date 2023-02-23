@@ -31,7 +31,7 @@ main()
     // Diffuse light
     vec3 normal = normalize(fragNormal);
     vec3 lightDirection = normalize(PushConstants.lightPosition - fragPosition);
-    float diffuseStrength = max(dot(normal, lightDirection), 0.0);
+    float diffuseStrength = max(dot(normal, lightDirection), 0.0) / 2;
     vec3 diffuse = diffuseStrength * PushConstants.lightColor;
 
     // Result

@@ -48,16 +48,7 @@ VulkanRender::VulkanRender(const Core::IWindow& window, const Core::Scene& scene
     mImagesInFlight.resize(Defaults::MaxFramesInFlight, {});
 
     // Skybox test
-    mSkybox = std::make_unique<VulkanSkybox>(
-        *mDevice.get(),
-        *mDescriptorPool.get(),
-        *mCommandPool.get(),
-        std::array<Core::Texture, 6> { Lucid::Files::LoadImage("Resources/Skyboxes/skybox_b.jpg"),
-                                       Lucid::Files::LoadImage("Resources/Skyboxes/skybox_f.jpg"),
-                                       Lucid::Files::LoadImage("Resources/Skyboxes/skybox_l.jpg"),
-                                       Lucid::Files::LoadImage("Resources/Skyboxes/skybox_r.jpg"),
-                                       Lucid::Files::LoadImage("Resources/Skyboxes/skybox_u.jpg"),
-                                       Lucid::Files::LoadImage("Resources/Skyboxes/skybox_d.jpg") });
+    mSkybox = std::make_unique<VulkanSkybox>(*mDevice.get(), *mDescriptorPool.get(), *mCommandPool.get());
 }
 
 VulkanRender::~VulkanRender() { mDevice->Handle()->waitIdle(); }
@@ -72,6 +63,8 @@ VulkanRender::DrawFrame()
         *mRenderPass.get(),
         [this](vk::CommandBuffer& commandBuffer)
         {
+            static float position = 1.0;
+
             // Skybox
             commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mSkyboxPipeline->Handle().get());
             mSkybox->Draw(commandBuffer, *mSkyboxPipeline.get());
@@ -81,9 +74,9 @@ VulkanRender::DrawFrame()
 
             static Core::PushConstants constants;
             constants.ambientColor = glm::make_vec3(Defaults::AmbientColor.data());
-            constants.ambientFactor = 3.0f;
-            constants.lightPosition = glm::vec3(10.0, 50.0, 0.0);
-            constants.lightColor = glm::vec3(10.0, 10.0, 10.0);
+            constants.ambientFactor = 1000.0f;
+            constants.lightPosition = glm::vec3(sin(position) * 400, 50.0, cos(position) * 400);
+            constants.lightColor = glm::vec3(4.5, 4.5, 5.0);
             commandBuffer.pushConstants(
                 mMeshPipeline->Layout(),
                 vk::ShaderStageFlagBits::eFragment,
@@ -96,6 +89,8 @@ VulkanRender::DrawFrame()
             {
                 mesh.Draw(commandBuffer, *mMeshPipeline.get());
             }
+
+            position += 0.001;
         });
 
     // Render frame
@@ -222,7 +217,8 @@ VulkanRender::UpdateUniformBuffers()
 
     Core::UniformBufferObject ubo;
     ubo.view = mScene.GetCamera()->Transform();
-    ubo.projection = glm::perspective(glm::radians(mScene.GetCamera()->FieldOfView()), aspectRatio, 0.01f, 10000.0f);
+    ubo.projection
+        = glm::perspective(glm::radians(mScene.GetCamera()->FieldOfView()), aspectRatio, 0.01f, 1'000'000.0f);
     ubo.projection[1][1] *= -1;
 
     for (std::size_t i = 0; i < mMeshes.size(); i++)
