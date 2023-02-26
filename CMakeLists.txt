@@ -38,8 +38,8 @@ include(${CMAKE_BINARY_DIR}/conan.cmake)
 conan_cmake_run(
     REQUIRES
         fmt/9.1.0
-        rang/3.1.0
-        glfw/3.3.2
+        rang/3.2
+        glfw/3.3.8
         stb/20200203
         imgui/1.88
         shaderc/2019.0
