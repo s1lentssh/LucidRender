@@ -1,16 +1,26 @@
 function(SetMaxWarningLevel Project)
-    if(MSVC)
+    if(WIN32)
         target_compile_options(${Project} PRIVATE /W3)
-    else()
+    elseif(APPLE)
         target_compile_options(${Project} PRIVATE
-        #[[ Interesting
+            -Werror
+            -Weverything
+            -Wno-pre-c++17-compat
+            -Wno-c++98-compat
+            -Wno-weak-vtables
+            -Wno-padded
+            -Wno-exit-time-destructors
+            -Wno-global-constructors
+            -Wno-ctad-maybe-unsupported
+        )
+    elseif(UNIX)
+        target_compile_options(${Project} PRIVATE
             -Wall 
             -Wextra 
             -Wshadow 
             -Wnon-virtual-dtor 
             -Wpedantic 
             -Wconversion 
-            -Wpedantic 
             -Werror
             -pedantic
             -Wold-style-cast
@@ -23,17 +33,11 @@ function(SetMaxWarningLevel Project)
             -Wdouble-promotion
             -Wformat=2
             -Wimplicit-fallthrough
-        ]]#
-            -Werror
-            -Weverything
-            -Wno-pre-c++17-compat
-            -Wno-c++98-compat
-            -Wno-weak-vtables
-            -Wno-padded
-            -Wno-exit-time-destructors
-            -Wno-global-constructors
-            -Wno-ctad-maybe-unsupported
-            -Wno-error=unknown-warning
+            -Wduplicated-cond
+            -Wduplicated-branches
+            -Wlogical-op
+            -Wuseless-cast
+            -Wlifetime
         )
     endif()
 endfunction(SetMaxWarningLevel)
