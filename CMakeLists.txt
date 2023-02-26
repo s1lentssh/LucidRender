@@ -49,6 +49,7 @@ conan_cmake_run(
 
     BASIC_SETUP
     CMAKE_TARGETS
+    BUILD_TYPE ${CMAKE_BUILD_TYPE}
 
     OPTIONS
         shaderc*:shared=False

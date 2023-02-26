@@ -209,7 +209,7 @@ void
 VulkanRender::UpdateUniformBuffers()
 {
     vk::Extent2D extent = mSwapchain->GetExtent();
-    float aspectRatio = extent.width / static_cast<float>(extent.height);
+    float aspectRatio = static_cast<float>(extent.width) / static_cast<float>(extent.height);
 
     Core::UniformBufferObject ubo;
     ubo.view = mScene.GetCamera()->Transform();
