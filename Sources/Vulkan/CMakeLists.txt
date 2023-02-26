@@ -44,6 +44,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ImguiGenerated)
 
 # Set compile options
 SetMaxWarningLevel(${PROJECT_NAME})
+SetWindowsVersion(${PROJECT_NAME})
 SetLucidVersion(${PROJECT_NAME})
 
 if(WIN32)
