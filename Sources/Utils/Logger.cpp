@@ -58,13 +58,18 @@ LucidFormatter(logging::record_view const& rec, logging::formatting_ostream& str
     strm << fmt::format(fg(fmt::color::gray) | fmt::emphasis::bold, " ") << rec[expr::smessage] << " ";
 
     // Function and line section
+    auto line = logging::extract<unsigned long>("Line", rec);
+    if (line == nullptr)
+    {
+        throw std::runtime_error("Line was nullptr");
+    }
+
     strm << fmt::format(fg(fmt::color::light_steel_blue) | fmt::emphasis::bold, "(")
          << fmt::format(
                 fg(fmt::color::steel_blue) | fmt::emphasis::bold, logging::extract<std::string>("Function", rec).get())
          << fmt::format(fg(fmt::color::light_steel_blue) | fmt::emphasis::bold, ":")
          << fmt::format(
-                fg(fmt::color::steel_blue) | fmt::emphasis::bold,
-                std::to_string(logging::extract<unsigned long>("Line", rec).get()))
+                fg(fmt::color::steel_blue) | fmt::emphasis::bold, std::to_string(line.get()))
          << fmt::format(fg(fmt::color::light_steel_blue) | fmt::emphasis::bold, ")");
 }
 

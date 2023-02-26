@@ -37,7 +37,6 @@ function(SetMaxWarningLevel Project)
             -Wduplicated-branches
             -Wlogical-op
             -Wuseless-cast
-            -fno-semantic-interposition
         )
     endif()
 endfunction(SetMaxWarningLevel)
