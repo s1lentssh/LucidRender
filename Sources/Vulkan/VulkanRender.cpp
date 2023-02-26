@@ -63,8 +63,6 @@ VulkanRender::DrawFrame()
         *mRenderPass.get(),
         [this](vk::CommandBuffer& commandBuffer)
         {
-            static float position = 1.0;
-
             // Skybox
             commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mSkyboxPipeline->Handle().get());
             mSkybox->Draw(commandBuffer, *mSkyboxPipeline.get());
@@ -75,7 +73,7 @@ VulkanRender::DrawFrame()
             static Core::PushConstants constants;
             constants.ambientColor = glm::make_vec3(Defaults::AmbientColor.data());
             constants.ambientFactor = 1000.0f;
-            constants.lightPosition = glm::vec3(sin(position) * 400, 50.0, cos(position) * 400);
+            constants.lightPosition = glm::vec3(400.0, 50.0, 400.0);
             constants.lightColor = glm::vec3(4.5, 4.5, 5.0);
             commandBuffer.pushConstants(
                 mMeshPipeline->Layout(),
@@ -89,8 +87,6 @@ VulkanRender::DrawFrame()
             {
                 mesh.Draw(commandBuffer, *mMeshPipeline.get());
             }
-
-            position += 0.001;
         });
 
     // Render frame
