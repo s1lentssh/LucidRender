@@ -37,7 +37,7 @@ include(${CMAKE_BINARY_DIR}/conan.cmake)
 # Conan
 conan_cmake_run(
     REQUIRES
-        fmt/7.0.3
+        fmt/9.1.0
         rang/3.1.0
         glfw/3.3.2
         stb/20200203
