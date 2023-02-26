@@ -29,7 +29,6 @@ function(SetMaxWarningLevel Project)
             -Woverloaded-virtual
             -Wsign-conversion
             -Wmisleading-indentation
-            -Wnull-dereference
             -Wdouble-promotion
             -Wformat=2
             -Wimplicit-fallthrough
