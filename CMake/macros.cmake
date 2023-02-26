@@ -33,6 +33,7 @@ function(SetMaxWarningLevel Project)
             -Wno-exit-time-destructors
             -Wno-global-constructors
             -Wno-ctad-maybe-unsupported
+            -Wno-error=unknown-warning
         )
     endif()
 endfunction(SetMaxWarningLevel)
