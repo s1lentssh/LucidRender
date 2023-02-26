@@ -75,8 +75,7 @@ jobs:
     - name: Install Conan
       run: |
         sudo python -m pip install --upgrade pip
-        sudo python -m pip install conan
-        conan profile detect
+        sudo python -m pip install conan==1.58.0
         
     - name: Install Vulkan
       working-directory: /tmp
