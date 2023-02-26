@@ -51,7 +51,7 @@ conan_cmake_run(
     CMAKE_TARGETS
 
     OPTIONS
-        shaderc:shared=False
+        shaderc*:shared=False
 
     IMPORTS "./res/bindings, *.cpp -> generated/imgui"
     IMPORTS "./res/bindings, *.h -> generated/imgui"
