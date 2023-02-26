@@ -7,6 +7,7 @@ env:
   BUILD_TYPE: Release
   VULKAN_VERSION_WINDOWS: 1.2.170.0
   APT_PACKAGES: "libx11-xcb-dev libfontenc-dev libxaw7-dev libxcomposite-dev libxcursor-dev libxdamage-dev libxfixes-dev libxi-dev libxinerama-dev libxmu-dev libxmuu-dev libxpm-dev libxrandr-dev libxres-dev libxss-dev libxtst-dev libxv-dev libxvmc-dev libxxf86vm-dev libxcb-render-util0-dev libxcb-xkb-dev libxcb-icccm4-dev libxcb-image0-dev libxcb-keysyms1-dev libxcb-randr0-dev libxcb-shape0-dev libxcb-sync-dev libxcb-xfixes0-dev libxcb-xinerama0-dev libxcb-dri3-dev libxcb-util-dev"
+  COMPILER_LINUX: /usr/bin/g++-11
 
 jobs:
   Windows:
@@ -102,7 +103,7 @@ jobs:
       # and build directories, but this is only available with CMake 3.13 and higher.  
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: |
-        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_COMPILER=g++-10 -DCMAKE_INSTALL_PREFIX=/tmp/LucidRender
+        cmake -B Build $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_COMPILER=${{ env.COMPILER_LINUX }} -DCMAKE_INSTALL_PREFIX=/tmp/LucidRender
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
@@ -110,7 +111,7 @@ jobs:
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: cmake --build . --config $BUILD_TYPE --target install
       env:
-        CXX: /usr/bin/g++-10
+        CXX: ${{ env.COMPILER_LINUX }}
     
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
