@@ -26,6 +26,8 @@ public:
     void MouseScrolled(float x, float y);
     void KeyPressed(Key key);
     void KeyReleased(Key key);
+    void MousePressed();
+    void MouseReleased();
 
     std::set<Key> GetPressedKeys();
     Vector2d<float> GetMouseDelta();
@@ -42,7 +44,7 @@ private:
 
     Vector2d<float> mMouseLastPosition;
     Vector2d<float> mMouseDelta;
-    bool mMouseMovedThisFrame = false;
+    bool mMouseJustPressed = true;
 
     Vector2d<float> mScrollDelta;
     bool mMouseScrolledThisFrame = false;

@@ -44,6 +44,7 @@ public:
     static void OnKeyPressed(GLFWwindow* window, int key, int scancode, int action, int mods);
     static void OnCursorMoved(GLFWwindow* window, double x, double y);
     static void OnScrolled(GLFWwindow* window, double x, double y);
+    static void OnMouseButton(GLFWwindow* window, int button, int action, int mods);
 
 private:
     GLFWwindow* mWindow = nullptr;

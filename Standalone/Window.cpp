@@ -37,6 +37,7 @@ Window::Window()
     glfwSetKeyCallback(mWindow, OnKeyPressed);
     glfwSetCursorPosCallback(mWindow, OnCursorMoved);
     glfwSetScrollCallback(mWindow, OnScrolled);
+    glfwSetMouseButtonCallback(mWindow, OnMouseButton);
 }
 
 Window::~Window()
@@ -111,7 +112,7 @@ Window::OnCursorMoved(GLFWwindow* window, double x, double y)
     (void)y;
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
     {
-        // Core::InputController::Instance().MouseMoved(static_cast<float>(x), static_cast<float>(y));
+        Core::InputController::Instance().MouseMoved(static_cast<float>(x), static_cast<float>(y));
     }
 }
 
@@ -120,6 +121,24 @@ Window::OnScrolled(GLFWwindow* window, double x, double y)
 {
     (void)window;
     Core::InputController::Instance().MouseScrolled(static_cast<float>(x), static_cast<float>(y));
+}
+
+void
+Window::OnMouseButton(GLFWwindow* window, int button, int action, int mods)
+{
+    (void)window;
+    (void)button;
+    (void)mods;
+
+    if (action == GLFW_PRESS)
+    {
+        Core::InputController::Instance().MousePressed();
+    }
+
+    if (action == GLFW_RELEASE)
+    {
+        Core::InputController::Instance().MouseReleased();
+    }
 }
 
 std::vector<const char*>

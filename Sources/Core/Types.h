@@ -16,8 +16,7 @@ template <typename T> struct Vector2d
 
     bool IsZero() const
     {
-        return std::abs(x) <= std::numeric_limits<T>::epsilon()
-            && std::abs(y) <= std::numeric_limits<T>::epsilon();
+        return std::abs(x) <= std::numeric_limits<T>::epsilon() && std::abs(y) <= std::numeric_limits<T>::epsilon();
     }
 };
 
@@ -50,7 +49,7 @@ public:
     {
     }
 
-    void SetPosition(const glm::vec3& position) { mTransofrm = glm::translate(glm::mat4(1), position); }
+    void SetPosition(const glm::vec3& position) { mTransform = glm::translate(glm::mat4(1), position); }
 
     [[nodiscard]] Mesh GetMesh() const { return mMesh; }
 

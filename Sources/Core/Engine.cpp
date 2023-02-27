@@ -15,7 +15,7 @@ Engine::Engine(const IWindow& window, API api)
     mScene = std::make_shared<Lucid::Core::Scene>();
 
     auto camera = std::make_shared<Lucid::Core::Camera>(
-        glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.2f), glm::vec3(0.0f, 0.0f, 1.0f)));
+        glm::lookAt(glm::vec3(3.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
     mScene->AddCamera(camera);
 
     switch (api)

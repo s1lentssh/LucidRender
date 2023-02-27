@@ -16,7 +16,7 @@ public:
     const glm::mat4& Transform() const;
 
 protected:
-    glm::mat4 mTransofrm;
+    glm::mat4 mTransform;
 };
 
 } // namespace Lucid::Core

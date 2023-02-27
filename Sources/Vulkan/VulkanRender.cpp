@@ -228,7 +228,7 @@ VulkanRender::DrawFrame()
     ShowExampleAppDockSpace();
 
     // Top menu
-    static bool drawTransform = true;
+    static bool drawTransform = false;
     if (ImGui::BeginMainMenuBar())
     {
         if (ImGui::BeginMenu("File"))

@@ -15,9 +15,29 @@ InputController::Instance()
 void
 InputController::MouseMoved(float x, float y)
 {
-    mMouseDelta = Vector2d<float> { x - mMouseLastPosition.x, mMouseLastPosition.y - y };
-    mMouseLastPosition = Vector2d<float> { x, y };
-    mMouseMovedThisFrame = true;
+    if (mMouseJustPressed)
+    {
+        mMouseLastPosition = Vector2d<float> { x, y };
+        mMouseDelta = Vector2d<float> { 0, 0 };
+        mMouseJustPressed = false;
+    }
+    else
+    {
+        mMouseDelta = Vector2d<float> { x - mMouseLastPosition.x, mMouseLastPosition.y - y };
+        mMouseLastPosition = Vector2d<float> { x, y };
+    }
+}
+
+void
+InputController::MousePressed()
+{
+    mMouseJustPressed = true;
+}
+
+void
+InputController::MouseReleased()
+{
+    mMouseDelta = Vector2d<float> { 0, 0 };
 }
 
 void
@@ -48,13 +68,6 @@ InputController::GetPressedKeys()
 Vector2d<float>
 InputController::GetMouseDelta()
 {
-    if (!mMouseMovedThisFrame)
-    {
-        mMouseDelta = Vector2d<float> { 0, 0 };
-    }
-
-    mMouseMovedThisFrame = false;
-
     return mMouseDelta;
 }
 
