@@ -41,7 +41,7 @@ conan_cmake_run(
         rang/3.2
         glfw/3.3.8
         stb/20200203
-        imgui/1.88
+        imgui/cci.20230105+1.89.2.docking
         shaderc/2019.0
         glm/0.9.9.8
         tinyobjloader/1.0.6

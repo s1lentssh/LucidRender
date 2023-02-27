@@ -36,5 +36,6 @@ main()
 
     // Result
     vec3 result = (ambient + diffuse) * meshColor;
-    outColor = vec4(result, 1.0f);
+    float gamma = 2.2;
+    outColor = vec4(pow(result, vec3(1.0/gamma)), 1.0f);
 }

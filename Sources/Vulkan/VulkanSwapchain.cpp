@@ -89,7 +89,7 @@ VulkanSwapchain::SelectSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& av
 
     for (const auto& availableFormat : availableFormats)
     {
-        bool niceFormat = vk::Format::eR8G8B8A8Srgb == availableFormat.format;
+        bool niceFormat = vk::Format::eR16G16B16A16Sfloat == availableFormat.format;
         bool niceColorSpace = vk::ColorSpaceKHR::eSrgbNonlinear == availableFormat.colorSpace;
 
         if (niceFormat && niceColorSpace)
@@ -99,7 +99,7 @@ VulkanSwapchain::SelectSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& av
         }
     }
 
-    LoggerInfo << "Selected available colorspace and format";
+    LoggerWarning << "Selected available colorspace and format";
 
     if (availableFormats.size() > 1)
     {
@@ -116,7 +116,7 @@ VulkanSwapchain::SelectPresentMode(const std::vector<vk::PresentModeKHR>& availa
 
     for (const auto& availableMode : availableModes)
     {
-        bool niceMode = vk::PresentModeKHR::eImmediate == availableMode;
+        bool niceMode = vk::PresentModeKHR::eMailbox == availableMode;
 
         if (niceMode)
         {

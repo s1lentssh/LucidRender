@@ -12,6 +12,7 @@ function(SetMaxWarningLevel Project)
             -Wno-exit-time-destructors
             -Wno-global-constructors
             -Wno-ctad-maybe-unsupported
+            -Wno-switch-enum
         )
     elseif(UNIX)
         target_compile_options(${Project} PRIVATE

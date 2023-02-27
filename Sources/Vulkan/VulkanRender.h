@@ -26,11 +26,13 @@ public:
     ~VulkanRender() override;
     void DrawFrame() override;
     void AddAsset(const Core::Asset& asset) override;
+    bool ShouldClose() const override;
 
 private:
     void RecreateSwapchain();
     void UpdateUniformBuffers();
     void RecordCommandBuffers();
+    void SetupImgui();
 
     // Vulkan entities
     std::unique_ptr<VulkanInstance> mInstance;
@@ -57,6 +59,7 @@ private:
     const Core::IWindow* mWindow = nullptr;
 
     const Core::Scene& mScene;
+    bool mShouldClose = false;
 };
 
 } // namespace Lucid::Vulkan

@@ -42,6 +42,7 @@ public:
     virtual void DrawFrame() = 0;
     virtual void AddAsset(const Core::Asset& asset) = 0;
     virtual ~IRender() = default;
+    virtual bool ShouldClose() const = 0;
 };
 
 } // namespace Lucid::Core

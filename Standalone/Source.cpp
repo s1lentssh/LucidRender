@@ -45,7 +45,7 @@ try
 
     float lastTime = static_cast<float>(glfwGetTime());
 
-    while (!window->ShouldClose())
+    while (!window->ShouldClose() && !engine->ShouldClose())
     {
         float currentTime = static_cast<float>(glfwGetTime());
         float deltaTime = currentTime - lastTime;
