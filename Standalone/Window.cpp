@@ -35,7 +35,6 @@ Window::Window()
     glfwSetKeyCallback(mWindow, OnKeyPressed);
     glfwSetCursorPosCallback(mWindow, OnCursorMoved);
     glfwSetScrollCallback(mWindow, OnScrolled);
-    glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 Window::~Window()
@@ -106,7 +105,10 @@ void
 Window::OnCursorMoved(GLFWwindow* window, double x, double y)
 {
     (void)window;
-    Core::InputController::Instance().MouseMoved(static_cast<float>(x), static_cast<float>(y));
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+    {
+        // Core::InputController::Instance().MouseMoved(static_cast<float>(x), static_cast<float>(y));
+    }
 }
 
 void

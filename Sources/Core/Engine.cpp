@@ -81,4 +81,10 @@ Engine::ProcessInput(float time)
     }
 }
 
+bool
+Engine::ShouldClose() const
+{
+    return mRender->ShouldClose();
+}
+
 } // namespace Lucid::Core
