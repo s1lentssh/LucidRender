@@ -408,7 +408,7 @@ VulkanImage::GenerateMipmaps(
                 };
                 auto dstOffsets = std::array<vk::Offset3D, 2> {
                     vk::Offset3D(0, 0, 0),
-                    vk::Offset3D(mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1)
+                    vk::Offset3D(static_cast<std::int32_t>(mipWidth > 1 ? mipWidth / 2 : 1), static_cast<std::int32_t>(mipHeight > 1 ? mipHeight / 2 : 1), 1)
                 };
 
                 auto blit = vk::ImageBlit()

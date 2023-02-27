@@ -133,7 +133,7 @@ Window::Handle() const noexcept
 #endif
 
 #ifdef __linux__
-unsigned int
+std::uint64_t
 Window::Handle() const noexcept
 {
     return glfwGetX11Window(mWindow);
