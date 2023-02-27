@@ -1,12 +1,12 @@
 #include "Window.h"
 
-#include <Core/InputController.h>
-#include <Utils/Defaults.hpp>
-
-#define STB_IMAGE_IMPLEMENTATION
 #include <map>
 
 #include <stb_image.h>
+
+#include <Core/InputController.h>
+#include <Utils/Defaults.hpp>
+
 
 #if defined(__APPLE__)
 #include <Utils/MacOS/Interface.h>

@@ -11,6 +11,7 @@ find_package(fmt REQUIRED)
 find_package(rang REQUIRED)
 find_package(stb REQUIRED)
 find_package(tinyobjloader REQUIRED)
+find_package(TinyGLTF)
 
 # Link libraries
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../)
@@ -21,6 +22,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     stb::stb
     tinyobjloader::tinyobjloader
     Lucid::Core
+    TinyGLTF::TinyGLTF
 )
 
 IF(APPLE)

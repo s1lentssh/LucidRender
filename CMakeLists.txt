@@ -38,6 +38,7 @@ conan_cmake_run(
         glm/0.9.9.8
         tinyobjloader/1.0.6
         boost/1.79.0
+        tinygltf/2.5.0
 
     BASIC_SETUP
     CMAKE_TARGETS

@@ -3,6 +3,10 @@
 #include <fstream>
 
 #include <stb_image.h>
+#define TINYGLTF_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <tiny_gltf.h>
 #include <tiny_obj_loader.h>
 
 #include <Utils/Logger.hpp>
@@ -66,6 +70,21 @@ Files::LoadModel(const std::filesystem::path& path)
 {
     LoggerInfo << "Loading model " << path.string().c_str();
 
+    if (path.extension() == ".obj")
+    {
+        return LoadObj(path);
+    }
+    else if (path.extension() == ".gltf")
+    {
+        return LoadGltf(path);
+    }
+
+    throw std::runtime_error("Can't determine model format");
+}
+
+Core::Mesh
+Files::LoadObj(const std::filesystem::path& path)
+{
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
@@ -100,6 +119,31 @@ Files::LoadModel(const std::filesystem::path& path)
 
             mesh.vertices.push_back(vertex);
             mesh.indices.push_back(static_cast<std::uint32_t>(mesh.indices.size()));
+        }
+    }
+
+    return mesh;
+}
+
+Core::Mesh
+Files::LoadGltf(const std::filesystem::path& path)
+{
+    tinygltf::Model model;
+    tinygltf::TinyGLTF loader;
+    std::string error;
+    std::string warn;
+
+    if (!loader.LoadASCIIFromFile(&model, &error, &warn, path.string()))
+    {
+        throw std::runtime_error("Cant load model, error: " + error);
+    }
+
+    Core::Mesh mesh;
+
+    for (const auto& gltfMesh : model.meshes)
+    {
+        for (const auto& gltfPrimitive : gltfMesh.primitives)
+        {
         }
     }
 

@@ -32,16 +32,21 @@ try
     std::unique_ptr<Lucid::Core::Engine> engine
         = std::make_unique<Lucid::Core::Engine>(*window.get(), Lucid::Core::Engine::API::Vulkan);
 
-    Lucid::Core::Asset asset(
+    /*Lucid::Core::Asset asset(
         Lucid::Files::LoadModel("Resources/Models/VikingRoom.obj"),
-        Lucid::Files::LoadImage("Resources/Textures/VikingRoom.png"));
+        Lucid::Files::LoadImage("Resources/Textures/VikingRoom.png"));*/
 
     Lucid::Core::Asset asset2(
         Lucid::Files::LoadModel("Resources/Models/Tree.obj"), Lucid::Files::LoadImage("Resources/Textures/Tree.png"));
     asset2.SetPosition({ 0.0, 2.0, 0.0 });
 
-    engine->AddAsset(asset);
+    // engine->AddAsset(asset);
     engine->AddAsset(asset2);
+
+    Lucid::Core::Asset asset(
+        Lucid::Files::LoadModel("/Users/s1lentssh/Work/glTF-Sample-Models/2.0/SciFiHelmet/glTF/SciFiHelmet.gltf"),
+        Lucid::Files::LoadImage(
+            "/Users/s1lentssh/Work/glTF-Sample-Models/2.0/SciFiHelmet/glTF/SciFiHelmet_BaseColor.png"));
 
     float lastTime = static_cast<float>(glfwGetTime());
 
