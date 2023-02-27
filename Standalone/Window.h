@@ -31,7 +31,7 @@ public:
 #endif
 
 #ifdef __APPLE__
-    [[nodiscard]] void* Handle() const noexcept override;
+    [[nodiscard]] std::uint64_t Handle() const noexcept override;
 #endif
 
     GLFWwindow* Get() const noexcept override { return mWindow; }
