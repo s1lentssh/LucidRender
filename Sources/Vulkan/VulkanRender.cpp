@@ -187,13 +187,12 @@ VulkanRender::DrawFrame()
     ImGui::NewFrame();
 
     // Top menu
-    ImVec2 menuBarSize {};
     static bool drawTransform = true;
     if (ImGui::BeginMainMenuBar())
     {
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("About", nullptr))
+            if (ImGui::MenuItem("About", "Shift + H"))
             {
             }
             if (ImGui::MenuItem("Close", "Esc"))
@@ -209,14 +208,20 @@ VulkanRender::DrawFrame()
             ImGui::PopStyleVar();
             ImGui::EndMenu();
         }
-        menuBarSize = ImGui::GetWindowSize();
+        if (ImGui::BeginMenu("Render"))
+        {
+            if (ImGui::MenuItem("Start Render", "Shift + R"))
+            {
+            }
+            ImGui::EndMenu();
+        }
         ImGui::EndMainMenuBar();
     }
 
     // Body
     if (drawTransform)
     {
-        ImGui::Begin("Transform", &drawTransform);
+        ImGui::Begin("Transform", &drawTransform, ImGuiWindowFlags_NoFocusOnAppearing);
         static float vec3[3] = { 1, 5, 100 };
         ImGui::InputFloat3("Translate", vec3, "%.2f");
         ImGui::InputFloat3("Rotate", vec3, "%.2f");
