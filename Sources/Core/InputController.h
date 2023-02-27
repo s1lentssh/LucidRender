@@ -28,6 +28,7 @@ public:
     void KeyReleased(Key key);
     void MousePressed();
     void MouseReleased();
+    void SetMouseDisabled(bool value);
 
     std::set<Key> GetPressedKeys();
     Vector2d<float> GetMouseDelta();
@@ -48,6 +49,7 @@ private:
 
     Vector2d<float> mScrollDelta;
     bool mMouseScrolledThisFrame = false;
+    bool mMouseDisabled = false;
 };
 
 } // namespace Lucid::Core

@@ -17,7 +17,6 @@
 #include <Vulkan/VulkanSwapchain.h>
 #include <vulkan/vulkan.hpp>
 
-
 namespace Lucid::Vulkan
 {
 

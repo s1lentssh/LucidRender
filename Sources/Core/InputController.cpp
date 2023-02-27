@@ -15,6 +15,11 @@ InputController::Instance()
 void
 InputController::MouseMoved(float x, float y)
 {
+    if (mMouseDisabled)
+    {
+        return;
+    }
+
     if (mMouseJustPressed)
     {
         mMouseLastPosition = Vector2d<float> { x, y };
@@ -38,6 +43,12 @@ void
 InputController::MouseReleased()
 {
     mMouseDelta = Vector2d<float> { 0, 0 };
+}
+
+void
+InputController::SetMouseDisabled(bool disabled)
+{
+    mMouseDisabled = disabled;
 }
 
 void

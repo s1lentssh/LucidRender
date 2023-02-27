@@ -1,5 +1,6 @@
 #include "VulkanRender.h"
 
+#include <Core/InputController.h>
 #include <Core/UniformBufferObject.h>
 #include <Utils/Files.h>
 #include <Utils/Logger.hpp>
@@ -217,6 +218,8 @@ VulkanRender::DrawFrame()
 {
     mDevice->Handle()->waitIdle();
 
+    Core::InputController::Instance().SetMouseDisabled(ImGui::GetIO().WantCaptureMouse);
+
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
@@ -241,8 +244,8 @@ VulkanRender::DrawFrame()
         if (ImGui::BeginMenu("View"))
         {
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2.0f, 2.0f));
-            ImGui::Checkbox("Show Transform", &drawTransform);
-            if (ImGui::Checkbox("Draw Skybox", &mDrawSkybox))
+            ImGui::Checkbox("Properties", &drawTransform);
+            if (ImGui::Checkbox("Skybox", &mDrawSkybox))
             {
                 RecreateSwapchain();
             }
@@ -262,12 +265,16 @@ VulkanRender::DrawFrame()
     // Body
     if (drawTransform)
     {
-        ImGui::SetNextWindowSize({ 300.0f, 200.0f });
-        ImGui::Begin("Transform", &drawTransform, ImGuiWindowFlags_NoFocusOnAppearing);
+        ImGui::SetNextWindowSize({ 300.0f, 200.0f }, ImGuiCond_FirstUseEver);
+        ImGui::Begin("Properties", &drawTransform, ImGuiWindowFlags_NoFocusOnAppearing);
+        ImGui::Text("Selected Asset");
         static float vec3[3] = { 1, 5, 100 };
         ImGui::InputFloat3("Translate", vec3, "%.2f");
         ImGui::InputFloat3("Rotate", vec3, "%.2f");
         ImGui::InputFloat3("Scale", vec3, "%.2f");
+        ImGui::Text("Environment Light");
+        static float col1[3] = { 1.0f, 0.0f, 0.2f };
+        ImGui::ColorEdit3("Color", col1);
         ImGui::End();
     }
 
@@ -293,7 +300,7 @@ VulkanRender::DrawFrame()
             static Core::PushConstants constants;
             constants.ambientColor = glm::make_vec4(Defaults::AmbientColor.data());
             constants.lightPosition = glm::vec4(400.0, 50.0, 400.0, 1.0);
-            constants.lightColor = glm::vec4(1.0, 1.0, 1.0, 5.0);
+            constants.lightColor = glm::vec4(1.0, 1.0, 1.0, 1.0);
             commandBuffer.pushConstants(
                 mMeshPipeline->Layout(),
                 vk::ShaderStageFlagBits::eFragment,
