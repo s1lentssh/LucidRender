@@ -3,7 +3,6 @@ name: CMake
 on: [push]
 
 env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
   VULKAN_VERSION_WINDOWS: 1.2.170.0
   APT_PACKAGES: "libx11-xcb-dev libfontenc-dev libxaw7-dev libxcomposite-dev libxcursor-dev libxdamage-dev libxfixes-dev libxi-dev libxinerama-dev libxmu-dev libxmuu-dev libxpm-dev libxrandr-dev libxres-dev libxss-dev libxtst-dev libxv-dev libxvmc-dev libxxf86vm-dev libxcb-render-util0-dev libxcb-xkb-dev libxcb-icccm4-dev libxcb-image0-dev libxcb-keysyms1-dev libxcb-randr0-dev libxcb-shape0-dev libxcb-sync-dev libxcb-xfixes0-dev libxcb-xinerama0-dev libxcb-dri3-dev libxcb-util-dev"
@@ -11,10 +10,6 @@ env:
 
 jobs:
   Windows:
-    # The CMake configure and build commands are platform agnostic and should work equally
-    # well on Windows or Mac.  You can convert this to a matrix build if you need
-    # cross-platform coverage.
-    # See: https://docs.github.com/en/actions/configuring-and-managing-workflows/configuring-a-workflow#configuring-a-build-matrix
     runs-on: windows-latest
 
     steps:
@@ -37,40 +32,26 @@ jobs:
           $installer = Start-Process -FilePath VulkanSDK.exe -Wait -PassThru -ArgumentList @("/S");
           $installer.WaitForExit();
 
-    - name: Create Build Environment
-      # Some projects don't allow in-source building, so create a separate build directory
-      # We'll use this as our working directory for all subsequent commands
-      run: cmake -E make_directory ${{runner.workspace}}/build
-
     - name: Configure CMake
-      # Use a bash shell so we can use the same syntax for environment variable
-      # access regardless of the host operating system
       shell: bash
-      working-directory: ${{runner.workspace}}/build
-      # Note the current convention is to use the -S and -B options here to specify source 
-      # and build directories, but this is only available with CMake 3.13 and higher.  
-      # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_SYSTEM_VERSION=10.0.19041.0
+      working-directory: ${{runner.workspace}}
+      run: |
+        cmake -B Build $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_SYSTEM_VERSION=10.0.19041.0 -DCMAKE_INSTALL_PREFIX=${{runner.workspace}}/Install
       env:
         Vulkan_SDK: C:/VulkanSDK/${{ env.VULKAN_VERSION_WINDOWS }}
 
     - name: Build
-      working-directory: ${{runner.workspace}}/build
+      working-directory: ${{runner.workspace}}
       shell: bash
-      # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: cmake --build . --config $BUILD_TYPE --target install
     
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
         name: LucidRender_Windows
-        path: "C:/Program Files (x86)/LucidRender/"
+        path: ${{runner.workspace}}/Install
         
   Ubuntu:
-    # The CMake configure and build commands are platform agnostic and should work equally
-    # well on Windows or Mac.  You can convert this to a matrix build if you need
-    # cross-platform coverage.
-    # See: https://docs.github.com/en/actions/configuring-and-managing-workflows/configuring-a-workflow#configuring-a-build-matrix
     runs-on: ubuntu-latest
 
     steps:
@@ -91,19 +72,14 @@ jobs:
         sudo apt update
         sudo apt install vulkan-sdk libgl-dev
 
-    - name: Create Build Environment
-      # Some projects don't allow in-source building, so create a separate build directory
-      # We'll use this as our working directory for all subsequent commands
-      run: cmake -E make_directory ${{runner.workspace}}/build
-
     - name: Configure CMake
       shell: bash
-      working-directory: ${{runner.workspace}}/build
+      working-directory: ${{runner.workspace}}
       run: |
-        cmake -B Build $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_COMPILER=${{ env.COMPILER_LINUX }} -DCMAKE_INSTALL_PREFIX=/tmp/LucidRender
+        cmake -B Build $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_COMPILER=${{ env.COMPILER_LINUX }} -DCMAKE_INSTALL_PREFIX=${{runner.workspace}}/Install
 
     - name: Build
-      working-directory: ${{runner.workspace}}/build
+      working-directory: ${{runner.workspace}}
       shell: bash
       run: cmake --build Build --config $BUILD_TYPE --target install
       env:
@@ -113,5 +89,5 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: LucidRender_Ubuntu
-        path: "/tmp/LucidRender/"
+        path: ${{runner.workspace}}/Install
       
