@@ -34,6 +34,8 @@ private:
     void UpdateUniformBuffers();
     void RecordCommandBuffers();
     void SetupImgui();
+    void DrawDockspace();
+    void DrawOverlay();
 
     // Vulkan entities
     std::unique_ptr<VulkanInstance> mInstance;

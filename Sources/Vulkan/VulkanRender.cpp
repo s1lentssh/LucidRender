@@ -186,10 +186,8 @@ VulkanRender::~VulkanRender()
     ImGui::DestroyContext();
 }
 
-void ShowExampleAppDockSpace();
-
 void
-ShowExampleAppDockSpace()
+VulkanRender::DrawDockspace()
 {
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
@@ -219,67 +217,7 @@ VulkanRender::DrawFrame()
 
     Core::InputController::Instance().SetMouseDisabled(ImGui::GetIO().WantCaptureMouse);
 
-    ImGui_ImplVulkan_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-
-    ShowExampleAppDockSpace();
-
-    // Top menu
-    static bool drawTransform = false;
-    if (ImGui::BeginMainMenuBar())
-    {
-        if (ImGui::BeginMenu("File"))
-        {
-            if (ImGui::MenuItem("About", "Shift + H"))
-            {
-            }
-            if (ImGui::MenuItem("Close", "Esc"))
-            {
-                mShouldClose = true;
-            }
-            ImGui::EndMenu();
-        }
-        if (ImGui::BeginMenu("View"))
-        {
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2.0f, 2.0f));
-            ImGui::Checkbox("Properties", &drawTransform);
-            if (ImGui::Checkbox("Skybox", &mDrawSkybox))
-            {
-                RecreateSwapchain();
-            }
-            ImGui::PopStyleVar();
-            ImGui::EndMenu();
-        }
-        if (ImGui::BeginMenu("Render"))
-        {
-            if (ImGui::MenuItem("Start Render", "Shift + R"))
-            {
-            }
-            ImGui::EndMenu();
-        }
-        ImGui::EndMainMenuBar();
-    }
-
-    // Body
-    if (drawTransform)
-    {
-        ImGui::SetNextWindowSize({ 300.0f, 200.0f }, ImGuiCond_FirstUseEver);
-        ImGui::Begin("Properties", &drawTransform, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoResize);
-        ImGui::Text("Selected Asset");
-        static float vec3[3] = { 1, 5, 100 };
-        ImGui::InputFloat3("Translate", vec3, "%.2f");
-        ImGui::InputFloat3("Rotate", vec3, "%.2f");
-        ImGui::InputFloat3("Scale", vec3, "%.2f");
-        ImGui::Text("Environment Light");
-        static float col1[3] = { 1.0f, 0.0f, 0.2f };
-        ImGui::ColorEdit3("Color", col1);
-        ImGui::End();
-    }
-
-    ImGui::Render();
-    auto drawData = ImGui::GetDrawData();
-    drawData->FramebufferScale = { 1.0, 1.0 };
+    DrawOverlay();
 
     mCommandPool->RecordCommandBuffers(
         *mSwapchain.get(),
@@ -471,6 +409,72 @@ void
 VulkanRender::RecordCommandBuffers()
 {
     mCommandPool->RecreateCommandBuffers(*mSwapchain.get());
+}
+
+void
+VulkanRender::DrawOverlay()
+{
+    ImGui_ImplVulkan_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    DrawDockspace();
+
+    // Top menu
+    static bool drawTransform = false;
+    if (ImGui::BeginMainMenuBar())
+    {
+        if (ImGui::BeginMenu("File"))
+        {
+            if (ImGui::MenuItem("About", "Shift + H"))
+            {
+            }
+            if (ImGui::MenuItem("Close", "Esc"))
+            {
+                mShouldClose = true;
+            }
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("View"))
+        {
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2.0f, 2.0f));
+            ImGui::Checkbox("Properties", &drawTransform);
+            if (ImGui::Checkbox("Skybox", &mDrawSkybox))
+            {
+                RecreateSwapchain();
+            }
+            ImGui::PopStyleVar();
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Render"))
+        {
+            if (ImGui::MenuItem("Start Render", "Shift + R"))
+            {
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMainMenuBar();
+    }
+
+    // Body
+    if (drawTransform)
+    {
+        ImGui::SetNextWindowSize({ 300.0f, 200.0f }, ImGuiCond_FirstUseEver);
+        ImGui::Begin("Properties", &drawTransform, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoResize);
+        ImGui::Text("Selected Asset");
+        static float vec3[3] = { 1, 5, 100 };
+        ImGui::InputFloat3("Translate", vec3, "%.2f");
+        ImGui::InputFloat3("Rotate", vec3, "%.2f");
+        ImGui::InputFloat3("Scale", vec3, "%.2f");
+        ImGui::Text("Environment Light");
+        static float col1[3] = { 1.0f, 0.0f, 0.2f };
+        ImGui::ColorEdit3("Color", col1);
+        ImGui::End();
+    }
+
+    ImGui::Render();
+    auto drawData = ImGui::GetDrawData();
+    drawData->FramebufferScale = { 1.0, 1.0 };
 }
 
 } // namespace Lucid::Vulkan
