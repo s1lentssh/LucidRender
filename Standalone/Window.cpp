@@ -12,6 +12,8 @@
 #include <Utils/MacOS/Interface.h>
 #endif
 
+#include <iostream>
+
 namespace Lucid
 {
 
@@ -105,6 +107,8 @@ void
 Window::OnCursorMoved(GLFWwindow* window, double x, double y)
 {
     (void)window;
+    (void)x;
+    (void)y;
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
     {
         // Core::InputController::Instance().MouseMoved(static_cast<float>(x), static_cast<float>(y));

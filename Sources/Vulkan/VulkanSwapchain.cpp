@@ -89,7 +89,7 @@ VulkanSwapchain::SelectSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& av
 
     for (const auto& availableFormat : availableFormats)
     {
-        bool niceFormat = vk::Format::eR8G8B8A8Unorm == availableFormat.format;
+        bool niceFormat = vk::Format::eR16G16B16A16Sfloat == availableFormat.format;
         bool niceColorSpace = vk::ColorSpaceKHR::eSrgbNonlinear == availableFormat.colorSpace;
 
         if (niceFormat && niceColorSpace)
