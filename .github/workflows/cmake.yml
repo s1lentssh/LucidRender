@@ -43,7 +43,7 @@ jobs:
     - name: Build
       working-directory: ${{runner.workspace}}
       shell: bash
-      run: cmake --build . --config $BUILD_TYPE --target install
+      run: cmake --build Build --config $BUILD_TYPE --target install
     
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
