@@ -26,12 +26,12 @@ public:
 #endif
 
 #ifdef __linux__
-    [[nodiscard]] unsigned int Handle() const noexcept override;
+    [[nodiscard]] unsigned std::uint64_t Handle() const noexcept override;
     [[nodiscard]] void* Display() const noexcept override;
 #endif
 
 #ifdef __APPLE__
-    [[nodiscard]] std::uint64_t Handle() const noexcept override;
+    [[nodiscard]] void* Handle() const noexcept override;
 #endif
 
     GLFWwindow* Get() const noexcept override { return mWindow; }
