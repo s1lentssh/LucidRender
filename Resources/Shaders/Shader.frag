@@ -12,10 +12,9 @@ layout(binding = 1) uniform sampler2D texSampler;
 
 layout(push_constant) uniform constants
 {
-    vec3 ambientColor;
-    float ambientFactor;
-    vec3 lightPosition;
-    vec3 lightColor;
+    vec4 ambientColor;
+    vec4 lightPosition;
+    vec4 lightColor;
 }
 PushConstants;
 
@@ -26,13 +25,13 @@ main()
     vec3 meshColor = texture(texSampler, fragTexCoord).xyz;
 
     // Ambient light
-    vec3 ambient = PushConstants.ambientColor * PushConstants.ambientFactor;
+    vec3 ambient = PushConstants.ambientColor.xyz * PushConstants.ambientColor.w;
 
     // Diffuse light
     vec3 normal = normalize(fragNormal);
-    vec3 lightDirection = normalize(PushConstants.lightPosition - fragPosition);
+    vec3 lightDirection = normalize(PushConstants.lightPosition.xyz - fragPosition);
     float diffuseStrength = max(dot(normal, lightDirection), 0.0) / 2;
-    vec3 diffuse = diffuseStrength * PushConstants.lightColor;
+    vec3 diffuse = diffuseStrength * PushConstants.lightColor.xyz * PushConstants.lightColor.w;
 
     // Result
     vec3 result = (ambient + diffuse) * meshColor;

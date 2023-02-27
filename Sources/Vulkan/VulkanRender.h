@@ -2,6 +2,7 @@
 
 #include <Core/Interfaces.h>
 #include <Core/Scene.h>
+#include <Utils/Defaults.hpp>
 #include <Vulkan/VulkanBuffer.h>
 #include <Vulkan/VulkanCommandPool.h>
 #include <Vulkan/VulkanDescriptorPool.h>
@@ -15,6 +16,7 @@
 #include <Vulkan/VulkanSurface.h>
 #include <Vulkan/VulkanSwapchain.h>
 #include <vulkan/vulkan.hpp>
+
 
 namespace Lucid::Vulkan
 {
@@ -60,6 +62,9 @@ private:
 
     const Core::Scene& mScene;
     bool mShouldClose = false;
+
+    // Settings
+    bool mDrawSkybox = Defaults::DrawSkybox;
 };
 
 } // namespace Lucid::Vulkan

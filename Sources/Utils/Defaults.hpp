@@ -12,7 +12,7 @@ struct Defaults
     inline static const std::string Version = LUCID_RENDER_VERSION;
     inline static const std::string EngineName = "LucidEngine";
     inline static const std::array<float, 4> BackgroundColor = { 0.05f, 0.05f, 0.05f, 1.0f };
-    inline static const std::array<float, 3> AmbientColor = { 1.0f, 1.0f, 1.0f };
+    inline static const std::array<float, 4> AmbientColor = { 1.0f, 1.0f, 1.0f, 0.2f };
     inline static const std::uint32_t MaxFramesInFlight = 3;
     inline static const bool DrawSkybox = false;
 

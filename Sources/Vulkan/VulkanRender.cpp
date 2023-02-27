@@ -1,7 +1,6 @@
 #include "VulkanRender.h"
 
 #include <Core/UniformBufferObject.h>
-#include <Utils/Defaults.hpp>
 #include <Utils/Files.h>
 #include <Utils/Logger.hpp>
 #include <glm/glm.hpp>
@@ -50,10 +49,7 @@ VulkanRender::VulkanRender(const Core::IWindow& window, const Core::Scene& scene
     mImagesInFlight.resize(Defaults::MaxFramesInFlight, {});
 
     // Skybox
-    if constexpr (Defaults::DrawSkybox)
-    {
-        mSkybox = std::make_unique<VulkanSkybox>(*mDevice.get(), *mDescriptorPool.get(), *mCommandPool.get());
-    }
+    mSkybox = std::make_unique<VulkanSkybox>(*mDevice.get(), *mDescriptorPool.get(), *mCommandPool.get());
 
     // ImGui
     SetupImgui();
@@ -246,6 +242,10 @@ VulkanRender::DrawFrame()
         {
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2.0f, 2.0f));
             ImGui::Checkbox("Show Transform", &drawTransform);
+            if (ImGui::Checkbox("Draw Skybox", &mDrawSkybox))
+            {
+                RecreateSwapchain();
+            }
             ImGui::PopStyleVar();
             ImGui::EndMenu();
         }
@@ -281,7 +281,7 @@ VulkanRender::DrawFrame()
         [this](vk::CommandBuffer& commandBuffer)
         {
             // Skybox
-            if constexpr (Defaults::DrawSkybox)
+            if (mDrawSkybox)
             {
                 commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mSkyboxPipeline->Handle().get());
                 mSkybox->Draw(commandBuffer, *mSkyboxPipeline.get());
@@ -291,10 +291,9 @@ VulkanRender::DrawFrame()
             commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mMeshPipeline->Handle().get());
 
             static Core::PushConstants constants;
-            constants.ambientColor = glm::make_vec3(Defaults::AmbientColor.data());
-            constants.ambientFactor = 1000.0f;
-            constants.lightPosition = glm::vec3(400.0, 50.0, 400.0);
-            constants.lightColor = glm::vec3(4.5, 4.5, 5.0);
+            constants.ambientColor = glm::make_vec4(Defaults::AmbientColor.data());
+            constants.lightPosition = glm::vec4(400.0, 50.0, 400.0, 1.0);
+            constants.lightColor = glm::vec4(1.0, 1.0, 1.0, 5.0);
             commandBuffer.pushConstants(
                 mMeshPipeline->Layout(),
                 vk::ShaderStageFlagBits::eFragment,
@@ -419,7 +418,7 @@ VulkanRender::RecreateSwapchain()
     mMeshPipeline
         = VulkanPipeline::Default(*mDevice.get(), mSwapchain->GetExtent(), *mRenderPass.get(), *mDescriptorPool.get());
 
-    if constexpr (Defaults::DrawSkybox)
+    if (mDrawSkybox)
     {
         mSkyboxPipeline = VulkanPipeline::Skybox(
             *mDevice.get(), mSwapchain->GetExtent(), *mRenderPass.get(), *mDescriptorPool.get());
@@ -456,7 +455,7 @@ VulkanRender::UpdateUniformBuffers()
         mMeshes.at(i).UpdateTransform(ubo);
     }
 
-    if constexpr (Defaults::DrawSkybox)
+    if (mDrawSkybox)
     {
         mSkybox->UpdateTransform(ubo);
     }
