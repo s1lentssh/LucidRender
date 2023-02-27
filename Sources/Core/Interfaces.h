@@ -17,7 +17,7 @@ public:
 #endif
 
 #ifdef __linux__
-    [[nodiscard]] virtual unsigned int Handle() const noexcept = 0;
+    [[nodiscard]] virtual std::uint64_t Handle() const noexcept = 0;
     [[nodiscard]] virtual void* Display() const noexcept = 0;
 #endif
 
