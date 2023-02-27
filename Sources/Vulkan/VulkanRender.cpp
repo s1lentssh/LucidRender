@@ -59,10 +59,26 @@ VulkanRender::VulkanRender(const Core::IWindow& window, const Core::Scene& scene
     SetupImgui();
 }
 
+void ShowDockingDisabledMessage();
+
+void
+ShowDockingDisabledMessage()
+{
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui::Text("ERROR: Docking is not enabled! See Demo > Configuration.");
+    ImGui::Text("Set io.ConfigFlags |= ImGuiConfigFlags_DockingEnable in your code, or ");
+    ImGui::SameLine(0.0f, 0.0f);
+    if (ImGui::SmallButton("click here"))
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+}
+
 void
 VulkanRender::SetupImgui()
 {
     ImGui::CreateContext();
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
     ImVec4* colors = ImGui::GetStyle().Colors;
     colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
@@ -173,6 +189,33 @@ VulkanRender::~VulkanRender()
     ImGui::DestroyContext();
 }
 
+void ShowExampleAppDockSpace();
+
+void
+ShowExampleAppDockSpace()
+{
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->WorkPos);
+    ImGui::SetNextWindowSize(viewport->WorkSize);
+    ImGui::SetNextWindowViewport(viewport->ID);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar
+        | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
+        | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoBringToFrontOnFocus
+        | ImGuiWindowFlags_NoNavFocus;
+
+    ImGui::Begin("DockSpace", nullptr, window_flags);
+    ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+
+    ImGuiDockNodeFlags dockspace_flags
+        = ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_NoDockingInCentralNode;
+
+    ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8.0f, 8.0f));
+    ImGui::End();
+}
+
 void
 VulkanRender::DrawFrame()
 {
@@ -181,6 +224,8 @@ VulkanRender::DrawFrame()
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+
+    ShowExampleAppDockSpace();
 
     // Top menu
     static bool drawTransform = true;
@@ -217,6 +262,7 @@ VulkanRender::DrawFrame()
     // Body
     if (drawTransform)
     {
+        ImGui::SetNextWindowSize({ 300.0f, 200.0f });
         ImGui::Begin("Transform", &drawTransform, ImGuiWindowFlags_NoFocusOnAppearing);
         static float vec3[3] = { 1, 5, 100 };
         ImGui::InputFloat3("Translate", vec3, "%.2f");
