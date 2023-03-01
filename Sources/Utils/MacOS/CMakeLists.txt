@@ -8,4 +8,5 @@ add_library(Lucid::MacOS ALIAS ${PROJECT_NAME})
 
 # Set compile options
 SetMaxWarningLevel(${PROJECT_NAME})
+SetWindowsVersion(${PROJECT_NAME})
 SetLucidVersion(${PROJECT_NAME})

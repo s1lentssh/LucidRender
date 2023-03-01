@@ -140,12 +140,12 @@ Files::LoadGltf(const std::filesystem::path& path)
 
     Core::Mesh mesh;
 
-    for (const auto& gltfMesh : model.meshes)
+    /*for (const auto& gltfMesh : model.meshes)
     {
         for (const auto& gltfPrimitive : gltfMesh.primitives)
         {
         }
-    }
+    }*/
 
     return mesh;
 }

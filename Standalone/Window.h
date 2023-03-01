@@ -26,7 +26,7 @@ public:
 #endif
 
 #ifdef __linux__
-    [[nodiscard]] unsigned int Handle() const noexcept override;
+    [[nodiscard]] std::uint64_t Handle() const noexcept override;
     [[nodiscard]] void* Display() const noexcept override;
 #endif
 
@@ -44,6 +44,7 @@ public:
     static void OnKeyPressed(GLFWwindow* window, int key, int scancode, int action, int mods);
     static void OnCursorMoved(GLFWwindow* window, double x, double y);
     static void OnScrolled(GLFWwindow* window, double x, double y);
+    static void OnMouseButton(GLFWwindow* window, int button, int action, int mods);
 
 private:
     GLFWwindow* mWindow = nullptr;

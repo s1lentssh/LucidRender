@@ -19,6 +19,7 @@ public:
     Engine(const IWindow& window, API api);
     void Update(float time);
     void AddAsset(const Core::Asset& asset);
+    bool ShouldClose() const;
 
 private:
     void ProcessInput(float time);

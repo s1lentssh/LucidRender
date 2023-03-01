@@ -20,6 +20,7 @@ endif()
 
 # Set compile options
 SetMaxWarningLevel(${PROJECT_NAME})
+SetWindowsVersion(${PROJECT_NAME})
 SetLucidVersion(${PROJECT_NAME})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES 

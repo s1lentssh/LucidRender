@@ -17,7 +17,7 @@ public:
 #endif
 
 #ifdef __linux__
-    [[nodiscard]] virtual unsigned int Handle() const noexcept = 0;
+    [[nodiscard]] virtual std::uint64_t Handle() const noexcept = 0;
     [[nodiscard]] virtual void* Display() const noexcept = 0;
 #endif
 
@@ -42,6 +42,7 @@ public:
     virtual void DrawFrame() = 0;
     virtual void AddAsset(const Core::Asset& asset) = 0;
     virtual ~IRender() = default;
+    virtual bool ShouldClose() const = 0;
 };
 
 } // namespace Lucid::Core

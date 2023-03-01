@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <Vulkan/VulkanEntity.h>
 #include <vulkan/vulkan.hpp>
 

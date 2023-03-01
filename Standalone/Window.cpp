@@ -12,6 +12,8 @@
 #include <Utils/MacOS/Interface.h>
 #endif
 
+#include <iostream>
+
 namespace Lucid
 {
 
@@ -35,7 +37,7 @@ Window::Window()
     glfwSetKeyCallback(mWindow, OnKeyPressed);
     glfwSetCursorPosCallback(mWindow, OnCursorMoved);
     glfwSetScrollCallback(mWindow, OnScrolled);
-    glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetMouseButtonCallback(mWindow, OnMouseButton);
 }
 
 Window::~Window()
@@ -106,7 +108,12 @@ void
 Window::OnCursorMoved(GLFWwindow* window, double x, double y)
 {
     (void)window;
-    Core::InputController::Instance().MouseMoved(static_cast<float>(x), static_cast<float>(y));
+    (void)x;
+    (void)y;
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+    {
+        Core::InputController::Instance().MouseMoved(static_cast<float>(x), static_cast<float>(y));
+    }
 }
 
 void
@@ -114,6 +121,24 @@ Window::OnScrolled(GLFWwindow* window, double x, double y)
 {
     (void)window;
     Core::InputController::Instance().MouseScrolled(static_cast<float>(x), static_cast<float>(y));
+}
+
+void
+Window::OnMouseButton(GLFWwindow* window, int button, int action, int mods)
+{
+    (void)window;
+    (void)button;
+    (void)mods;
+
+    if (action == GLFW_PRESS)
+    {
+        Core::InputController::Instance().MousePressed();
+    }
+
+    if (action == GLFW_RELEASE)
+    {
+        Core::InputController::Instance().MouseReleased();
+    }
 }
 
 std::vector<const char*>
@@ -133,7 +158,7 @@ Window::Handle() const noexcept
 #endif
 
 #ifdef __linux__
-unsigned int
+std::uint64_t
 Window::Handle() const noexcept
 {
     return glfwGetX11Window(mWindow);

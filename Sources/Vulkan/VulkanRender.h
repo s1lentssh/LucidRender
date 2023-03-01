@@ -2,6 +2,7 @@
 
 #include <Core/Interfaces.h>
 #include <Core/Scene.h>
+#include <Utils/Defaults.hpp>
 #include <Vulkan/VulkanBuffer.h>
 #include <Vulkan/VulkanCommandPool.h>
 #include <Vulkan/VulkanDescriptorPool.h>
@@ -26,11 +27,15 @@ public:
     ~VulkanRender() override;
     void DrawFrame() override;
     void AddAsset(const Core::Asset& asset) override;
+    bool ShouldClose() const override;
 
 private:
     void RecreateSwapchain();
     void UpdateUniformBuffers();
     void RecordCommandBuffers();
+    void SetupImgui();
+    void DrawDockspace();
+    void DrawOverlay();
 
     // Vulkan entities
     std::unique_ptr<VulkanInstance> mInstance;
@@ -57,6 +62,10 @@ private:
     const Core::IWindow* mWindow = nullptr;
 
     const Core::Scene& mScene;
+    bool mShouldClose = false;
+
+    // Settings
+    bool mDrawSkybox = Defaults::DrawSkybox;
 };
 
 } // namespace Lucid::Vulkan

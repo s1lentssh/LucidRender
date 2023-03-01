@@ -40,10 +40,11 @@ target_include_directories(ImguiGenerated SYSTEM INTERFACE
     ${CMAKE_BINARY_DIR}/generated
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE ImguiGenerated)
+target_link_libraries(${PROJECT_NAME} PRIVATE ImguiGenerated imgui::imgui)
 
 # Set compile options
 SetMaxWarningLevel(${PROJECT_NAME})
+SetWindowsVersion(${PROJECT_NAME})
 SetLucidVersion(${PROJECT_NAME})
 
 if(WIN32)

@@ -17,10 +17,9 @@ struct Vertex
 
 struct PushConstants
 {
-    glm::vec3 ambientColor;
-    alignas(8) float ambientFactor;
-    glm::vec3 lightPosition;
-    glm::vec3 lightColor;
+    glm::vec4 ambientColor;
+    glm::vec4 lightPosition;
+    glm::vec4 lightColor;
 };
 
 } // namespace Lucid::Core

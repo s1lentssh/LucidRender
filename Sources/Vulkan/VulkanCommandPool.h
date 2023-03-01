@@ -1,9 +1,11 @@
 #pragma once
 
+#include <functional>
 #include <vector>
 
 #include <Vulkan/VulkanEntity.h>
 #include <vulkan/vulkan.hpp>
+
 
 namespace Lucid::Vulkan
 {
