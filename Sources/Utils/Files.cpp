@@ -138,6 +138,16 @@ Files::LoadGltf(const std::filesystem::path& path)
         throw std::runtime_error("Cant load model, error: " + error);
     }
 
+    if (!error.empty())
+    {
+        throw std::runtime_error("Error in model loading: " + error);
+    }
+
+    if (!warn.empty())
+    {
+        throw std::runtime_error("Warn in model loading: " + warn);
+    }
+
     Core::Mesh mesh;
 
     for (const tinygltf::Mesh& gltfMesh : model.meshes)
@@ -145,7 +155,7 @@ Files::LoadGltf(const std::filesystem::path& path)
         std::string name = gltfMesh.name;
 
         auto getRawBuffer
-            = [&model, &gltfMesh](const std::string& attribute) -> std::tuple<char*, std::size_t, std::size_t>
+            = [&model, &gltfMesh](const std::string& attribute) -> std::tuple<std::uint8_t*, std::size_t, std::size_t>
         {
             std::size_t accessorId = 0;
 
@@ -169,18 +179,26 @@ Files::LoadGltf(const std::filesystem::path& path)
 
             if (attribute == "POSITION" && accessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT)
             {
-                throw std::runtime_error("Loader supports only float positions");
+                throw std::runtime_error(
+                    "Loader supports only float positions, provided " + std::to_string(accessor.componentType));
             }
 
             if (attribute == "NORMAL" && accessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT)
             {
-                throw std::runtime_error("Loader supports only float normals");
+                throw std::runtime_error(
+                    "Loader supports only float normals, provided " + std::to_string(accessor.componentType));
             }
 
             if (attribute == "INDEX" && accessor.componentType != TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT)
             {
                 throw std::runtime_error(
                     "Loader supports only unsigned int indices, provided " + std::to_string(accessor.componentType));
+            }
+
+            if (attribute == "TEXCOORD_0" && accessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT)
+            {
+                throw std::runtime_error(
+                    "Loader supports only float UV's, provided " + std::to_string(accessor.componentType));
             }
 
             // Buffer view
@@ -191,7 +209,7 @@ Files::LoadGltf(const std::filesystem::path& path)
             std::size_t bufferId = static_cast<std::size_t>(bufferView.buffer);
             tinygltf::Buffer buffer = model.buffers[bufferId];
 
-            return { reinterpret_cast<char*>(buffer.data.data() + accessor.byteOffset + bufferView.byteOffset),
+            return { static_cast<std::uint8_t*>(buffer.data.data() + accessor.byteOffset + bufferView.byteOffset),
                      itemStride,
                      itemCount };
         };
@@ -200,6 +218,11 @@ Files::LoadGltf(const std::filesystem::path& path)
         auto [positionBuffer, positionStride, positionCount] = getRawBuffer("POSITION");
         auto [normalBuffer, normalStride, normalCount] = getRawBuffer("NORMAL");
         auto [uvBuffer, uvStride, uvCount] = getRawBuffer("TEXCOORD_0");
+
+        if (!(positionCount == normalCount && normalCount == uvCount))
+        {
+            throw std::runtime_error("Wrong vertex info in file");
+        }
 
         for (std::size_t i = 0; i < positionCount; i++)
         {
