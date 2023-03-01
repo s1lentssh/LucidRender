@@ -190,13 +190,13 @@ VulkanPipeline::GetAttributeDescriptions()
                                 .setFormat(vk::Format::eR32G32B32Sfloat)
                                 .setOffset(offsetof(Core::Vertex, color));
 
-    auto textureCoordinateDescription = vk::VertexInputAttributeDescription()
-                                            .setBinding(0)
-                                            .setLocation(3)
-                                            .setFormat(vk::Format::eR32G32Sfloat)
-                                            .setOffset(offsetof(Core::Vertex, textureCoordinate));
+    auto uvDescription = vk::VertexInputAttributeDescription()
+                             .setBinding(0)
+                             .setLocation(3)
+                             .setFormat(vk::Format::eR32G32Sfloat)
+                             .setOffset(offsetof(Core::Vertex, uv));
 
-    return { positionDescription, normalDescription, colorDescription, textureCoordinateDescription };
+    return { positionDescription, normalDescription, colorDescription, uvDescription };
 }
 
 } // namespace Lucid::Vulkan

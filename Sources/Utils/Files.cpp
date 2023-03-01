@@ -111,9 +111,8 @@ Files::LoadObj(const std::filesystem::path& path)
                               attrib.normals[static_cast<std::size_t>(3 * index.normal_index + 1)],
                               attrib.normals[static_cast<std::size_t>(3 * index.normal_index + 2)] };
 
-            vertex.textureCoordinate
-                = { attrib.texcoords[static_cast<std::size_t>(2 * index.texcoord_index + 0)],
-                    1.0f - attrib.texcoords[static_cast<std::size_t>(2 * index.texcoord_index + 1)] };
+            vertex.uv = { attrib.texcoords[static_cast<std::size_t>(2 * index.texcoord_index + 0)],
+                          1.0f - attrib.texcoords[static_cast<std::size_t>(2 * index.texcoord_index + 1)] };
 
             vertex.color = { 1.0f, 1.0f, 1.0f };
 
@@ -155,7 +154,8 @@ Files::LoadGltf(const std::filesystem::path& path)
         std::string name = gltfMesh.name;
 
         auto getRawBuffer
-            = [&model, &gltfMesh](const std::string& attribute) -> std::tuple<std::uint8_t*, std::size_t, std::size_t>
+            = [&model,
+               &gltfMesh](const std::string& attribute) -> std::tuple<const std::uint8_t*, std::size_t, std::size_t>
         {
             std::size_t accessorId = 0;
 
@@ -169,7 +169,7 @@ Files::LoadGltf(const std::filesystem::path& path)
             }
 
             // Accessor
-            tinygltf::Accessor accessor = model.accessors[accessorId];
+            tinygltf::Accessor& accessor = model.accessors[accessorId];
             std::uint32_t componentType = static_cast<std::uint32_t>(accessor.componentType);
             std::uint32_t type = static_cast<std::uint32_t>(accessor.type);
             std::size_t componentSize = static_cast<std::size_t>(tinygltf::GetComponentSizeInBytes(componentType));
@@ -203,13 +203,13 @@ Files::LoadGltf(const std::filesystem::path& path)
 
             // Buffer view
             std::size_t bufferViewId = static_cast<std::size_t>(accessor.bufferView);
-            tinygltf::BufferView bufferView = model.bufferViews[bufferViewId];
+            tinygltf::BufferView& bufferView = model.bufferViews[bufferViewId];
 
             // Buffer
             std::size_t bufferId = static_cast<std::size_t>(bufferView.buffer);
-            tinygltf::Buffer buffer = model.buffers[bufferId];
+            tinygltf::Buffer& buffer = model.buffers[bufferId];
 
-            return { static_cast<std::uint8_t*>(buffer.data.data() + accessor.byteOffset + bufferView.byteOffset),
+            return { static_cast<const std::uint8_t*>(buffer.data.data() + accessor.byteOffset + bufferView.byteOffset),
                      itemStride,
                      itemCount };
         };
@@ -229,21 +229,21 @@ Files::LoadGltf(const std::filesystem::path& path)
             Core::Vertex vertex;
 
             // Position
-            float* castedPosition = reinterpret_cast<float*>(positionBuffer + (i * positionStride));
-            vertex.position = { castedPosition[0], castedPosition[1], castedPosition[2] };
+            const float* position = reinterpret_cast<const float*>(positionBuffer + (i * positionStride));
+            vertex.position = { position[0], position[1], position[2] };
 
             // Normal
-            float* castedNormal = reinterpret_cast<float*>(normalBuffer + (i * normalStride));
-            vertex.normal = { castedNormal[0], castedNormal[1], castedNormal[2] };
+            const float* normal = reinterpret_cast<const float*>(normalBuffer + (i * normalStride));
+            vertex.normal = { normal[0], normal[1], normal[2] };
 
             // UV
-            float* castedUv = reinterpret_cast<float*>(uvBuffer + (i * uvStride));
-            vertex.textureCoordinate = { castedUv[0], castedUv[1] };
+            const float* uv = reinterpret_cast<const float*>(uvBuffer + (i * uvStride));
+            vertex.uv = { uv[0], uv[1] };
 
             // Index
-            std::uint32_t* castedIndex = reinterpret_cast<std::uint32_t*>(indexBuffer + (i * indexStride));
+            const std::uint32_t index = *reinterpret_cast<const uint32_t*>(indexBuffer + (i * indexStride));
 
-            mesh.indices.push_back(static_cast<std::uint32_t>(*castedIndex));
+            mesh.indices.push_back(index);
             mesh.vertices.push_back(vertex);
         }
     }
