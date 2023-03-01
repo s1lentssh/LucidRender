@@ -140,12 +140,90 @@ Files::LoadGltf(const std::filesystem::path& path)
 
     Core::Mesh mesh;
 
-    /*for (const auto& gltfMesh : model.meshes)
+    for (const tinygltf::Mesh& gltfMesh : model.meshes)
     {
-        for (const auto& gltfPrimitive : gltfMesh.primitives)
+        std::string name = gltfMesh.name;
+
+        auto getRawBuffer
+            = [&model, &gltfMesh](const std::string& attribute) -> std::tuple<char*, std::size_t, std::size_t>
         {
+            std::size_t accessorId = 0;
+
+            if (attribute == "INDEX")
+            {
+                accessorId = static_cast<std::size_t>(gltfMesh.primitives[0].indices);
+            }
+            else
+            {
+                accessorId = static_cast<std::size_t>(gltfMesh.primitives[0].attributes.at(attribute));
+            }
+
+            // Accessor
+            tinygltf::Accessor accessor = model.accessors[accessorId];
+            std::uint32_t componentType = static_cast<std::uint32_t>(accessor.componentType);
+            std::uint32_t type = static_cast<std::uint32_t>(accessor.type);
+            std::size_t componentSize = static_cast<std::size_t>(tinygltf::GetComponentSizeInBytes(componentType));
+            std::size_t componentCount = static_cast<std::size_t>(tinygltf::GetNumComponentsInType(type));
+            std::size_t itemStride = componentSize * componentCount;
+            std::size_t itemCount = static_cast<std::size_t>(accessor.count);
+
+            if (attribute == "POSITION" && accessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT)
+            {
+                throw std::runtime_error("Loader supports only float positions");
+            }
+
+            if (attribute == "NORMAL" && accessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT)
+            {
+                throw std::runtime_error("Loader supports only float normals");
+            }
+
+            if (attribute == "INDEX" && accessor.componentType != TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT)
+            {
+                throw std::runtime_error(
+                    "Loader supports only unsigned int indices, provided " + std::to_string(accessor.componentType));
+            }
+
+            // Buffer view
+            std::size_t bufferViewId = static_cast<std::size_t>(accessor.bufferView);
+            tinygltf::BufferView bufferView = model.bufferViews[bufferViewId];
+
+            // Buffer
+            std::size_t bufferId = static_cast<std::size_t>(bufferView.buffer);
+            tinygltf::Buffer buffer = model.buffers[bufferId];
+
+            return { reinterpret_cast<char*>(buffer.data.data() + accessor.byteOffset + bufferView.byteOffset),
+                     itemStride,
+                     itemCount };
+        };
+
+        auto [indexBuffer, indexStride, indexCount] = getRawBuffer("INDEX");
+        auto [positionBuffer, positionStride, positionCount] = getRawBuffer("POSITION");
+        auto [normalBuffer, normalStride, normalCount] = getRawBuffer("NORMAL");
+        auto [uvBuffer, uvStride, uvCount] = getRawBuffer("TEXCOORD_0");
+
+        for (std::size_t i = 0; i < positionCount; i++)
+        {
+            Core::Vertex vertex;
+
+            // Position
+            float* castedPosition = reinterpret_cast<float*>(positionBuffer + (i * positionStride));
+            vertex.position = { castedPosition[0], castedPosition[1], castedPosition[2] };
+
+            // Normal
+            float* castedNormal = reinterpret_cast<float*>(normalBuffer + (i * normalStride));
+            vertex.normal = { castedNormal[0], castedNormal[1], castedNormal[2] };
+
+            // UV
+            float* castedUv = reinterpret_cast<float*>(uvBuffer + (i * uvStride));
+            vertex.textureCoordinate = { castedUv[0], castedUv[1] };
+
+            // Index
+            std::uint32_t* castedIndex = reinterpret_cast<std::uint32_t*>(indexBuffer + (i * indexStride));
+
+            mesh.indices.push_back(static_cast<std::uint32_t>(*castedIndex));
+            mesh.vertices.push_back(vertex);
         }
-    }*/
+    }
 
     return mesh;
 }

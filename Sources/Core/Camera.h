@@ -29,7 +29,7 @@ public:
     float FieldOfView() const;
 
 private:
-    const glm::vec3 mCameraUp = glm::vec3(0.0f, 0.0f, 1.0f);
+    const glm::vec3 mCameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
     const float mCameraSpeed = 3.0f;
     const float mCameraSensitivity = 0.05f;
 
