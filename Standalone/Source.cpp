@@ -50,9 +50,9 @@ try
     engine->AddAsset(ground);*/
 
     Lucid::Core::Asset asset(
-        Lucid::Files::LoadModel("/Users/s1lentssh/Work/glTF-Sample-Models/2.0/SciFiHelmet/glTF/SciFiHelmet.gltf"),
+        Lucid::Files::LoadModel("C:/Storage/glTF-Sample-Models/2.0/SciFiHelmet/glTF/SciFiHelmet.gltf"),
         Lucid::Files::LoadImage(
-            "/Users/s1lentssh/Work/glTF-Sample-Models/2.0/SciFiHelmet/glTF/SciFiHelmet_BaseColor.png"));
+            "C:/Storage/glTF-Sample-Models/2.0/SciFiHelmet/glTF/SciFiHelmet_BaseColor.png"));
     engine->AddAsset(asset);
 
     float lastTime = static_cast<float>(glfwGetTime());

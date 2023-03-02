@@ -73,7 +73,7 @@ void
 Camera::AdjustFieldOfView(const float value)
 {
     mFov += value;
-    mFov = std::clamp(mFov, 1.0f, 360.0f);
+    mFov = std::clamp(mFov, 10.0f, 120.0f);
 }
 
 float

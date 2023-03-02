@@ -175,7 +175,7 @@ Files::LoadGltf(const std::filesystem::path& path)
             std::size_t componentSize = static_cast<std::size_t>(tinygltf::GetComponentSizeInBytes(componentType));
             std::size_t componentCount = static_cast<std::size_t>(tinygltf::GetNumComponentsInType(type));
             std::size_t itemStride = componentSize * componentCount;
-            std::size_t itemCount = static_cast<std::size_t>(accessor.count);
+            std::size_t itemCount = accessor.count;
 
             if (attribute == "POSITION" && accessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT)
             {
