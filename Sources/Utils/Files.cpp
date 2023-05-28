@@ -3,12 +3,9 @@
 #include <fstream>
 
 #include <stb_image.h>
-#define TINYGLTF_IMPLEMENTATION
-#define STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <tiny_gltf.h>
 #include <tiny_obj_loader.h>
 
+#include <Utils/Loaders/GltfLoader.h>
 #include <Utils/Logger.hpp>
 
 namespace Lucid
@@ -65,18 +62,17 @@ Files::LoadImage(const std::filesystem::path& path)
     return { { static_cast<std::uint32_t>(width), static_cast<std::uint32_t>(height) }, result, mipLevels };
 }
 
-Core::Mesh
+Core::Node
 Files::LoadModel(const std::filesystem::path& path)
 {
     LoggerInfo << "Loading model " << path.string().c_str();
-
     if (path.extension() == ".obj")
     {
-        return LoadObj(path);
+        // return LoadObj(path);
     }
     else if (path.extension() == ".gltf")
     {
-        return LoadGltf(path);
+        return Loaders::GltfLoader::Load(path);
     }
 
     throw std::runtime_error("Can't determine model format");
@@ -118,133 +114,6 @@ Files::LoadObj(const std::filesystem::path& path)
 
             mesh.vertices.push_back(vertex);
             mesh.indices.push_back(static_cast<std::uint32_t>(mesh.indices.size()));
-        }
-    }
-
-    return mesh;
-}
-
-Core::Mesh
-Files::LoadGltf(const std::filesystem::path& path)
-{
-    tinygltf::Model model;
-    tinygltf::TinyGLTF loader;
-    std::string error;
-    std::string warn;
-
-    if (!loader.LoadASCIIFromFile(&model, &error, &warn, path.string()))
-    {
-        throw std::runtime_error("Cant load model, error: " + error);
-    }
-
-    if (!error.empty())
-    {
-        throw std::runtime_error("Error in model loading: " + error);
-    }
-
-    if (!warn.empty())
-    {
-        throw std::runtime_error("Warn in model loading: " + warn);
-    }
-
-    Core::Mesh mesh;
-
-    for (const tinygltf::Mesh& gltfMesh : model.meshes)
-    {
-        std::string name = gltfMesh.name;
-
-        auto getRawBuffer
-            = [&model,
-               &gltfMesh](const std::string& attribute) -> std::tuple<const std::uint8_t*, std::size_t, std::size_t>
-        {
-            std::size_t accessorId = 0;
-
-            if (attribute == "INDEX")
-            {
-                accessorId = static_cast<std::size_t>(gltfMesh.primitives[0].indices);
-            }
-            else
-            {
-                accessorId = static_cast<std::size_t>(gltfMesh.primitives[0].attributes.at(attribute));
-            }
-
-            // Accessor
-            tinygltf::Accessor& accessor = model.accessors[accessorId];
-            std::uint32_t componentType = static_cast<std::uint32_t>(accessor.componentType);
-            std::uint32_t type = static_cast<std::uint32_t>(accessor.type);
-            std::size_t componentSize = static_cast<std::size_t>(tinygltf::GetComponentSizeInBytes(componentType));
-            std::size_t componentCount = static_cast<std::size_t>(tinygltf::GetNumComponentsInType(type));
-            std::size_t itemStride = componentSize * componentCount;
-            std::size_t itemCount = accessor.count;
-
-            if (attribute == "POSITION" && accessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT)
-            {
-                throw std::runtime_error(
-                    "Loader supports only float positions, provided " + std::to_string(accessor.componentType));
-            }
-
-            if (attribute == "NORMAL" && accessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT)
-            {
-                throw std::runtime_error(
-                    "Loader supports only float normals, provided " + std::to_string(accessor.componentType));
-            }
-
-            if (attribute == "INDEX" && accessor.componentType != TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT)
-            {
-                throw std::runtime_error(
-                    "Loader supports only unsigned int indices, provided " + std::to_string(accessor.componentType));
-            }
-
-            if (attribute == "TEXCOORD_0" && accessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT)
-            {
-                throw std::runtime_error(
-                    "Loader supports only float UV's, provided " + std::to_string(accessor.componentType));
-            }
-
-            // Buffer view
-            std::size_t bufferViewId = static_cast<std::size_t>(accessor.bufferView);
-            tinygltf::BufferView& bufferView = model.bufferViews[bufferViewId];
-
-            // Buffer
-            std::size_t bufferId = static_cast<std::size_t>(bufferView.buffer);
-            tinygltf::Buffer& buffer = model.buffers[bufferId];
-
-            return { static_cast<const std::uint8_t*>(buffer.data.data() + accessor.byteOffset + bufferView.byteOffset),
-                     itemStride,
-                     itemCount };
-        };
-
-        auto [indexBuffer, indexStride, indexCount] = getRawBuffer("INDEX");
-        auto [positionBuffer, positionStride, positionCount] = getRawBuffer("POSITION");
-        auto [normalBuffer, normalStride, normalCount] = getRawBuffer("NORMAL");
-        auto [uvBuffer, uvStride, uvCount] = getRawBuffer("TEXCOORD_0");
-
-        if (!(positionCount == normalCount && normalCount == uvCount))
-        {
-            throw std::runtime_error("Wrong vertex info in file");
-        }
-
-        for (std::size_t i = 0; i < positionCount; i++)
-        {
-            Core::Vertex vertex;
-
-            // Position
-            const float* position = reinterpret_cast<const float*>(positionBuffer + (i * positionStride));
-            vertex.position = { position[0], position[1], position[2] };
-
-            // Normal
-            const float* normal = reinterpret_cast<const float*>(normalBuffer + (i * normalStride));
-            vertex.normal = { normal[0], normal[1], normal[2] };
-
-            // UV
-            const float* uv = reinterpret_cast<const float*>(uvBuffer + (i * uvStride));
-            vertex.uv = { uv[0], uv[1] };
-
-            // Index
-            const std::uint32_t index = *reinterpret_cast<const uint32_t*>(indexBuffer + (i * indexStride));
-
-            mesh.indices.push_back(index);
-            mesh.vertices.push_back(vertex);
         }
     }
 

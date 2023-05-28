@@ -26,7 +26,7 @@ public:
     VulkanRender(const Core::IWindow& window, const Core::Scene& scene);
     ~VulkanRender() override;
     void DrawFrame() override;
-    void AddAsset(const Core::Asset& asset) override;
+    void AddNode(const Core::Node& node) override;
     bool ShouldClose() const override;
 
 private:

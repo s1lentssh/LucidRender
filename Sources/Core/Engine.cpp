@@ -37,10 +37,10 @@ Engine::Update(float time)
 }
 
 void
-Engine::AddAsset(const Core::Asset& asset)
+Engine::AddNode(const Core::Node& node)
 {
-    mScene->AddAsset(asset);
-    mRender->AddAsset(asset);
+    mScene->AddNode(node);
+    mRender->AddNode(node);
 }
 
 void

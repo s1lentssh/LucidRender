@@ -16,11 +16,10 @@ class Files
 public:
     static std::vector<char> LoadFile(const std::filesystem::path& path);
     static Core::Texture LoadImage(const std::filesystem::path& path);
-    static Core::Mesh LoadModel(const std::filesystem::path& path);
+    static Core::Node LoadModel(const std::filesystem::path& path);
 
 private:
     static Core::Mesh LoadObj(const std::filesystem::path& path);
-    static Core::Mesh LoadGltf(const std::filesystem::path& path);
 };
 
 } // namespace Lucid

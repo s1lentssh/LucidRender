@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include <Core/Entity.h>
@@ -24,6 +25,18 @@ struct Mesh
 {
     std::vector<Vertex> vertices;
     std::vector<std::uint32_t> indices;
+};
+
+struct Node
+{
+    std::string name;
+    std::vector<std::shared_ptr<Node>> children;
+    std::weak_ptr<Node> parent;
+    std::shared_ptr<Mesh> mesh;
+
+    static void PrintTree(std::ostream& os, const Node& node, std::string prefix = "", bool isLastChild = true);
+
+    friend std::ostream& operator<<(std::ostream&, const Node&);
 };
 
 struct Texture

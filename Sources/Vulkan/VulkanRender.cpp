@@ -327,11 +327,12 @@ VulkanRender::DrawFrame()
 }
 
 void
-VulkanRender::AddAsset(const Core::Asset& asset)
+VulkanRender::AddNode(const Core::Node& node)
 {
-    mMeshes.push_back(
+    (void)node;
+    /*mMeshes.push_back(
         VulkanMesh(*mDevice.get(), *mDescriptorPool.get(), *mCommandPool.get(), asset.GetTexture(), asset.GetMesh()));
-    RecordCommandBuffers();
+    RecordCommandBuffers();*/
 }
 
 bool
@@ -395,7 +396,7 @@ VulkanRender::UpdateUniformBuffers()
 
     for (std::size_t i = 0; i < mMeshes.size(); i++)
     {
-        ubo.model = mScene.GetAssets().at(i).Transform();
+        // ubo.model = mScene.GetNodes().at(i).Transform();
         mMeshes.at(i).UpdateTransform(ubo);
     }
 

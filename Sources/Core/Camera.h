@@ -37,7 +37,7 @@ private:
     glm::vec3 mCameraFront;
     float mYaw = 0.0;
     float mPitch = 0.0f;
-    float mFov = 37.8;
+    float mFov = 37.8f;
 };
 
 } // namespace Lucid::Core

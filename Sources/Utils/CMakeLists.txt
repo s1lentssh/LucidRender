@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(Utils)
 
 # Create target
-file(GLOB SOURCES *.cpp *.h) 
+file(GLOB_RECURSE SOURCES *.cpp *.h) 
 add_library(${PROJECT_NAME} ${SOURCES})
 add_library(Lucid::Utils ALIAS ${PROJECT_NAME})
 

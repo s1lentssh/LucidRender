@@ -4,9 +4,9 @@ namespace Lucid::Core
 {
 
 void
-Scene::AddAsset(const Asset& entity)
+Scene::AddNode(const Node& node)
 {
-    mMeshes.push_back(entity);
+    mNodes.push_back(node);
 }
 
 void
@@ -15,10 +15,10 @@ Scene::AddCamera(const std::shared_ptr<Camera>& entity)
     mCamera = entity;
 }
 
-const std::vector<Asset>&
-Scene::GetAssets() const
+const std::vector<Node>&
+Scene::GetNodes() const
 {
-    return mMeshes;
+    return mNodes;
 }
 
 const std::shared_ptr<Camera>&

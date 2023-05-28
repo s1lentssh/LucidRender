@@ -18,14 +18,14 @@ class Scene
 public:
     Scene() = default;
 
-    void AddAsset(const Asset& entity);
-    void AddCamera(const std::shared_ptr<Camera>& entity);
+    void AddNode(const Node& node);
+    void AddCamera(const std::shared_ptr<Camera>& node);
 
-    const std::vector<Asset>& GetAssets() const;
+    const std::vector<Node>& GetNodes() const;
     const std::shared_ptr<Camera>& GetCamera() const;
 
 private:
-    std::vector<Asset> mMeshes;
+    std::vector<Node> mNodes;
     std::shared_ptr<Camera> mCamera;
 };
 

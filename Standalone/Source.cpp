@@ -32,28 +32,8 @@ try
     std::unique_ptr<Lucid::Core::Engine> engine
         = std::make_unique<Lucid::Core::Engine>(*window.get(), Lucid::Core::Engine::API::Vulkan);
 
-    /*Lucid::Core::Asset room(
-        Lucid::Files::LoadModel("Resources/Models/VikingRoom.obj"),
-        Lucid::Files::LoadImage("Resources/Textures/VikingRoom.png"));
-    room.SetPosition({ 0.0, 0.0, 0.05 });
-
-    Lucid::Core::Asset tree(
-        Lucid::Files::LoadModel("Resources/Models/Tree.obj"), Lucid::Files::LoadImage("Resources/Textures/Tree.png"));
-    tree.SetPosition({ 0.0, 2.0, 0.05 });
-
-    Lucid::Core::Asset ground(
-        Lucid::Files::LoadModel("Resources/Models/Ground.obj"),
-        Lucid::Files::LoadImage("Resources/Textures/Ground.jpg"));
-
-    engine->AddAsset(room);
-    engine->AddAsset(tree);
-    engine->AddAsset(ground);*/
-
-    Lucid::Core::Asset asset(
-        Lucid::Files::LoadModel("C:/Storage/glTF-Sample-Models/2.0/SciFiHelmet/glTF/SciFiHelmet.gltf"),
-        Lucid::Files::LoadImage(
-            "C:/Storage/glTF-Sample-Models/2.0/SciFiHelmet/glTF/SciFiHelmet_BaseColor.png"));
-    engine->AddAsset(asset);
+    Lucid::Core::Node scene = Lucid::Files::LoadModel("/Users/s1lentssh/Downloads/de_dust2_-_cs_map/scene.gltf");
+    engine->AddNode(scene);
 
     float lastTime = static_cast<float>(glfwGetTime());
 
