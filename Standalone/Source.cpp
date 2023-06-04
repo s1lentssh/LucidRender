@@ -1,4 +1,4 @@
-﻿#include "Window.h"
+#include "Window.h"
 
 #include <Core/Engine.h>
 #include <Utils/Defaults.hpp>
@@ -32,7 +32,7 @@ try
     std::unique_ptr<Lucid::Core::Engine> engine
         = std::make_unique<Lucid::Core::Engine>(*window.get(), Lucid::Core::Engine::API::Vulkan);
 
-    Lucid::Core::Node scene = Lucid::Files::LoadModel("/Users/s1lentssh/Downloads/de_dust2_-_cs_map/scene.gltf");
+    Lucid::Core::Node scene = Lucid::Files::LoadModel("/Users/s1lentssh/Documents/Office.glb");
     engine->AddNode(scene);
 
     float lastTime = static_cast<float>(glfwGetTime());

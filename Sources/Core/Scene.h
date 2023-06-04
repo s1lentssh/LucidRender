@@ -20,12 +20,13 @@ public:
 
     void AddNode(const Node& node);
     void AddCamera(const std::shared_ptr<Camera>& node);
+    void Traverse(const std::function<void(Node&)>& fn, const Node& node) const;
 
-    const std::vector<Node>& GetNodes() const;
+    const Node& GetRootNode() const;
     const std::shared_ptr<Camera>& GetCamera() const;
 
 private:
-    std::vector<Node> mNodes;
+    Node mRootNode;
     std::shared_ptr<Camera> mCamera;
 };
 

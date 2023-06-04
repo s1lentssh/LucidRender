@@ -19,7 +19,7 @@ public:
     static Core::Node LoadModel(const std::filesystem::path& path);
 
 private:
-    static Core::Mesh LoadObj(const std::filesystem::path& path);
+    static Core::Node LoadObj(const std::filesystem::path& path);
 };
 
 } // namespace Lucid

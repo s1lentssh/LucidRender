@@ -40,7 +40,6 @@ void
 Engine::AddNode(const Core::Node& node)
 {
     mScene->AddNode(node);
-    mRender->AddNode(node);
 }
 
 void

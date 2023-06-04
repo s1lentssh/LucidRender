@@ -215,6 +215,8 @@ VulkanRender::DrawFrame()
 {
     mDevice->Handle()->waitIdle();
 
+    SyncronizeScene();
+
     Core::InputController::Instance().SetMouseDisabled(ImGui::GetIO().WantCaptureMouse);
 
     DrawOverlay();
@@ -237,7 +239,7 @@ VulkanRender::DrawFrame()
             static Core::PushConstants constants;
             constants.ambientColor = glm::make_vec4(Defaults::AmbientColor.data());
             constants.lightPosition = glm::vec4(400.0, 50.0, 400.0, 1.0);
-            constants.lightColor = glm::vec4(1.0, 1.0, 1.0, 1.0);
+            constants.lightColor = glm::vec4(1.0, 1.0, 1.0, 100.0);
             commandBuffer.pushConstants(
                 mMeshPipeline->Layout(),
                 vk::ShaderStageFlagBits::eFragment,
@@ -326,19 +328,44 @@ VulkanRender::DrawFrame()
     mCurrentFrame = (mCurrentFrame + 1) % Defaults::MaxFramesInFlight;
 }
 
-void
-VulkanRender::AddNode(const Core::Node& node)
+std::size_t
+VulkanRender::AddMesh(const Core::Mesh& mesh)
 {
-    (void)node;
-    /*mMeshes.push_back(
-        VulkanMesh(*mDevice.get(), *mDescriptorPool.get(), *mCommandPool.get(), asset.GetTexture(), asset.GetMesh()));
-    RecordCommandBuffers();*/
+    mMeshes.push_back(VulkanMesh(
+        *mDevice.get(),
+        *mDescriptorPool.get(),
+        *mCommandPool.get(),
+        Lucid::Files::LoadImage("/Users/s1lentssh/Work/glTF-Sample-Models/2.0/SciFiHelmet/glTF/SciFiHelmet_BaseColor.png"),
+        mesh));
+    return mMeshes.size() - 1;
 }
 
 bool
 VulkanRender::ShouldClose() const
 {
     return mShouldClose;
+}
+
+void
+VulkanRender::SyncronizeScene()
+{
+    mScene.Traverse(
+        [this](Core::Node& node)
+        {
+            if (node.synched)
+            {
+                return;
+            }
+
+            if (node.mesh != nullptr)
+            {
+                std::size_t index = AddMesh(*node.mesh.get());
+                (void)index;
+            }
+
+            node.synched = true;
+        },
+        mScene.GetRootNode());
 }
 
 void
@@ -394,11 +421,18 @@ VulkanRender::UpdateUniformBuffers()
         = glm::perspective(glm::radians(mScene.GetCamera()->FieldOfView()), aspectRatio, 0.01f, 1'000'000.0f);
     ubo.projection[1][1] *= -1;
 
-    for (std::size_t i = 0; i < mMeshes.size(); i++)
-    {
-        // ubo.model = mScene.GetNodes().at(i).Transform();
-        mMeshes.at(i).UpdateTransform(ubo);
-    }
+    std::size_t index = 0;
+
+    mScene.Traverse(
+        [&index, &ubo, this](Core::Node& node)
+        {
+            if (node.mesh != nullptr)
+            {
+                ubo.model = node.Transform();
+                mMeshes.at(index++).UpdateTransform(ubo);
+            }
+        },
+        mScene.GetRootNode());
 
     if (mDrawSkybox)
     {

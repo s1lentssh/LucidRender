@@ -40,7 +40,7 @@ class IRender
 {
 public:
     virtual void DrawFrame() = 0;
-    virtual void AddNode(const Core::Node& node) = 0;
+    virtual std::size_t AddMesh(const Core::Mesh& mesh) = 0;
     virtual ~IRender() = default;
     virtual bool ShouldClose() const = 0;
 };

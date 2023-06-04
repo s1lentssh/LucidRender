@@ -68,9 +68,9 @@ Files::LoadModel(const std::filesystem::path& path)
     LoggerInfo << "Loading model " << path.string().c_str();
     if (path.extension() == ".obj")
     {
-        // return LoadObj(path);
+        return LoadObj(path);
     }
-    else if (path.extension() == ".gltf")
+    else if (path.extension() == ".gltf" || path.extension() == ".glb")
     {
         return Loaders::GltfLoader::Load(path);
     }
@@ -78,7 +78,7 @@ Files::LoadModel(const std::filesystem::path& path)
     throw std::runtime_error("Can't determine model format");
 }
 
-Core::Mesh
+Core::Node
 Files::LoadObj(const std::filesystem::path& path)
 {
     tinyobj::attrib_t attrib;
@@ -117,7 +117,9 @@ Files::LoadObj(const std::filesystem::path& path)
         }
     }
 
-    return mesh;
+    Core::Node node;
+    node.mesh = std::make_shared<Core::Mesh>(mesh);
+    return node;
 }
 
 } // namespace Lucid

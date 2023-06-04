@@ -6,7 +6,7 @@ namespace Lucid::Core
 void
 Scene::AddNode(const Node& node)
 {
-    mNodes.push_back(node);
+    mRootNode = node;
 }
 
 void
@@ -15,10 +15,20 @@ Scene::AddCamera(const std::shared_ptr<Camera>& entity)
     mCamera = entity;
 }
 
-const std::vector<Node>&
-Scene::GetNodes() const
+void
+Scene::Traverse(const std::function<void(Node&)>& fn, const Node& node) const
 {
-    return mNodes;
+    for (const std::shared_ptr<Node>& child : node.children)
+    {
+        fn(*child.get());
+        Traverse(fn, *child.get());
+    }
+}
+
+const Node&
+Scene::GetRootNode() const
+{
+    return mRootNode;
 }
 
 const std::shared_ptr<Camera>&

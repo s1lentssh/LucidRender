@@ -10,7 +10,7 @@ VulkanSkybox::VulkanSkybox(VulkanDevice& device, VulkanDescriptorPool& pool, Vul
     , mUniformBuffer(device)
 {
     (void)manager;
-    /*Core::Mesh mesh = Files::LoadModel("Resources/Models/Cube.obj");
+    Core::Mesh mesh = *Files::LoadModel("Resources/Models/Cube.obj").mesh.get();
     mIndexBuffer = std::make_unique<VulkanIndexBuffer>(device, manager, mesh.indices);
     mVertexBuffer = std::make_unique<VulkanVertexBuffer>(device, manager, mesh.vertices);
 
@@ -36,7 +36,7 @@ VulkanSkybox::VulkanSkybox(VulkanDevice& device, VulkanDescriptorPool& pool, Vul
                          .setImageView(mTexture->GetImageView())
                          .setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
 
-    mDescriptorSet.Update(bufferInfo, imageInfo);*/
+    mDescriptorSet.Update(bufferInfo, imageInfo);
 }
 
 void

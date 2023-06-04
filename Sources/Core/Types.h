@@ -33,9 +33,12 @@ struct Node
     std::vector<std::shared_ptr<Node>> children;
     std::weak_ptr<Node> parent;
     std::shared_ptr<Mesh> mesh;
+    bool synched = false;
+    glm::mat4 transform { 1.0f };
+
+    glm::mat4 Transform() const;
 
     static void PrintTree(std::ostream& os, const Node& node, std::string prefix = "", bool isLastChild = true);
-
     friend std::ostream& operator<<(std::ostream&, const Node&);
 };
 

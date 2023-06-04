@@ -26,10 +26,11 @@ public:
     VulkanRender(const Core::IWindow& window, const Core::Scene& scene);
     ~VulkanRender() override;
     void DrawFrame() override;
-    void AddNode(const Core::Node& node) override;
+    std::size_t AddMesh(const Core::Mesh& mesh) override;
     bool ShouldClose() const override;
 
 private:
+    void SyncronizeScene();
     void RecreateSwapchain();
     void UpdateUniformBuffers();
     void RecordCommandBuffers();
