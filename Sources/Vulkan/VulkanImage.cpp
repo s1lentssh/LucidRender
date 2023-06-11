@@ -21,7 +21,7 @@ VulkanImage::VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, c
         vk::BufferUsageFlagBits::eTransferSrc,
         vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
-    stagingBuffer.Write(const_cast<char*>(texture.pixels.data()));
+    stagingBuffer.Write(const_cast<unsigned char*>(texture.pixels.data()));
 
     auto createInfo = vk::ImageCreateInfo()
                           .setImageType(vk::ImageType::e2D)
@@ -80,7 +80,7 @@ VulkanImage::VulkanImage(
     std::size_t offset { 0 };
     for (const auto& texture : textures)
     {
-        stagingBuffer.Write(const_cast<char*>(texture.pixels.data()), texture.pixels.size(), offset);
+        stagingBuffer.Write(const_cast<unsigned char*>(texture.pixels.data()), texture.pixels.size(), offset);
         offset += texture.pixels.size();
     }
 
@@ -406,10 +406,12 @@ VulkanImage::GenerateMipmaps(
                     vk::Offset3D(0, 0, 0),
                     vk::Offset3D(static_cast<std::int32_t>(mipWidth), static_cast<std::int32_t>(mipHeight), 1)
                 };
-                auto dstOffsets = std::array<vk::Offset3D, 2> {
-                    vk::Offset3D(0, 0, 0),
-                    vk::Offset3D(static_cast<std::int32_t>(mipWidth > 1 ? mipWidth / 2 : 1), static_cast<std::int32_t>(mipHeight > 1 ? mipHeight / 2 : 1), 1)
-                };
+                auto dstOffsets
+                    = std::array<vk::Offset3D, 2> { vk::Offset3D(0, 0, 0),
+                                                    vk::Offset3D(
+                                                        static_cast<std::int32_t>(mipWidth > 1 ? mipWidth / 2 : 1),
+                                                        static_cast<std::int32_t>(mipHeight > 1 ? mipHeight / 2 : 1),
+                                                        1) };
 
                 auto blit = vk::ImageBlit()
                                 .setSrcOffsets(srcOffsets)

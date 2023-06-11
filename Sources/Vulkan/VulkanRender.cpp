@@ -239,7 +239,7 @@ VulkanRender::DrawFrame()
             static Core::PushConstants constants;
             constants.ambientColor = glm::make_vec4(Defaults::AmbientColor.data());
             constants.lightPosition = glm::vec4(400.0, 50.0, 400.0, 1.0);
-            constants.lightColor = glm::vec4(1.0, 1.0, 1.0, 100.0);
+            constants.lightColor = glm::vec4(1.0, 1.0, 1.0, 0.0);
             commandBuffer.pushConstants(
                 mMeshPipeline->Layout(),
                 vk::ShaderStageFlagBits::eFragment,
@@ -331,11 +331,14 @@ VulkanRender::DrawFrame()
 std::size_t
 VulkanRender::AddMesh(const Core::Mesh& mesh)
 {
+    static auto DefaultTexture = Lucid::Files::LoadImage(
+        "/Users/s1lentssh/Work/glTF-Sample-Models/2.0/SciFiHelmet/glTF/SciFiHelmet_BaseColor.png");
+
     mMeshes.push_back(VulkanMesh(
         *mDevice.get(),
         *mDescriptorPool.get(),
         *mCommandPool.get(),
-        Lucid::Files::LoadImage("/Users/s1lentssh/Work/glTF-Sample-Models/2.0/SciFiHelmet/glTF/SciFiHelmet_BaseColor.png"),
+        mesh.texture == nullptr ? DefaultTexture : *mesh.texture.get(),
         mesh));
     return mMeshes.size() - 1;
 }
@@ -417,8 +420,7 @@ VulkanRender::UpdateUniformBuffers()
 
     Core::UniformBufferObject ubo;
     ubo.view = mScene.GetCamera()->Transform();
-    ubo.projection
-        = glm::perspective(glm::radians(mScene.GetCamera()->FieldOfView()), aspectRatio, 0.01f, 1'000'000.0f);
+    ubo.projection = glm::perspective(glm::radians(mScene.GetCamera()->FieldOfView()), aspectRatio, 1.f, 100'000.0f);
     ubo.projection[1][1] *= -1;
 
     std::size_t index = 0;

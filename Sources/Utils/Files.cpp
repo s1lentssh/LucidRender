@@ -54,7 +54,7 @@ Files::LoadImage(const std::filesystem::path& path)
     }
 
     std::size_t size = static_cast<std::size_t>(width * height * 4);
-    std::vector<char> result(size);
+    std::vector<unsigned char> result(size);
     std::memcpy(result.data(), pixels, size);
 
     std::uint32_t mipLevels = static_cast<std::uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;

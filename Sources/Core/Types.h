@@ -21,8 +21,16 @@ template <typename T> struct Vector2d
     }
 };
 
+struct Texture
+{
+    Vector2d<std::uint32_t> size;
+    std::vector<unsigned char> pixels;
+    std::uint32_t mipLevels = 1;
+};
+
 struct Mesh
 {
+    std::shared_ptr<Texture> texture;
     std::vector<Vertex> vertices;
     std::vector<std::uint32_t> indices;
 };
@@ -40,13 +48,6 @@ struct Node
 
     static void PrintTree(std::ostream& os, const Node& node, std::string prefix = "", bool isLastChild = true);
     friend std::ostream& operator<<(std::ostream&, const Node&);
-};
-
-struct Texture
-{
-    Vector2d<std::uint32_t> size;
-    std::vector<char> pixels;
-    std::uint32_t mipLevels;
 };
 
 class Asset : public Entity
