@@ -5,12 +5,13 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 namespace Lucid::Core
 {
 
 Camera::Camera(const glm::mat4& transform)
-    : Entity(transform)
+    : mTransform(transform)
 {
     glm::mat4 viewMatrix = glm::inverse(transform);
 
@@ -23,20 +24,21 @@ Camera::Camera(const glm::mat4& transform)
 
     mCameraPos = translation;
     mCameraFront = -glm::normalize(glm::vec3(viewMatrix[2]));
-    mYaw = glm::degrees(glm::roll(rotation)) + 90.0f;
-    mPitch = -(90.0f - glm::degrees(glm::pitch(rotation)));
+
+    mYaw = -(glm::degrees(glm::yaw(rotation)) + 90.0f);
+    mPitch = glm::degrees(glm::pitch(rotation));
 }
 
 void
 Camera::Rotate(const Vector2d<float>& value)
 {
-    mYaw -= value.x * mCameraSensitivity;
+    mYaw += value.x * mCameraSensitivity;
     mPitch += value.y * mCameraSensitivity;
     mPitch = std::clamp(mPitch, -89.0f, 89.0f);
 
     mCameraFront.x = std::cos(glm::radians(mYaw)) * std::cos(glm::radians(mPitch));
-    mCameraFront.y = std::sin(glm::radians(mYaw)) * std::cos(glm::radians(mPitch));
-    mCameraFront.z = std::sin(glm::radians(mPitch));
+    mCameraFront.z = std::sin(glm::radians(mYaw)) * std::cos(glm::radians(mPitch));
+    mCameraFront.y = std::sin(glm::radians(mPitch));
 
     mCameraFront = glm::normalize(mCameraFront);
     mTransform = glm::lookAt(mCameraPos, mCameraPos + mCameraFront, mCameraUp);
@@ -71,7 +73,13 @@ void
 Camera::AdjustFieldOfView(const float value)
 {
     mFov += value;
-    mFov = std::clamp(mFov, 1.0f, 360.0f);
+    mFov = std::clamp(mFov, 10.0f, 120.0f);
+}
+
+glm::mat4
+Camera::Transform() const
+{
+    return mTransform;
 }
 
 float

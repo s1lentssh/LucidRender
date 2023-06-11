@@ -13,6 +13,7 @@ function(SetMaxWarningLevel Project)
             -Wno-global-constructors
             -Wno-ctad-maybe-unsupported
             -Wno-switch-enum
+            -Wno-poison-system-directories
         )
     elseif(UNIX)
         target_compile_options(${Project} PRIVATE

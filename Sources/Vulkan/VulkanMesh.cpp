@@ -1,4 +1,5 @@
 #include <Core/UniformBufferObject.h>
+#include <Utils/Files.h>
 #include <Vulkan/VulkanDevice.h>
 #include <Vulkan/VulkanMesh.h>
 
@@ -9,20 +10,23 @@ VulkanMesh::VulkanMesh(
     VulkanDevice& device,
     VulkanDescriptorPool& pool,
     VulkanCommandPool& manager,
-    const Core::Texture& texture,
-    const Core::Mesh& mesh)
-    : mVertexBuffer(device, manager, mesh.vertices)
-    , mIndexBuffer(device, manager, mesh.indices)
+    const Core::MeshPtr& mesh)
+    : mVertexBuffer(device, manager, mesh->vertices)
+    , mIndexBuffer(device, manager, mesh->indices)
     , mUniformBuffer(device)
-    , mTexture(VulkanImage::FromTexture(
-          device,
-          manager,
-          texture,
-          vk::Format::eR8G8B8A8Srgb,
-          vk::ImageAspectFlagBits::eColor))
-    , mSampler(device, mTexture->GetMipLevels())
-    , mDescriptorSet(device, pool)
 {
+    static auto DefaultTexture = Lucid::Files::LoadImage("Resources/Textures/Default.png");
+
+    mTexture = VulkanImage::FromTexture(
+        device,
+        manager,
+        mesh->texture == nullptr ? DefaultTexture : mesh->texture,
+        vk::Format::eR8G8B8A8Srgb,
+        vk::ImageAspectFlagBits::eColor);
+
+    mSampler = std::make_unique<VulkanSampler>(device, mTexture->GetMipLevels());
+    mDescriptorSet = std::make_unique<VulkanDescriptorSet>(device, pool);
+
     auto bufferInfo = vk::DescriptorBufferInfo()
                           .setBuffer(mUniformBuffer.Handle().get())
                           .setOffset(0)
@@ -31,9 +35,9 @@ VulkanMesh::VulkanMesh(
     auto imageInfo = vk::DescriptorImageInfo()
                          .setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
                          .setImageView(mTexture->GetImageView())
-                         .setSampler(mSampler.Handle().get());
+                         .setSampler(mSampler->Handle().get());
 
-    mDescriptorSet.Update(bufferInfo, imageInfo);
+    mDescriptorSet->Update(bufferInfo, imageInfo);
 }
 
 void
@@ -44,7 +48,7 @@ VulkanMesh::Draw(vk::CommandBuffer& commandBuffer, VulkanPipeline& pipeline) con
     commandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
     commandBuffer.bindIndexBuffer(mIndexBuffer.Handle().get(), 0, vk::IndexType::eUint32);
     commandBuffer.bindDescriptorSets(
-        vk::PipelineBindPoint::eGraphics, pipeline.Layout(), 0, 1, &mDescriptorSet.Handle().get(), 0, {});
+        vk::PipelineBindPoint::eGraphics, pipeline.Layout(), 0, 1, &mDescriptorSet->Handle().get(), 0, {});
     commandBuffer.drawIndexed(static_cast<std::uint32_t>(mIndexBuffer.IndicesCount()), 1, 0, 0, 0);
 }
 

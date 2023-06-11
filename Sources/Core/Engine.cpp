@@ -15,7 +15,7 @@ Engine::Engine(const IWindow& window, API api)
     mScene = std::make_shared<Lucid::Core::Scene>();
 
     auto camera = std::make_shared<Lucid::Core::Camera>(
-        glm::lookAt(glm::vec3(3.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 6.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
     mScene->AddCamera(camera);
 
     switch (api)
@@ -31,16 +31,19 @@ Engine::Update(float time)
 {
     // Sync
     ProcessInput(time);
+    ProcessDirtyNodes();
 
     // Render
     mRender->DrawFrame();
 }
 
 void
-Engine::AddAsset(const Core::Asset& asset)
+Engine::SetRootNode(const SceneNodePtr& node)
 {
-    mScene->AddAsset(asset);
-    mRender->AddAsset(asset);
+    mScene->SetRootNode(node);
+
+    // Set all nodes as dirty
+    mScene->Traverse([this](const Core::SceneNodePtr& it) { mDirtyNodes.insert(it->GetId()); }, mScene->GetRootNode());
 }
 
 void
@@ -79,6 +82,21 @@ Engine::ProcessInput(float time)
     {
         mScene->GetCamera()->AdjustFieldOfView(scrollDelta.y);
     }
+}
+
+void
+Engine::ProcessDirtyNodes()
+{
+    for (const std::size_t id : mDirtyNodes)
+    {
+        const Core::SceneNodePtr& node = mScene->GetNodeById(id);
+        if (node->GetOptionalMesh().has_value())
+        {
+            mRender->AddNode(node);
+        }
+    }
+
+    mDirtyNodes.clear();
 }
 
 bool

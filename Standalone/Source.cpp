@@ -1,4 +1,4 @@
-﻿#include "Window.h"
+#include "Window.h"
 
 #include <Core/Engine.h>
 #include <Utils/Defaults.hpp>
@@ -32,22 +32,8 @@ try
     std::unique_ptr<Lucid::Core::Engine> engine
         = std::make_unique<Lucid::Core::Engine>(*window.get(), Lucid::Core::Engine::API::Vulkan);
 
-    Lucid::Core::Asset room(
-        Lucid::Files::LoadModel("Resources/Models/VikingRoom.obj"),
-        Lucid::Files::LoadImage("Resources/Textures/VikingRoom.png"));
-    room.SetPosition({ 0.0, 0.0, 0.05 });
-
-    Lucid::Core::Asset tree(
-        Lucid::Files::LoadModel("Resources/Models/Tree.obj"), Lucid::Files::LoadImage("Resources/Textures/Tree.png"));
-    tree.SetPosition({ 0.0, 2.0, 0.05 });
-
-    Lucid::Core::Asset ground(
-        Lucid::Files::LoadModel("Resources/Models/Ground.obj"),
-        Lucid::Files::LoadImage("Resources/Textures/Ground.jpg"));
-
-    engine->AddAsset(room);
-    engine->AddAsset(tree);
-    engine->AddAsset(ground);
+    Lucid::Core::SceneNodePtr scene = Lucid::Files::LoadModel("/Users/s1lentssh/Documents/Office.glb");
+    engine->SetRootNode(scene);
 
     float lastTime = static_cast<float>(glfwGetTime());
 

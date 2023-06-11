@@ -38,14 +38,14 @@ public:
     static std::unique_ptr<VulkanImage> FromTexture(
         VulkanDevice& device,
         VulkanCommandPool& commandPool,
-        const Core::Texture& texture,
+        const Core::TexturePtr& texture,
         vk::Format format,
         vk::ImageAspectFlags aspectFlags);
 
     static std::unique_ptr<VulkanImage> FromCubemap(
         VulkanDevice& device,
         VulkanCommandPool& commandPool,
-        const std::array<Core::Texture, 6>& textures,
+        const std::array<Core::TexturePtr, 6>& textures,
         vk::Format format,
         vk::ImageAspectFlags aspectFlags);
 
@@ -81,9 +81,9 @@ private:
 
     VulkanImage(VulkanDevice& device, vk::Image image);
 
-    VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, const Core::Texture& texture);
+    VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, const Core::TexturePtr& texture);
 
-    VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, const std::array<Core::Texture, 6>& textures);
+    VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, const std::array<Core::TexturePtr, 6>& textures);
 
     void GenerateImageView(
         vk::Format format,

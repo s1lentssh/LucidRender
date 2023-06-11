@@ -206,7 +206,7 @@ VulkanRender::DrawDockspace()
         = ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_NoDockingInCentralNode;
 
     ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8.0f, 8.0f));
+    ImGui::PopStyleVar();
     ImGui::End();
 }
 
@@ -237,7 +237,7 @@ VulkanRender::DrawFrame()
             static Core::PushConstants constants;
             constants.ambientColor = glm::make_vec4(Defaults::AmbientColor.data());
             constants.lightPosition = glm::vec4(400.0, 50.0, 400.0, 1.0);
-            constants.lightColor = glm::vec4(1.0, 1.0, 1.0, 1.0);
+            constants.lightColor = glm::vec4(1.0, 1.0, 1.0, 0.0);
             commandBuffer.pushConstants(
                 mMeshPipeline->Layout(),
                 vk::ShaderStageFlagBits::eFragment,
@@ -246,7 +246,7 @@ VulkanRender::DrawFrame()
                 &constants);
 
             // Geometry
-            for (const VulkanMesh& mesh : mMeshes)
+            for (const auto& [id, mesh] : mMeshes)
             {
                 mesh.Draw(commandBuffer, *mMeshPipeline.get());
             }
@@ -327,11 +327,11 @@ VulkanRender::DrawFrame()
 }
 
 void
-VulkanRender::AddAsset(const Core::Asset& asset)
+VulkanRender::AddNode(const Core::SceneNodePtr& node)
 {
-    mMeshes.push_back(
-        VulkanMesh(*mDevice.get(), *mDescriptorPool.get(), *mCommandPool.get(), asset.GetTexture(), asset.GetMesh()));
-    RecordCommandBuffers();
+
+    const Core::MeshPtr& mesh = node->GetOptionalMesh().value();
+    mMeshes.emplace(node->GetId(), VulkanMesh { *mDevice.get(), *mDescriptorPool.get(), *mCommandPool.get(), mesh });
 }
 
 bool
@@ -389,14 +389,13 @@ VulkanRender::UpdateUniformBuffers()
 
     Core::UniformBufferObject ubo;
     ubo.view = mScene.GetCamera()->Transform();
-    ubo.projection
-        = glm::perspective(glm::radians(mScene.GetCamera()->FieldOfView()), aspectRatio, 0.01f, 1'000'000.0f);
+    ubo.projection = glm::perspective(glm::radians(mScene.GetCamera()->FieldOfView()), aspectRatio, 1.f, 100'000.0f);
     ubo.projection[1][1] *= -1;
 
-    for (std::size_t i = 0; i < mMeshes.size(); i++)
+    for (const auto& [id, mesh] : mMeshes)
     {
-        ubo.model = mScene.GetAssets().at(i).Transform();
-        mMeshes.at(i).UpdateTransform(ubo);
+        ubo.model = mScene.GetNodeById(id)->GetTransform();
+        mMeshes.at(id).UpdateTransform(ubo);
     }
 
     if (mDrawSkybox)

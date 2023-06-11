@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.21)
 project(LucidRender 
     VERSION 0.2.0
     DESCRIPTION "Pre-Alpha")
@@ -46,6 +46,7 @@ conan_cmake_run(
         glm/0.9.9.8
         tinyobjloader/1.0.6
         boost/1.79.0
+        tinygltf/2.5.0
 
     BASIC_SETUP
     CMAKE_TARGETS

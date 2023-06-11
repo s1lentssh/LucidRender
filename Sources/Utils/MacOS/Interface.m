@@ -23,9 +23,10 @@ void makeViewMetalCompatible(void* handle)
 
 void* getMetalLayer(void* window)
 {
+    NSView* view;
     NSWindow* ns_window = (__bridge NSWindow*) window;
     void* viewHandle = (__bridge void*) [ns_window contentView];
     makeViewMetalCompatible(viewHandle);
-    NSView* view = (__bridge NSView*)viewHandle;
+    view = (__bridge NSView*)viewHandle;
     return (__bridge void*) [view layer];
 }

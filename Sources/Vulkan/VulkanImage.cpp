@@ -2,7 +2,6 @@
 
 #include <numeric>
 
-#include <Core/Texture.h>
 #include <Utils/Files.h>
 #include <Utils/Logger.hpp>
 #include <Vulkan/VulkanBuffer.h>
@@ -12,20 +11,20 @@
 namespace Lucid::Vulkan
 {
 
-VulkanImage::VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, const Core::Texture& texture)
+VulkanImage::VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, const Core::TexturePtr& texture)
     : mDevice(device)
 {
     VulkanBuffer stagingBuffer(
         device,
-        texture.pixels.size(),
+        texture->pixels.size(),
         vk::BufferUsageFlagBits::eTransferSrc,
         vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
-    stagingBuffer.Write(const_cast<char*>(texture.pixels.data()));
+    stagingBuffer.Write(const_cast<unsigned char*>(texture->pixels.data()));
 
     auto createInfo = vk::ImageCreateInfo()
                           .setImageType(vk::ImageType::e2D)
-                          .setExtent(vk::Extent3D().setWidth(texture.size.x).setHeight(texture.size.y).setDepth(1))
+                          .setExtent(vk::Extent3D().setWidth(texture->size.x).setHeight(texture->size.y).setDepth(1))
                           .setMipLevels(1)
                           .setArrayLayers(1)
                           .setFormat(vk::Format::eR8G8B8A8Srgb)
@@ -36,11 +35,11 @@ VulkanImage::VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, c
                               | vk::ImageUsageFlagBits::eTransferSrc)
                           .setSharingMode(vk::SharingMode::eExclusive)
                           .setSamples(vk::SampleCountFlagBits::e1)
-                          .setMipLevels(texture.mipLevels);
+                          .setMipLevels(texture->mipLevels);
 
     mUniqueImageHolder = device.Handle()->createImageUnique(createInfo);
     mHandle = mUniqueImageHolder.value().get();
-    mMipLevels = texture.mipLevels;
+    mMipLevels = texture->mipLevels;
 
     vk::MemoryRequirements requirements = device.Handle()->getImageMemoryRequirements(Handle());
     std::uint32_t memoryType
@@ -53,14 +52,14 @@ VulkanImage::VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, c
 
     Transition(
         commandPool, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
-    Write(commandPool, stagingBuffer, texture.size);
-    GenerateMipmaps(commandPool, texture.size, vk::Format::eR8G8B8A8Srgb);
+    Write(commandPool, stagingBuffer, texture->size);
+    GenerateMipmaps(commandPool, texture->size, vk::Format::eR8G8B8A8Srgb);
 }
 
 VulkanImage::VulkanImage(
     VulkanDevice& device,
     VulkanCommandPool& commandPool,
-    const std::array<Core::Texture, 6>& textures)
+    const std::array<Core::TexturePtr, 6>& textures)
     : mDevice(device)
 {
     (void)commandPool;
@@ -69,7 +68,7 @@ VulkanImage::VulkanImage(
         textures.begin(),
         textures.end(),
         static_cast<std::size_t>(0),
-        [](std::size_t accumulator, const Core::Texture& value) { return accumulator + value.pixels.size(); });
+        [](std::size_t accumulator, const Core::TexturePtr& value) { return accumulator + value->pixels.size(); });
 
     VulkanBuffer stagingBuffer(
         device,
@@ -80,8 +79,8 @@ VulkanImage::VulkanImage(
     std::size_t offset { 0 };
     for (const auto& texture : textures)
     {
-        stagingBuffer.Write(const_cast<char*>(texture.pixels.data()), texture.pixels.size(), offset);
-        offset += texture.pixels.size();
+        stagingBuffer.Write(const_cast<unsigned char*>(texture->pixels.data()), texture->pixels.size(), offset);
+        offset += texture->pixels.size();
     }
 
     auto& firstTexture = textures.at(0);
@@ -89,7 +88,7 @@ VulkanImage::VulkanImage(
     auto createInfo
         = vk::ImageCreateInfo()
               .setImageType(vk::ImageType::e2D)
-              .setExtent(vk::Extent3D().setWidth(firstTexture.size.x).setHeight(firstTexture.size.y).setDepth(1))
+              .setExtent(vk::Extent3D().setWidth(firstTexture->size.x).setHeight(firstTexture->size.y).setDepth(1))
               .setMipLevels(1)
               .setArrayLayers(static_cast<std::uint32_t>(textures.size()))
               .setFormat(vk::Format::eR8G8B8A8Srgb)
@@ -100,7 +99,7 @@ VulkanImage::VulkanImage(
                   | vk::ImageUsageFlagBits::eTransferSrc)
               .setSharingMode(vk::SharingMode::eExclusive)
               .setSamples(vk::SampleCountFlagBits::e1)
-              .setMipLevels(firstTexture.mipLevels)
+              .setMipLevels(firstTexture->mipLevels)
               .setFlags(vk::ImageCreateFlagBits::eCubeCompatible);
 
     mUniqueImageHolder = device.Handle()->createImageUnique(createInfo);
@@ -122,7 +121,7 @@ VulkanImage::VulkanImage(
         vk::ImageLayout::eTransferDstOptimal,
         textures.size());
 
-    Write(commandPool, stagingBuffer, firstTexture.size, textures.size());
+    Write(commandPool, stagingBuffer, firstTexture->size, textures.size());
 
     Transition(
         commandPool,
@@ -164,7 +163,7 @@ std::unique_ptr<VulkanImage>
 VulkanImage::FromTexture(
     VulkanDevice& device,
     VulkanCommandPool& commandPool,
-    const Core::Texture& texture,
+    const Core::TexturePtr& texture,
     vk::Format format,
     vk::ImageAspectFlags aspectFlags)
 {
@@ -177,7 +176,7 @@ std::unique_ptr<VulkanImage>
 VulkanImage::FromCubemap(
     VulkanDevice& device,
     VulkanCommandPool& commandPool,
-    const std::array<Core::Texture, 6>& textures,
+    const std::array<Core::TexturePtr, 6>& textures,
     vk::Format format,
     vk::ImageAspectFlags aspectFlags)
 {
@@ -406,10 +405,12 @@ VulkanImage::GenerateMipmaps(
                     vk::Offset3D(0, 0, 0),
                     vk::Offset3D(static_cast<std::int32_t>(mipWidth), static_cast<std::int32_t>(mipHeight), 1)
                 };
-                auto dstOffsets = std::array<vk::Offset3D, 2> {
-                    vk::Offset3D(0, 0, 0),
-                    vk::Offset3D(static_cast<std::int32_t>(mipWidth > 1 ? mipWidth / 2 : 1), static_cast<std::int32_t>(mipHeight > 1 ? mipHeight / 2 : 1), 1)
-                };
+                auto dstOffsets
+                    = std::array<vk::Offset3D, 2> { vk::Offset3D(0, 0, 0),
+                                                    vk::Offset3D(
+                                                        static_cast<std::int32_t>(mipWidth > 1 ? mipWidth / 2 : 1),
+                                                        static_cast<std::int32_t>(mipHeight > 1 ? mipHeight / 2 : 1),
+                                                        1) };
 
                 auto blit = vk::ImageBlit()
                                 .setSrcOffsets(srcOffsets)

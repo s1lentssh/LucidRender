@@ -79,7 +79,9 @@ InputController::GetPressedKeys()
 Vector2d<float>
 InputController::GetMouseDelta()
 {
-    return mMouseDelta;
+    auto result = mMouseDelta;
+    mMouseDelta = {};
+    return result;
 }
 
 Vector2d<float>
