@@ -31,15 +31,19 @@ Engine::Update(float time)
 {
     // Sync
     ProcessInput(time);
+    ProcessDirtyNodes();
 
     // Render
     mRender->DrawFrame();
 }
 
 void
-Engine::AddNode(const Core::Node& node)
+Engine::SetRootNode(const SceneNodePtr& node)
 {
-    mScene->AddNode(node);
+    mScene->SetRootNode(node);
+
+    // Set all nodes as dirty
+    mScene->Traverse([this](const Core::SceneNodePtr& it) { mDirtyNodes.insert(it->GetId()); }, mScene->GetRootNode());
 }
 
 void
@@ -78,6 +82,21 @@ Engine::ProcessInput(float time)
     {
         mScene->GetCamera()->AdjustFieldOfView(scrollDelta.y);
     }
+}
+
+void
+Engine::ProcessDirtyNodes()
+{
+    for (const std::size_t id : mDirtyNodes)
+    {
+        const Core::SceneNodePtr& node = mScene->GetNodeById(id);
+        if (node->GetOptionalMesh().has_value())
+        {
+            mRender->AddNode(node);
+        }
+    }
+
+    mDirtyNodes.clear();
 }
 
 bool

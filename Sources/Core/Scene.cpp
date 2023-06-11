@@ -4,9 +4,12 @@ namespace Lucid::Core
 {
 
 void
-Scene::AddNode(const Node& node)
+Scene::SetRootNode(const SceneNodePtr& node)
 {
     mRootNode = node;
+
+    // Add all nodes to index
+    Traverse([this](const Core::SceneNodePtr& it) { mNodeIndex[it->GetId()] = it; }, GetRootNode());
 }
 
 void
@@ -16,19 +19,25 @@ Scene::AddCamera(const std::shared_ptr<Camera>& entity)
 }
 
 void
-Scene::Traverse(const std::function<void(Node&)>& fn, const Node& node) const
+Scene::Traverse(const std::function<void(const SceneNodePtr&)>& fn, const SceneNodePtr& node) const
 {
-    for (const std::shared_ptr<Node>& child : node.children)
+    for (const SceneNodePtr& child : node->GetChildren())
     {
-        fn(*child.get());
-        Traverse(fn, *child.get());
+        fn(child);
+        Traverse(fn, child);
     }
 }
 
-const Node&
+const SceneNodePtr&
 Scene::GetRootNode() const
 {
     return mRootNode;
+}
+
+SceneNodePtr
+Scene::GetNodeById(std::size_t id) const
+{
+    return mNodeIndex.at(id).lock();
 }
 
 const std::shared_ptr<Camera>&

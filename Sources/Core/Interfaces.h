@@ -2,6 +2,7 @@
 
 #include <filesystem>
 
+#include <Core/SceneNode.h>
 #include <Core/Types.h>
 
 struct GLFWwindow;
@@ -40,7 +41,7 @@ class IRender
 {
 public:
     virtual void DrawFrame() = 0;
-    virtual std::size_t AddMesh(const Core::Mesh& mesh) = 0;
+    virtual void AddNode(const Core::SceneNodePtr& mesh) = 0;
     virtual ~IRender() = default;
     virtual bool ShouldClose() const = 0;
 };

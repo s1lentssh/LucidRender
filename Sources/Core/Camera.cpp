@@ -11,7 +11,7 @@ namespace Lucid::Core
 {
 
 Camera::Camera(const glm::mat4& transform)
-    : Entity(transform)
+    : mTransform(transform)
 {
     glm::mat4 viewMatrix = glm::inverse(transform);
 
@@ -74,6 +74,12 @@ Camera::AdjustFieldOfView(const float value)
 {
     mFov += value;
     mFov = std::clamp(mFov, 10.0f, 120.0f);
+}
+
+glm::mat4
+Camera::Transform() const
+{
+    return mTransform;
 }
 
 float

@@ -11,7 +11,7 @@
 namespace Lucid::Loaders
 {
 
-Core::Node
+Core::SceneNodePtr
 GltfLoader::Load(const std::filesystem::path& path)
 {
     tinygltf::Model gltf;
@@ -45,22 +45,19 @@ GltfLoader::Load(const std::filesystem::path& path)
     }
 
     tinygltf::Scene scene = gltf.scenes.at(0);
-    Core::Node result;
-    result.name = "Root";
+    Core::SceneNodePtr result = Core::SceneNode::Create("Root", nullptr);
 
     for (const auto nodeId : scene.nodes)
     {
         const tinygltf::Node rootNode = gltf.nodes.at(static_cast<std::size_t>(nodeId));
-        std::shared_ptr<Core::Node> traversed = GltfLoader::TraverseFn(gltf, rootNode);
-        traversed->mesh = GltfLoader::MeshFn(gltf, rootNode.mesh);
-        result.children.push_back(traversed);
+        Core::SceneNodePtr traversed = GltfLoader::TraverseFn(gltf, rootNode, nullptr);
+        result->AddChildren(traversed);
     }
 
-    LoggerInfo << result;
     return result;
 }
 
-GltfLoader::BufferData
+std::optional<GltfLoader::BufferData>
 GltfLoader::GetBufferData(const tinygltf::Model& gltf, std::int32_t meshId, const std::string& attribute)
 {
     const tinygltf::Mesh& mesh = gltf.meshes.at(static_cast<std::size_t>(meshId));
@@ -79,13 +76,8 @@ GltfLoader::GetBufferData(const tinygltf::Model& gltf, std::int32_t meshId, cons
         }
         catch (const std::exception& ex)
         {
-            (void)ex;
-            LoggerError << "Size: " << mesh.primitives.size();
-            LoggerError << "Attributes: ";
-            for (const auto& [key, value] : mesh.primitives[0].attributes)
-            {
-                LoggerError << key;
-            }
+            LoggerError << "No attribute " << attribute << ": " << ex.what();
+            return std::nullopt;
         }
     }
 
@@ -131,31 +123,30 @@ GltfLoader::GetBufferData(const tinygltf::Model& gltf, std::int32_t meshId, cons
     std::size_t bufferId = static_cast<std::size_t>(bufferView.buffer);
     const tinygltf::Buffer& buffer = gltf.buffers[bufferId];
 
-    return { static_cast<const std::uint8_t*>(buffer.data.data() + accessor.byteOffset + bufferView.byteOffset),
-             itemStride,
-             itemCount,
-             accessor.componentType };
+    return { { static_cast<const std::uint8_t*>(buffer.data.data() + accessor.byteOffset + bufferView.byteOffset),
+               itemStride,
+               itemCount,
+               accessor.componentType } };
 }
 
-std::shared_ptr<Core::Node>
-GltfLoader::TraverseFn(const tinygltf::Model& gltf, const tinygltf::Node& node)
+Core::SceneNodePtr
+GltfLoader::TraverseFn(const tinygltf::Model& gltf, const tinygltf::Node& node, Core::SceneNodePtr parent)
 {
-    std::shared_ptr<Core::Node> result = std::make_shared<Core::Node>();
-    result->name = node.name;
-    result->mesh = GltfLoader::MeshFn(gltf, node.mesh);
-    result->transform = GltfLoader::TransformFn(node);
+    Core::SceneNodePtr result = Core::SceneNode::Create(node.name, parent);
+    result->SetMesh(GltfLoader::MeshFn(gltf, node.mesh));
+    result->SetTransform(GltfLoader::TransformFn(node));
 
     for (const auto childId : node.children)
     {
         const tinygltf::Node childNode = gltf.nodes.at(static_cast<std::size_t>(childId));
-        std::shared_ptr<Core::Node> traversed = GltfLoader::TraverseFn(gltf, childNode);
-        traversed->parent = result;
-        result->children.push_back(traversed);
+        Core::SceneNodePtr traversed = GltfLoader::TraverseFn(gltf, childNode, result);
+        result->AddChildren(traversed);
     }
+
     return result;
 }
 
-std::shared_ptr<Core::Mesh>
+Core::MeshPtr
 GltfLoader::MeshFn(const tinygltf::Model& gltf, std::int32_t meshId)
 {
     if (meshId == -1)
@@ -163,45 +154,68 @@ GltfLoader::MeshFn(const tinygltf::Model& gltf, std::int32_t meshId)
         return nullptr;
     }
 
-    BufferData indexBuffer = GltfLoader::GetBufferData(gltf, meshId, "INDEX");
-    BufferData vertexBuffer = GltfLoader::GetBufferData(gltf, meshId, "POSITION");
-    BufferData normalBuffer = GltfLoader::GetBufferData(gltf, meshId, "NORMAL");
-    BufferData uvBuffer = GltfLoader::GetBufferData(gltf, meshId, "TEXCOORD_0");
+    auto indexBuffer = GltfLoader::GetBufferData(gltf, meshId, "INDEX");
+    auto vertexBuffer = GltfLoader::GetBufferData(gltf, meshId, "POSITION");
+    auto normalBuffer = GltfLoader::GetBufferData(gltf, meshId, "NORMAL");
+    auto uvBuffer = GltfLoader::GetBufferData(gltf, meshId, "TEXCOORD_0");
 
     Core::Mesh result;
 
+    if (!vertexBuffer.has_value())
+    {
+        return std::make_shared<Core::Mesh>(result);
+    }
+
     // Vertices
-    for (std::size_t i = 0; i < vertexBuffer.count; i++)
+    for (std::size_t i = 0; i < vertexBuffer.value().count; i++)
     {
         Core::Vertex vertex;
 
         // Position
-        const float* position = reinterpret_cast<const float*>(vertexBuffer.data + (i * vertexBuffer.stride));
-        vertex.position = { position[0], position[1], position[2] };
+        if (vertexBuffer.has_value())
+        {
+            const float* position
+                = reinterpret_cast<const float*>(vertexBuffer.value().data + (i * vertexBuffer.value().stride));
+            vertex.position = { position[0], position[1], position[2] };
+        }
 
         // Normal
-        const float* normal = reinterpret_cast<const float*>(normalBuffer.data + (i * normalBuffer.stride));
-        vertex.normal = { normal[0], normal[1], normal[2] };
+        if (normalBuffer.has_value())
+        {
+            const float* normal
+                = reinterpret_cast<const float*>(normalBuffer.value().data + (i * normalBuffer.value().stride));
+            vertex.normal = { normal[0], normal[1], normal[2] };
+        }
 
         // UV
-        const float* uv = reinterpret_cast<const float*>(uvBuffer.data + (i * uvBuffer.stride));
-        vertex.uv = { uv[0], uv[1] };
+        if (uvBuffer.has_value())
+        {
+            const float* uv = reinterpret_cast<const float*>(uvBuffer.value().data + (i * uvBuffer.value().stride));
+            vertex.uv = { uv[0], uv[1] };
+        }
 
         result.vertices.push_back(vertex);
     }
 
+    if (!indexBuffer.has_value())
+    {
+        return std::make_shared<Core::Mesh>(result);
+    }
+
     // Indices
-    for (std::size_t i = 0; i < indexBuffer.count; i++)
+    for (std::size_t i = 0; i < indexBuffer.value().count; i++)
     {
         // Index
-        if (indexBuffer.type == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT)
+        if (indexBuffer.value().type == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT)
         {
-            const std::uint16_t index = *reinterpret_cast<const uint16_t*>(indexBuffer.data + (i * indexBuffer.stride));
+            const std::uint16_t index
+                = *reinterpret_cast<const uint16_t*>(indexBuffer.value().data + (i * indexBuffer.value().stride));
             result.indices.push_back(index);
         }
-        else if (indexBuffer.type == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT)
+        else if (indexBuffer.value().type == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT)
         {
-            const std::uint32_t index = *reinterpret_cast<const uint32_t*>(indexBuffer.data + (i * indexBuffer.stride));
+            const std::uint32_t index
+                = *reinterpret_cast<const uint32_t*>(indexBuffer.value().data + (i * indexBuffer.value().stride));
             result.indices.push_back(index);
         }
     }
@@ -211,7 +225,7 @@ GltfLoader::MeshFn(const tinygltf::Model& gltf, std::int32_t meshId)
     return std::make_shared<Core::Mesh>(result);
 }
 
-std::shared_ptr<Core::Texture>
+Core::TexturePtr
 GltfLoader::TextureFn(const tinygltf::Model& gltf, std::int32_t meshId)
 {
     if (static_cast<std::size_t>(meshId) >= gltf.meshes.size() || meshId < 0)
@@ -250,8 +264,6 @@ GltfLoader::TextureFn(const tinygltf::Model& gltf, std::int32_t meshId)
     Core::Texture result;
     result.size = { static_cast<std::uint32_t>(image.width), static_cast<std::uint32_t>(image.height) };
     result.pixels = image.image;
-
-    LoggerInfo << "Found texture";
 
     return std::make_shared<Core::Texture>(result);
 }

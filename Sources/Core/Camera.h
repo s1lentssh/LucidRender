@@ -2,14 +2,13 @@
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <Core/Entity.h>
 #include <Core/Types.h>
 #include <glm/glm.hpp>
 
 namespace Lucid::Core
 {
 
-class Camera : public Entity
+class Camera
 {
 public:
     enum class MoveDirection
@@ -26,6 +25,7 @@ public:
     void Rotate(const Vector2d<float>& value);
     void Move(MoveDirection direction, float deltaTime);
     void AdjustFieldOfView(const float value);
+    glm::mat4 Transform() const;
     float FieldOfView() const;
 
 private:
@@ -33,6 +33,7 @@ private:
     const float mCameraSpeed = 300.0f;
     const float mCameraSensitivity = 0.1f;
 
+    glm::mat4 mTransform { 1.0f };
     glm::vec3 mCameraPos;
     glm::vec3 mCameraFront;
     float mYaw = 0.0;

@@ -9,17 +9,16 @@ VulkanSkybox::VulkanSkybox(VulkanDevice& device, VulkanDescriptorPool& pool, Vul
     : mDescriptorSet(device, pool)
     , mUniformBuffer(device)
 {
-    (void)manager;
-    Core::Mesh mesh = *Files::LoadModel("Resources/Models/Cube.obj").mesh.get();
-    mIndexBuffer = std::make_unique<VulkanIndexBuffer>(device, manager, mesh.indices);
-    mVertexBuffer = std::make_unique<VulkanVertexBuffer>(device, manager, mesh.vertices);
+    Core::MeshPtr mesh = Files::LoadModel("Resources/Models/Cube.obj")->GetOptionalMesh().value();
+    mIndexBuffer = std::make_unique<VulkanIndexBuffer>(device, manager, mesh->indices);
+    mVertexBuffer = std::make_unique<VulkanVertexBuffer>(device, manager, mesh->vertices);
 
-    std::array<Core::Texture, 6> textures {
-        Lucid::Files::LoadImage("Resources/Skyboxes/BACK.jpeg"),
-    Lucid::Files::LoadImage("Resources/Skyboxes/FRONT.jpeg"), Lucid::Files::LoadImage("Resources/Skyboxes/LEFT.jpeg"),
-    Lucid::Files::LoadImage("Resources/Skyboxes/RIGHT.jpeg"), Lucid::Files::LoadImage("Resources/Skyboxes/UP.jpeg"),
-    Lucid::Files::LoadImage("Resources/Skyboxes/DOWN.jpeg")
-    };
+    std::array<Core::TexturePtr, 6> textures { Lucid::Files::LoadImage("Resources/Skyboxes/BACK.jpeg"),
+                                               Lucid::Files::LoadImage("Resources/Skyboxes/FRONT.jpeg"),
+                                               Lucid::Files::LoadImage("Resources/Skyboxes/LEFT.jpeg"),
+                                               Lucid::Files::LoadImage("Resources/Skyboxes/RIGHT.jpeg"),
+                                               Lucid::Files::LoadImage("Resources/Skyboxes/UP.jpeg"),
+                                               Lucid::Files::LoadImage("Resources/Skyboxes/DOWN.jpeg") };
 
     mTexture = VulkanImage::FromCubemap(
         device, manager, textures, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor);

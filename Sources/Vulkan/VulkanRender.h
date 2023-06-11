@@ -26,11 +26,10 @@ public:
     VulkanRender(const Core::IWindow& window, const Core::Scene& scene);
     ~VulkanRender() override;
     void DrawFrame() override;
-    std::size_t AddMesh(const Core::Mesh& mesh) override;
+    void AddNode(const Core::SceneNodePtr& node) override;
     bool ShouldClose() const override;
 
 private:
-    void SyncronizeScene();
     void RecreateSwapchain();
     void UpdateUniformBuffers();
     void RecordCommandBuffers();
@@ -50,8 +49,8 @@ private:
     std::unique_ptr<VulkanDescriptorPool> mDescriptorPool;
     std::unique_ptr<VulkanImage> mResolveImage;
     std::unique_ptr<VulkanImage> mDepthImage;
-    std::vector<VulkanMesh> mMeshes;
     std::unique_ptr<VulkanSkybox> mSkybox;
+    std::map<std::size_t, VulkanMesh> mMeshes;
 
     // Synchronization
     std::vector<vk::UniqueSemaphore> mImagePresentedSemaphores;

@@ -3,9 +3,9 @@
 #include <fstream>
 
 #include <stb_image.h>
-#include <tiny_obj_loader.h>
 
 #include <Utils/Loaders/GltfLoader.h>
+#include <Utils/Loaders/ObjLoader.h>
 #include <Utils/Logger.hpp>
 
 namespace Lucid
@@ -32,7 +32,7 @@ Files::LoadFile(const std::filesystem::path& path)
 }
 
 #undef LoadImage
-Core::Texture
+Core::TexturePtr
 Files::LoadImage(const std::filesystem::path& path)
 {
     if (!std::filesystem::exists(path))
@@ -59,16 +59,21 @@ Files::LoadImage(const std::filesystem::path& path)
 
     std::uint32_t mipLevels = static_cast<std::uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
 
-    return { { static_cast<std::uint32_t>(width), static_cast<std::uint32_t>(height) }, result, mipLevels };
+    Core::Texture texture { { static_cast<std::uint32_t>(width), static_cast<std::uint32_t>(height) },
+                            result,
+                            mipLevels };
+
+    return std::make_shared<Core::Texture>(texture);
 }
 
-Core::Node
+Core::SceneNodePtr
 Files::LoadModel(const std::filesystem::path& path)
 {
     LoggerInfo << "Loading model " << path.string().c_str();
+
     if (path.extension() == ".obj")
     {
-        return LoadObj(path);
+        return Loaders::ObjLoader::Load(path);
     }
     else if (path.extension() == ".gltf" || path.extension() == ".glb")
     {
@@ -76,50 +81,6 @@ Files::LoadModel(const std::filesystem::path& path)
     }
 
     throw std::runtime_error("Can't determine model format");
-}
-
-Core::Node
-Files::LoadObj(const std::filesystem::path& path)
-{
-    tinyobj::attrib_t attrib;
-    std::vector<tinyobj::shape_t> shapes;
-    std::vector<tinyobj::material_t> materials;
-    std::string error;
-
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &error, path.string().c_str()))
-    {
-        throw std::runtime_error("Cant load model, error: " + error);
-    }
-
-    Core::Mesh mesh;
-
-    for (const auto& shape : shapes)
-    {
-        for (const auto& index : shape.mesh.indices)
-        {
-            Core::Vertex vertex;
-
-            vertex.position = { attrib.vertices[static_cast<std::size_t>(3 * index.vertex_index + 0)],
-                                attrib.vertices[static_cast<std::size_t>(3 * index.vertex_index + 1)],
-                                attrib.vertices[static_cast<std::size_t>(3 * index.vertex_index + 2)] };
-
-            vertex.normal = { attrib.normals[static_cast<std::size_t>(3 * index.normal_index + 0)],
-                              attrib.normals[static_cast<std::size_t>(3 * index.normal_index + 1)],
-                              attrib.normals[static_cast<std::size_t>(3 * index.normal_index + 2)] };
-
-            vertex.uv = { attrib.texcoords[static_cast<std::size_t>(2 * index.texcoord_index + 0)],
-                          1.0f - attrib.texcoords[static_cast<std::size_t>(2 * index.texcoord_index + 1)] };
-
-            vertex.color = { 1.0f, 1.0f, 1.0f };
-
-            mesh.vertices.push_back(vertex);
-            mesh.indices.push_back(static_cast<std::uint32_t>(mesh.indices.size()));
-        }
-    }
-
-    Core::Node node;
-    node.mesh = std::make_shared<Core::Mesh>(mesh);
-    return node;
 }
 
 } // namespace Lucid

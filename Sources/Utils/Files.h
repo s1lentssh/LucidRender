@@ -3,8 +3,7 @@
 #include <filesystem>
 #include <vector>
 
-#include <Core/Mesh.h>
-#include <Core/Texture.h>
+#include <Core/SceneNode.h>
 
 #undef LoadImage
 
@@ -15,11 +14,8 @@ class Files
 {
 public:
     static std::vector<char> LoadFile(const std::filesystem::path& path);
-    static Core::Texture LoadImage(const std::filesystem::path& path);
-    static Core::Node LoadModel(const std::filesystem::path& path);
-
-private:
-    static Core::Node LoadObj(const std::filesystem::path& path);
+    static Core::TexturePtr LoadImage(const std::filesystem::path& path);
+    static Core::SceneNodePtr LoadModel(const std::filesystem::path& path);
 };
 
 } // namespace Lucid

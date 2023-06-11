@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.21)
 project(LucidRender 
     VERSION 0.2.0
     DESCRIPTION "Pre-Alpha")

@@ -215,8 +215,6 @@ VulkanRender::DrawFrame()
 {
     mDevice->Handle()->waitIdle();
 
-    SyncronizeScene();
-
     Core::InputController::Instance().SetMouseDisabled(ImGui::GetIO().WantCaptureMouse);
 
     DrawOverlay();
@@ -248,7 +246,7 @@ VulkanRender::DrawFrame()
                 &constants);
 
             // Geometry
-            for (const VulkanMesh& mesh : mMeshes)
+            for (const auto& [id, mesh] : mMeshes)
             {
                 mesh.Draw(commandBuffer, *mMeshPipeline.get());
             }
@@ -328,47 +326,18 @@ VulkanRender::DrawFrame()
     mCurrentFrame = (mCurrentFrame + 1) % Defaults::MaxFramesInFlight;
 }
 
-std::size_t
-VulkanRender::AddMesh(const Core::Mesh& mesh)
+void
+VulkanRender::AddNode(const Core::SceneNodePtr& node)
 {
-    static auto DefaultTexture = Lucid::Files::LoadImage(
-        "/Users/s1lentssh/Work/glTF-Sample-Models/2.0/SciFiHelmet/glTF/SciFiHelmet_BaseColor.png");
 
-    mMeshes.push_back(VulkanMesh(
-        *mDevice.get(),
-        *mDescriptorPool.get(),
-        *mCommandPool.get(),
-        mesh.texture == nullptr ? DefaultTexture : *mesh.texture.get(),
-        mesh));
-    return mMeshes.size() - 1;
+    const Core::MeshPtr& mesh = node->GetOptionalMesh().value();
+    mMeshes.emplace(node->GetId(), VulkanMesh { *mDevice.get(), *mDescriptorPool.get(), *mCommandPool.get(), mesh });
 }
 
 bool
 VulkanRender::ShouldClose() const
 {
     return mShouldClose;
-}
-
-void
-VulkanRender::SyncronizeScene()
-{
-    mScene.Traverse(
-        [this](Core::Node& node)
-        {
-            if (node.synched)
-            {
-                return;
-            }
-
-            if (node.mesh != nullptr)
-            {
-                std::size_t index = AddMesh(*node.mesh.get());
-                (void)index;
-            }
-
-            node.synched = true;
-        },
-        mScene.GetRootNode());
 }
 
 void
@@ -423,18 +392,11 @@ VulkanRender::UpdateUniformBuffers()
     ubo.projection = glm::perspective(glm::radians(mScene.GetCamera()->FieldOfView()), aspectRatio, 1.f, 100'000.0f);
     ubo.projection[1][1] *= -1;
 
-    std::size_t index = 0;
-
-    mScene.Traverse(
-        [&index, &ubo, this](Core::Node& node)
-        {
-            if (node.mesh != nullptr)
-            {
-                ubo.model = node.Transform();
-                mMeshes.at(index++).UpdateTransform(ubo);
-            }
-        },
-        mScene.GetRootNode());
+    for (const auto& [id, mesh] : mMeshes)
+    {
+        ubo.model = mScene.GetNodeById(id)->GetTransform();
+        mMeshes.at(id).UpdateTransform(ubo);
+    }
 
     if (mDrawSkybox)
     {
