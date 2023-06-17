@@ -41,7 +41,7 @@ jobs:
         -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake \
         -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
         -DCMAKE_SYSTEM_VERSION=10.0.19041.0
-        ${{runner.workspace}}/Install
+        -DCMAKE_INSTALL_PREFIX=${{runner.workspace}}/Install
 
     - name: Build CMake
       working-directory: ${{runner.workspace}}
