@@ -31,9 +31,8 @@ Files::LoadFile(const std::filesystem::path& path)
     return pixels;
 }
 
-#undef LoadImage
 Core::TexturePtr
-Files::LoadImage(const std::filesystem::path& path)
+Files::LoadTexture(const std::filesystem::path& path)
 {
     if (!std::filesystem::exists(path))
     {

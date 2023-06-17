@@ -13,12 +13,12 @@ VulkanSkybox::VulkanSkybox(VulkanDevice& device, VulkanDescriptorPool& pool, Vul
     mIndexBuffer = std::make_unique<VulkanIndexBuffer>(device, manager, mesh->indices);
     mVertexBuffer = std::make_unique<VulkanVertexBuffer>(device, manager, mesh->vertices);
 
-    std::array<Core::TexturePtr, 6> textures { Lucid::Files::LoadImage("Resources/Skyboxes/BACK.jpeg"),
-                                               Lucid::Files::LoadImage("Resources/Skyboxes/FRONT.jpeg"),
-                                               Lucid::Files::LoadImage("Resources/Skyboxes/LEFT.jpeg"),
-                                               Lucid::Files::LoadImage("Resources/Skyboxes/RIGHT.jpeg"),
-                                               Lucid::Files::LoadImage("Resources/Skyboxes/UP.jpeg"),
-                                               Lucid::Files::LoadImage("Resources/Skyboxes/DOWN.jpeg") };
+    std::array<Core::TexturePtr, 6> textures { Lucid::Files::LoadTexture("Resources/Skyboxes/BACK.jpeg"),
+                                               Lucid::Files::LoadTexture("Resources/Skyboxes/FRONT.jpeg"),
+                                               Lucid::Files::LoadTexture("Resources/Skyboxes/LEFT.jpeg"),
+                                               Lucid::Files::LoadTexture("Resources/Skyboxes/RIGHT.jpeg"),
+                                               Lucid::Files::LoadTexture("Resources/Skyboxes/UP.jpeg"),
+                                               Lucid::Files::LoadTexture("Resources/Skyboxes/DOWN.jpeg") };
 
     mTexture = VulkanImage::FromCubemap(
         device, manager, textures, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor);
