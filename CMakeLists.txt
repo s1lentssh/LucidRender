@@ -25,44 +25,6 @@ endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 # Includes
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/macros.cmake)
 
-if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
-    message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
-    file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/0.18.1/conan.cmake"
-        "${CMAKE_BINARY_DIR}/conan.cmake"
-        TLS_VERIFY ON)
-endif()
-
-include(${CMAKE_BINARY_DIR}/conan.cmake)
-
-# Conan
-conan_cmake_run(
-    REQUIRES
-        fmt/9.1.0
-        rang/3.2
-        glfw/3.3.8
-        stb/20200203
-        imgui/cci.20230105+1.89.2.docking
-        shaderc/2019.0
-        glm/0.9.9.8
-        tinyobjloader/1.0.6
-        boost/1.79.0
-        tinygltf/2.5.0
-
-    BASIC_SETUP
-    CMAKE_TARGETS
-    BUILD_TYPE ${CMAKE_BUILD_TYPE}
-
-    OPTIONS
-        shaderc*:shared=False
-
-    IMPORTS "./res/bindings, *.cpp -> generated/imgui"
-    IMPORTS "./res/bindings, *.h -> generated/imgui"
-
-    BUILD missing
-    GENERATORS cmake_find_package)
-
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-
 # Subdirectories
 add_subdirectory(Sources)
 add_subdirectory(Standalone)

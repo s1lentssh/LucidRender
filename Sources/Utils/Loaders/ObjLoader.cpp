@@ -11,9 +11,9 @@ ObjLoader::Load(const std::filesystem::path& path)
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
-    std::string error;
+    std::string error, warning;
 
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &error, path.string().c_str()))
+    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warning, &error, path.string().c_str()))
     {
         throw std::runtime_error("Cant load model, error: " + error);
     }
