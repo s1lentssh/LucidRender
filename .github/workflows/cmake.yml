@@ -37,6 +37,7 @@ jobs:
       working-directory: ${{runner.workspace}}
       run: |
         cmake -B Build $GITHUB_WORKSPACE \
+        -DBoost_NO_WARN_NEW_VERSIONS=1 \
         -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake \
         -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
         -DCMAKE_SYSTEM_VERSION=10.0.19041.0
@@ -80,6 +81,7 @@ jobs:
       working-directory: ${{runner.workspace}}
       run: |
         cmake -B Build $GITHUB_WORKSPACE \
+        -DBoost_NO_WARN_NEW_VERSIONS=1 \
         -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake \
         -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
         -DCMAKE_CXX_COMPILER=${{ env.COMPILER_LINUX }}
