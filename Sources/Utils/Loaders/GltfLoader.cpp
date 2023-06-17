@@ -123,7 +123,7 @@ GltfLoader::GetBufferData(const tinygltf::Model& gltf, std::int32_t meshId, cons
     std::size_t bufferId = static_cast<std::size_t>(bufferView.buffer);
     const tinygltf::Buffer& buffer = gltf.buffers[bufferId];
 
-    return { { static_cast<const std::uint8_t*>(buffer.data.data() + accessor.byteOffset + bufferView.byteOffset),
+    return { { buffer.data.data() + accessor.byteOffset + bufferView.byteOffset,
                itemStride,
                itemCount,
                accessor.componentType } };

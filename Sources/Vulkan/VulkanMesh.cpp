@@ -15,7 +15,7 @@ VulkanMesh::VulkanMesh(
     , mIndexBuffer(device, manager, mesh->indices)
     , mUniformBuffer(device)
 {
-    static auto DefaultTexture = Lucid::Files::LoadImage("Resources/Textures/Default.png");
+    static auto DefaultTexture = Lucid::Files::LoadTexture("Resources/Textures/Default.png");
 
     mTexture = VulkanImage::FromTexture(
         device,

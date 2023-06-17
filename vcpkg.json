@@ -1,0 +1,23 @@
+{
+    "name": "lucid-render",
+    "version-string": "0.1.0",
+    "dependencies": [
+        "fmt",
+        "rang",
+        "glfw3",
+        "stb",
+        {
+            "name": "imgui",
+            "features": [
+                "docking-experimental",
+                "vulkan-binding",
+                "glfw-binding"
+            ]
+        },
+        "shaderc",
+        "glm",
+        "tinyobjloader",
+        "boost",
+        "tinygltf"
+    ]
+}

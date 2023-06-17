@@ -7,10 +7,10 @@ add_library(${PROJECT_NAME} ${HEADERS} ${SOURCES})
 add_library(Lucid::Vulkan ALIAS ${PROJECT_NAME})
 
 # Find packages
-find_package(imgui REQUIRED)
+find_package(imgui CONFIG REQUIRED)
 find_package(Vulkan REQUIRED)
 find_package(glfw3 REQUIRED)
-find_package(shaderc REQUIRED)
+find_package(unofficial-shaderc CONFIG REQUIRED)
 find_package(Boost REQUIRED COMPONENTS log)
 
 # Link libraries
@@ -19,28 +19,12 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../)
 target_link_libraries(${PROJECT_NAME} PUBLIC 
     Vulkan::Vulkan 
     Utils
-    shaderc::shaderc
+    unofficial::shaderc::shaderc
     Lucid::Core
-    glfw::glfw
+    glfw
     Boost::log
-)
-
-add_library(ImguiGenerated
-    ${CMAKE_BINARY_DIR}/generated/imgui/imgui_impl_glfw.cpp
-    ${CMAKE_BINARY_DIR}/generated/imgui/imgui_impl_vulkan.cpp
-)
-
-target_link_libraries(ImguiGenerated PRIVATE 
     imgui::imgui
-    Vulkan::Vulkan
-    glfw::glfw
 )
-
-target_include_directories(ImguiGenerated SYSTEM INTERFACE
-    ${CMAKE_BINARY_DIR}/generated
-)
-
-target_link_libraries(${PROJECT_NAME} PRIVATE ImguiGenerated imgui::imgui)
 
 # Set compile options
 SetMaxWarningLevel(${PROJECT_NAME})
@@ -53,4 +37,7 @@ elseif(APPLE)
     target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_METAL_EXT)
 elseif(UNIX)
     target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_XCB_KHR)
+
+    find_package(X11 REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PRIVATE X11::X11 X11::xcb X11::X11_xcb)
 endif()

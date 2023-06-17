@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 #include <Core/Vertex.h>
 #include <glm/gtc/matrix_transform.hpp>

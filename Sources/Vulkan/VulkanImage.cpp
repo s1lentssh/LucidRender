@@ -20,7 +20,7 @@ VulkanImage::VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, c
         vk::BufferUsageFlagBits::eTransferSrc,
         vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
-    stagingBuffer.Write(const_cast<unsigned char*>(texture->pixels.data()));
+    stagingBuffer.Write(texture->pixels.data());
 
     auto createInfo = vk::ImageCreateInfo()
                           .setImageType(vk::ImageType::e2D)
@@ -79,7 +79,7 @@ VulkanImage::VulkanImage(
     std::size_t offset { 0 };
     for (const auto& texture : textures)
     {
-        stagingBuffer.Write(const_cast<unsigned char*>(texture->pixels.data()), texture->pixels.size(), offset);
+        stagingBuffer.Write(texture->pixels.data(), texture->pixels.size(), offset);
         offset += texture->pixels.size();
     }
 
