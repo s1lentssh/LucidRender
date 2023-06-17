@@ -39,5 +39,5 @@ elseif(UNIX)
     target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_XCB_KHR)
 
     find_package(X11 REQUIRED)
-    target_link_libraries(${PROJECT_NAME} X11::X11 X11::xcb X11::X11_xcb)
+    target_link_libraries(${PROJECT_NAME} PRIVATE X11::X11 X11::xcb X11::X11_xcb)
 endif()
