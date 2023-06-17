@@ -17,6 +17,10 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
+if (WIN32)
+    add_definitions(-DWIN32_LEAN_AND_MEAN)
+endif()
+
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/Install 
         CACHE PATH "Set Install prefix to default" FORCE)
