@@ -26,23 +26,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     imgui::imgui
 )
 
-# add_library(ImguiGenerated
-#     ${CMAKE_BINARY_DIR}/generated/imgui/imgui_impl_glfw.cpp
-#     ${CMAKE_BINARY_DIR}/generated/imgui/imgui_impl_vulkan.cpp
-# )
-
-# target_link_libraries(ImguiGenerated PRIVATE 
-#     imgui::imgui
-#     Vulkan::Vulkan
-#     glfw::glfw
-# )
-
-# target_include_directories(ImguiGenerated SYSTEM INTERFACE
-#     ${CMAKE_BINARY_DIR}/generated
-# )
-
-# target_link_libraries(${PROJECT_NAME} PRIVATE ImguiGenerated imgui::imgui)
-
 # Set compile options
 SetMaxWarningLevel(${PROJECT_NAME})
 SetWindowsVersion(${PROJECT_NAME})
@@ -54,4 +37,8 @@ elseif(APPLE)
     target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_METAL_EXT)
 elseif(UNIX)
     target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_XCB_KHR)
+
+    find_package(X11 REQUIRED)
+    find_package(X11_XCB REQUIRED)
+    target_link_libraries(${PROJECT_NAME} ${X11_LIBRARIES} ${X11_XCB_LIBRARIES})
 endif()
