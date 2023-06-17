@@ -96,4 +96,3 @@ jobs:
       with:
         name: LucidRender_Ubuntu
         path: ${{runner.workspace}}/Install
-      
