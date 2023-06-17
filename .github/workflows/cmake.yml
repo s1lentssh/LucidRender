@@ -64,7 +64,9 @@ jobs:
 
     - name: Install vcpkg
       uses: lukka/run-vcpkg@v11
-        
+      with:
+        vcpkgGitCommitId: '80ecf32496c3806c5bb79bb80f029f83d058930e'
+
     - name: Install Vulkan
       working-directory: /tmp
       run: |
