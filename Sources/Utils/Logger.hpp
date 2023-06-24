@@ -22,7 +22,8 @@ enum class Severity
     Error,
     Warning,
     Info,
-    Debug
+    Debug,
+    Plain
 };
 
 using LucidRenderLogger = boost::log::sources::severity_logger_mt<Severity>;
@@ -37,6 +38,7 @@ BOOST_LOG_ATTRIBUTE_KEYWORD(SeverityAttr, "Severity", Severity)
 #define LoggerError _LOG(Error)
 #define LoggerInfo _LOG(Info)
 #define LoggerDebug _LOG(Debug)
+#define LoggerPlain _LOG(Plain)
 
 #define _LOG_SET(_severity) boost::log::core::get()->set_filter(SeverityAttr >= Severity::_severity)
 inline void
