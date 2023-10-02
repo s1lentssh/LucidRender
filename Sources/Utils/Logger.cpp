@@ -51,6 +51,9 @@ LucidFormatter(logging::record_view const& rec, logging::formatting_ostream& str
         case Severity::Error:
             strm << fmt::format(fg(fmt::color::orange_red) | fmt::emphasis::bold, "× error");
             break;
+        case Severity::Plain:
+            strm << rec[expr::smessage] << std::endl;
+            return;
         }
     }
 
