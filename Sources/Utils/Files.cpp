@@ -65,10 +65,10 @@ Files::LoadTexture(const std::filesystem::path& path)
     return std::make_shared<Core::Texture>(texture);
 }
 
-Core::SceneNodePtr
+Core::Scene::NodePtr
 Files::LoadModel(const std::filesystem::path& path)
 {
-    LoggerInfo << "Loading model " << path.string().c_str();
+    LoggerInfo << "Loading model" << path.string().c_str();
 
     if (path.extension() == ".obj")
     {

@@ -14,4 +14,11 @@ struct UniformBufferObject
     alignas(16) glm::mat4 projection;
 };
 
+struct MaterialBufferObject
+{
+    alignas(16) glm::vec4 color = glm::vec4{1.0f};
+    alignas(4) float roughness = 0.0f;
+    alignas(4) float metalness = 0.0f;
+};
+
 } // namespace Lucid::Core

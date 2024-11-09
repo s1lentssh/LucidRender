@@ -18,19 +18,23 @@ VulkanPipeline::VulkanPipeline(
     VulkanDescriptorPool& descriptorPool,
     const std::string& shaderName,
     bool depthWriteTest,
-    vk::CullModeFlagBits cullMode)
+    vk::CullModeFlagBits cullMode,
+    const std::string& name)
+    : VulkanEntity(name, device.Handle())
 {
-    VulkanShader vertexShader(device, VulkanShader::Type::Vertex, "Resources/Shaders/" + shaderName + ".vert");
-    VulkanShader fragmentShader(device, VulkanShader::Type::Fragment, "Resources/Shaders/" + shaderName + ".frag");
+    VulkanShader vertexShader(
+        device, VulkanShader::Type::Vertex, "Resources/Shaders/" + shaderName + ".vert", shaderName + ".vert");
+    VulkanShader fragmentShader(
+        device, VulkanShader::Type::Fragment, "Resources/Shaders/" + shaderName + ".frag", shaderName + ".frag");
 
     auto vertexShaderStageInfo = vk::PipelineShaderStageCreateInfo()
                                      .setStage(vk::ShaderStageFlagBits::eVertex)
-                                     .setModule(vertexShader.Handle().get())
+                                     .setModule(vertexShader.Handle())
                                      .setPName("main");
 
     auto fragmentShaderStageInfo = vk::PipelineShaderStageCreateInfo()
                                        .setStage(vk::ShaderStageFlagBits::eFragment)
-                                       .setModule(fragmentShader.Handle().get())
+                                       .setModule(fragmentShader.Handle())
                                        .setPName("main");
 
     vk::PipelineShaderStageCreateInfo shaderStages[] = { vertexShaderStageInfo, fragmentShaderStageInfo };
@@ -104,7 +108,7 @@ VulkanPipeline::VulkanPipeline(
                                         .setPushConstantRangeCount(1)
                                         .setPPushConstantRanges(&pushConstant);
 
-    mLayout = device.Handle()->createPipelineLayoutUnique(pipelineLayoutCreateInfo);
+    mLayout = Device().createPipelineLayoutUnique(pipelineLayoutCreateInfo);
 
     auto depthStencilState = vk::PipelineDepthStencilStateCreateInfo()
                                  .setDepthTestEnable(depthWriteTest)
@@ -124,10 +128,10 @@ VulkanPipeline::VulkanPipeline(
                                   .setPColorBlendState(&colorBlendState)
                                   .setPDepthStencilState(&depthStencilState)
                                   .setLayout(mLayout.get())
-                                  .setRenderPass(renderPass.Handle().get())
+                                  .setRenderPass(renderPass.Handle())
                                   .setSubpass(0);
 
-    mHandle = device.Handle()->createGraphicsPipelineUnique({}, pipelineCreateInfo).value;
+    VulkanEntity::SetHandle(Device().createGraphicsPipelineUnique({}, pipelineCreateInfo).value);
 }
 
 std::unique_ptr<VulkanPipeline>
@@ -138,7 +142,7 @@ VulkanPipeline::Default(
     VulkanDescriptorPool& descriptorPool)
 {
     return std::make_unique<VulkanPipeline>(
-        device, extent, renderPass, descriptorPool, "Shader", true, vk::CullModeFlagBits::eNone);
+        device, extent, renderPass, descriptorPool, "Shader", true, vk::CullModeFlagBits::eNone, "Default Pipeline");
 }
 
 std::unique_ptr<VulkanPipeline>
@@ -149,7 +153,7 @@ VulkanPipeline::Skybox(
     VulkanDescriptorPool& descriptorPool)
 {
     return std::make_unique<VulkanPipeline>(
-        device, extent, renderPass, descriptorPool, "Skybox", false, vk::CullModeFlagBits::eNone);
+        device, extent, renderPass, descriptorPool, "Skybox", false, vk::CullModeFlagBits::eNone, "Skybox Pipeline");
 }
 
 const vk::PipelineLayout&
@@ -169,7 +173,7 @@ VulkanPipeline::GetBindingDescriptions()
     return { description };
 }
 
-std::array<vk::VertexInputAttributeDescription, 4>
+std::array<vk::VertexInputAttributeDescription, 5>
 VulkanPipeline::GetAttributeDescriptions()
 {
     auto positionDescription = vk::VertexInputAttributeDescription()
@@ -196,7 +200,13 @@ VulkanPipeline::GetAttributeDescriptions()
                              .setFormat(vk::Format::eR32G32Sfloat)
                              .setOffset(offsetof(Core::Vertex, uv));
 
-    return { positionDescription, normalDescription, colorDescription, uvDescription };
+    auto tangentDescription = vk::VertexInputAttributeDescription()
+                                  .setBinding(0)
+                                  .setLocation(4)
+                                  .setFormat(vk::Format::eR32G32B32A32Sfloat)
+                                  .setOffset(offsetof(Core::Vertex, tangent));
+
+    return { positionDescription, normalDescription, colorDescription, uvDescription, tangentDescription };
 }
 
 } // namespace Lucid::Vulkan

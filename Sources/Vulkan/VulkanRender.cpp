@@ -1,5 +1,9 @@
 #include "VulkanRender.h"
 
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_vulkan.h>
+
 #include <Core/InputController.h>
 #include <Core/UniformBufferObject.h>
 #include <Utils/Files.h>
@@ -7,32 +11,29 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_vulkan.h>
 
 namespace Lucid::Vulkan
 {
 
-VulkanRender::VulkanRender(const Core::IWindow& window, const Core::Scene& scene)
+VulkanRender::VulkanRender(const Core::IWindow& window, const Core::Scene::Scene& scene)
     : mWindow(&window)
     , mScene(scene)
 {
     // Create instance
-    mInstance = std::make_unique<VulkanInstance>(window.GetRequiredInstanceExtensions());
+    mInstance = std::make_unique<VulkanInstance>(window.GetRequiredInstanceExtensions(), "Main Vulkan Instance");
 
     // Create surface
-    mSurface = std::make_unique<VulkanSurface>(*mInstance.get(), window);
+    mSurface = std::make_unique<VulkanSurface>(*mInstance.get(), window, "Render Surface");
 
     // Create and init device
     mDevice = std::make_unique<VulkanDevice>(mInstance->PickSuitableDeviceForSurface(*mSurface.get()));
     mDevice->InitLogicalDeviceForSurface(*mSurface.get());
 
     // Create descriptor pool
-    mDescriptorPool = std::make_unique<VulkanDescriptorPool>(*mDevice.get());
+    mDescriptorPool = std::make_unique<VulkanDescriptorPool>(*mDevice.get(), "Main Descriptor Pool");
 
     // Create command pool
-    mCommandPool = std::make_unique<VulkanCommandPool>(*mDevice.get());
+    mCommandPool = std::make_unique<VulkanCommandPool>(*mDevice.get(), "Main Command Pool");
 
     RecreateSwapchain();
 
@@ -43,9 +44,9 @@ VulkanRender::VulkanRender(const Core::IWindow& window, const Core::Scene& scene
 
     for (std::uint32_t i = 0; i < Defaults::MaxFramesInFlight; i++)
     {
-        mImagePresentedSemaphores.push_back(mDevice->Handle()->createSemaphoreUnique(semaphoreCreateInfo));
-        mRenderFinishedSemaphores.push_back(mDevice->Handle()->createSemaphoreUnique(semaphoreCreateInfo));
-        mInFlightFences.push_back(mDevice->Handle()->createFenceUnique(fenceCreateInfo));
+        mImagePresentedSemaphores.push_back(mDevice->Handle().createSemaphoreUnique(semaphoreCreateInfo));
+        mRenderFinishedSemaphores.push_back(mDevice->Handle().createSemaphoreUnique(semaphoreCreateInfo));
+        mInFlightFences.push_back(mDevice->Handle().createFenceUnique(fenceCreateInfo));
     }
 
     mImagesInFlight.resize(Defaults::MaxFramesInFlight, {});
@@ -161,18 +162,18 @@ VulkanRender::SetupImgui()
 
     ImGui_ImplGlfw_InitForVulkan(mWindow->Get(), true);
     ImGui_ImplVulkan_InitInfo info = {};
-    info.Instance = mInstance->Handle().get();
+    info.Instance = mInstance->Handle();
     info.PhysicalDevice = mDevice->GetPhysicalDevice();
-    info.Device = mDevice->Handle().get();
+    info.Device = mDevice->Handle();
     info.QueueFamily = mDevice->FindGraphicsQueueFamily().value();
     info.Queue = mDevice->GetGraphicsQueue();
-    info.DescriptorPool = mDescriptorPool->Handle().get();
+    info.DescriptorPool = mDescriptorPool->Handle();
     info.Subpass = 0;
     info.MinImageCount = 2;
     info.ImageCount = static_cast<std::uint32_t>(mSwapchain->GetImageCount());
     info.MSAASamples = static_cast<VkSampleCountFlagBits>(mDevice->GetMsaaSamples());
 
-    ImGui_ImplVulkan_Init(&info, mRenderPass->Handle().get());
+    ImGui_ImplVulkan_Init(&info, mRenderPass->Handle());
     mCommandPool->ExecuteSingleCommand([](vk::CommandBuffer& commandBuffer)
                                        { ImGui_ImplVulkan_CreateFontsTexture(commandBuffer); });
 
@@ -181,7 +182,7 @@ VulkanRender::SetupImgui()
 
 VulkanRender::~VulkanRender()
 {
-    mDevice->Handle()->waitIdle();
+    mDevice->Handle().waitIdle();
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
@@ -214,7 +215,7 @@ VulkanRender::DrawDockspace()
 void
 VulkanRender::DrawFrame()
 {
-    mDevice->Handle()->waitIdle();
+    mDevice->Handle().waitIdle();
 
     Core::InputController::Instance().SetMouseDisabled(ImGui::GetIO().WantCaptureMouse);
 
@@ -228,12 +229,12 @@ VulkanRender::DrawFrame()
             // Skybox
             if (mDrawSkybox)
             {
-                commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mSkyboxPipeline->Handle().get());
+                commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mSkyboxPipeline->Handle());
                 mSkybox->Draw(commandBuffer, *mSkyboxPipeline.get());
             }
 
             // Push constants
-            commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mMeshPipeline->Handle().get());
+            commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mMeshPipeline->Handle());
 
             static Core::PushConstants constants;
             constants.ambientColor = glm::make_vec4(Defaults::AmbientColor.data());
@@ -257,7 +258,7 @@ VulkanRender::DrawFrame()
         });
 
     // Render frame
-    auto result = mDevice->Handle()->waitForFences(
+    auto result = mDevice->Handle().waitForFences(
         mInFlightFences[mCurrentFrame].get(), true, std::numeric_limits<std::uint64_t>::max());
     (void)result;
 
@@ -279,7 +280,7 @@ VulkanRender::DrawFrame()
     // Fix if max frames in flight greater than swapchain image count or if aquire returns out of order
     if (mImagesInFlight[imageIndex])
     {
-        auto result2 = mDevice->Handle()->waitForFences(
+        auto result2 = mDevice->Handle().waitForFences(
             mImagesInFlight[imageIndex], true, std::numeric_limits<std::uint64_t>::max());
         (void)result2;
     }
@@ -300,11 +301,11 @@ VulkanRender::DrawFrame()
                           .setSignalSemaphoreCount(static_cast<std::uint32_t>(std::size(signalSemaphores)))
                           .setPSignalSemaphores(signalSemaphores);
 
-    mDevice->Handle()->resetFences(mInFlightFences[mCurrentFrame].get());
+    mDevice->Handle().resetFences(mInFlightFences[mCurrentFrame].get());
     mDevice->GetGraphicsQueue().submit(submitInfo, mInFlightFences[mCurrentFrame].get());
 
     // Present frame
-    vk::SwapchainKHR swapchains[] = { mSwapchain->Handle().get() };
+    vk::SwapchainKHR swapchains[] = { mSwapchain->Handle() };
 
     auto presentInfo = vk::PresentInfoKHR()
                            .setSwapchainCount(static_cast<std::uint32_t>(std::size(swapchains)))
@@ -328,7 +329,7 @@ VulkanRender::DrawFrame()
 }
 
 void
-VulkanRender::AddNode(const Core::SceneNodePtr& node)
+VulkanRender::AddNode(const Core::Scene::NodePtr& node)
 {
 
     const Core::MeshPtr& mesh = node->GetOptionalMesh().value();
@@ -346,7 +347,7 @@ VulkanRender::RecreateSwapchain()
 {
     LoggerInfo << "Swapchain recreation";
 
-    mDevice->Handle()->waitIdle();
+    mDevice->Handle().waitIdle();
 
     while (mWindow->GetSize().x == 0 || mWindow->GetSize().y == 0)
     {
@@ -354,10 +355,11 @@ VulkanRender::RecreateSwapchain()
     }
 
     // Create swapchain
-    mSwapchain = std::make_unique<VulkanSwapchain>(*mDevice.get(), *mSurface.get(), mWindow->GetSize());
+    mSwapchain
+        = std::make_unique<VulkanSwapchain>(*mDevice.get(), *mSurface.get(), mWindow->GetSize(), "Main Swapchain");
 
     // Create render pass
-    mRenderPass = std::make_unique<VulkanRenderPass>(*mDevice.get(), mSwapchain->GetImageFormat());
+    mRenderPass = std::make_unique<VulkanRenderPass>(*mDevice.get(), mSwapchain->GetImageFormat(), "Main Render Pass");
 
     // Create pipelines
     mMeshPipeline
@@ -371,10 +373,15 @@ VulkanRender::RecreateSwapchain()
 
     // Create depth image
     mDepthImage = VulkanImage::CreateDepthImage(
-        *mDevice.get(), mSwapchain->GetExtent(), mDevice->FindSupportedDepthFormat(), vk::ImageAspectFlagBits::eDepth);
+        *mDevice.get(),
+        mSwapchain->GetExtent(),
+        mDevice->FindSupportedDepthFormat(),
+        vk::ImageAspectFlagBits::eDepth,
+        "Render depth image");
 
     // Create MSAA RenderTarget
-    mResolveImage = VulkanImage::CreateImage(*mDevice.get(), mSwapchain->GetImageFormat(), mSwapchain->GetExtent());
+    mResolveImage = VulkanImage::CreateImage(
+        *mDevice.get(), mSwapchain->GetImageFormat(), mSwapchain->GetExtent(), "Render resolve image");
 
     // Create framebuffers for swapchain
     mSwapchain->CreateFramebuffers(*mRenderPass.get(), *mDepthImage.get(), *mResolveImage.get());
@@ -389,9 +396,10 @@ VulkanRender::UpdateUniformBuffers()
     float aspectRatio = static_cast<float>(extent.width) / static_cast<float>(extent.height);
 
     Core::UniformBufferObject ubo;
-    ubo.view = mScene.GetCamera()->Transform();
+    ubo.view = glm::inverse(mScene.GetCamera()->Transform());
     ubo.projection = glm::perspective(glm::radians(mScene.GetCamera()->FieldOfView()), aspectRatio, 1.f, 100'000.0f);
     ubo.projection[1][1] *= -1;
+    ubo.projection[2][2] *= -1;
 
     for (const auto& [id, mesh] : mMeshes)
     {

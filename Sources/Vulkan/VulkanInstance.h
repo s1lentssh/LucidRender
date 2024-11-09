@@ -12,7 +12,7 @@ class VulkanSurface;
 class VulkanInstance : public VulkanEntity<vk::UniqueInstance>
 {
 public:
-    VulkanInstance(std::vector<const char*> requiredInstanceExtensions);
+    VulkanInstance(std::vector<const char*> requiredInstanceExtensions, const std::string& name);
     ~VulkanInstance();
 
     [[nodiscard]] VulkanDevice PickSuitableDeviceForSurface(const VulkanSurface& surface) const;

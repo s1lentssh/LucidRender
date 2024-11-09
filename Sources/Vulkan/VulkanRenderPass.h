@@ -13,7 +13,7 @@ class VulkanDevice;
 class VulkanRenderPass : public VulkanEntity<vk::UniqueRenderPass>
 {
 public:
-    VulkanRenderPass(VulkanDevice& device, vk::Format imageFormat);
+    VulkanRenderPass(VulkanDevice& device, vk::Format imageFormat, const std::string& name);
 };
 
 } // namespace Lucid::Vulkan

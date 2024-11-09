@@ -6,7 +6,6 @@
 #include <Vulkan/VulkanEntity.h>
 #include <vulkan/vulkan.hpp>
 
-
 namespace Lucid::Vulkan
 {
 
@@ -22,7 +21,7 @@ class VulkanMesh;
 class VulkanCommandPool : public VulkanEntity<vk::UniqueCommandPool>
 {
 public:
-    VulkanCommandPool(VulkanDevice& device);
+    VulkanCommandPool(VulkanDevice& device, const std::string& name);
 
     [[nodiscard]] vk::UniqueCommandBuffer& Get(std::size_t index);
 

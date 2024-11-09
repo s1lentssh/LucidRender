@@ -28,6 +28,7 @@ private:
     std::unique_ptr<VulkanVertexBuffer> mVertexBuffer;
     std::unique_ptr<VulkanIndexBuffer> mIndexBuffer;
     VulkanUniformBuffer mUniformBuffer;
+    VulkanMaterialBuffer mMaterialBuffer;
 };
 
 } // namespace Lucid::Vulkan

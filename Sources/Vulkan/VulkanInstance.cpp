@@ -9,7 +9,8 @@
 namespace Lucid::Vulkan
 {
 
-VulkanInstance::VulkanInstance(std::vector<const char*> requiredInstanceExtensions)
+VulkanInstance::VulkanInstance(std::vector<const char*> requiredInstanceExtensions, const std::string& name)
+    : VulkanEntity(name, 1)
 {
     auto unsupportedInstanceExtensions = VulkanInstance::GetUnsupportedExtensions(requiredInstanceExtensions);
     if (!unsupportedInstanceExtensions.empty())
@@ -58,7 +59,7 @@ VulkanInstance::VulkanInstance(std::vector<const char*> requiredInstanceExtensio
             .setPNext(&debugMessengerCreateInfo);
     }
 
-    mHandle = vk::createInstanceUnique(instanceCreateInfo);
+    VulkanEntity::SetHandle(vk::createInstanceUnique(instanceCreateInfo));
     LoggerInfo << "Vulkan instance created";
 
     if constexpr (Defaults::EnableValidationLayers)
@@ -72,10 +73,10 @@ VulkanInstance::~VulkanInstance()
     if (mDebugMessenger.operator bool())
     {
         auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(
-            Handle()->getProcAddr("vkDestroyDebugUtilsMessengerEXT"));
+            Handle().getProcAddr("vkDestroyDebugUtilsMessengerEXT"));
         if (func != nullptr)
         {
-            func(Handle().get(), *reinterpret_cast<VkDebugUtilsMessengerEXT*>(&mDebugMessenger), nullptr);
+            func(Handle(), *reinterpret_cast<VkDebugUtilsMessengerEXT*>(&mDebugMessenger), nullptr);
             LoggerInfo << "Debug messenger destroyed";
         }
     }
@@ -84,13 +85,13 @@ VulkanInstance::~VulkanInstance()
 std::vector<VulkanDevice>
 VulkanInstance::GetDevices() const
 {
-    std::vector<vk::PhysicalDevice> devices = Handle()->enumeratePhysicalDevices();
+    std::vector<vk::PhysicalDevice> devices = Handle().enumeratePhysicalDevices();
     std::vector<VulkanDevice> wrappedDevices;
     std::transform(
         devices.begin(),
         devices.end(),
         std::back_inserter(wrappedDevices),
-        [](const vk::PhysicalDevice& device) { return VulkanDevice(device); });
+        [](const vk::PhysicalDevice& device) { return VulkanDevice(device, "DeviceDebugName"); });
     return wrappedDevices;
 }
 
@@ -158,11 +159,11 @@ VulkanInstance::RegisterDebugCallback()
     auto createInfo = VulkanInstance::ProvideDebugMessengerCreateInfo();
 
     auto func
-        = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(Handle()->getProcAddr("vkCreateDebugUtilsMessengerEXT"));
+        = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(Handle().getProcAddr("vkCreateDebugUtilsMessengerEXT"));
     if (func != nullptr)
     {
         auto status = func(
-            Handle().get(),
+            Handle(),
             reinterpret_cast<VkDebugUtilsMessengerCreateInfoEXT*>(&createInfo),
             nullptr,
             reinterpret_cast<VkDebugUtilsMessengerEXT*>(&mDebugMessenger));

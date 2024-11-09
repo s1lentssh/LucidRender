@@ -37,11 +37,12 @@ public:
         VulkanDescriptorPool& descriptorPool,
         const std::string& shaderName,
         bool depthWriteTest,
-        vk::CullModeFlagBits cullMode);
+        vk::CullModeFlagBits cullMode,
+        const std::string& name);
 
 private:
     [[nodiscard]] static std::array<vk::VertexInputBindingDescription, 1> GetBindingDescriptions();
-    [[nodiscard]] static std::array<vk::VertexInputAttributeDescription, 4> GetAttributeDescriptions();
+    [[nodiscard]] static std::array<vk::VertexInputAttributeDescription, 5> GetAttributeDescriptions();
 
     vk::UniquePipelineLayout mLayout;
 };

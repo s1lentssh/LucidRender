@@ -33,7 +33,7 @@ public:
     };
 
 public:
-    VulkanDevice(const vk::PhysicalDevice& device);
+    VulkanDevice(const vk::PhysicalDevice& device, const std::string& name);
     void InitLogicalDeviceForSurface(const VulkanSurface& surface) noexcept;
 
     [[nodiscard]] bool IsSuitableForSurface(const VulkanSurface& surface) const noexcept;

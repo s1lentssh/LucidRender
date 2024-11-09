@@ -10,7 +10,7 @@ namespace Lucid::Loaders
 class ObjLoader
 {
 public:
-    static Core::SceneNodePtr Load(const std::filesystem::path& path);
+    static Core::Scene::NodePtr Load(const std::filesystem::path& path);
 
 private:
 };

@@ -18,24 +18,28 @@ public:
         VulkanDevice& device,
         vk::DeviceSize size,
         vk::BufferUsageFlags usage,
-        vk::MemoryPropertyFlags properties);
+        vk::MemoryPropertyFlags properties,
+        const std::string& name);
     void Write(const void* pixels, std::size_t size = 0, std::size_t offset = 0);
 
     [[nodiscard]] static std::uint32_t
-    FindMemoryType(VulkanDevice& device, std::uint32_t filter, vk::MemoryPropertyFlags flags);
+    FindMemoryType(vk::PhysicalDevice& device, std::uint32_t filter, vk::MemoryPropertyFlags flags);
 
 protected:
     void Write(VulkanCommandPool& manager, const VulkanBuffer& buffer);
 
     vk::UniqueDeviceMemory mMemory;
     std::size_t mBufferSize;
-    VulkanDevice& mDevice;
 };
 
 class VulkanVertexBuffer : public VulkanBuffer
 {
 public:
-    VulkanVertexBuffer(VulkanDevice& device, VulkanCommandPool& manager, const std::vector<Core::Vertex>& vertices);
+    VulkanVertexBuffer(
+        VulkanDevice& device,
+        VulkanCommandPool& manager,
+        const std::vector<Core::Vertex>& vertices,
+        const std::string& name);
     [[nodiscard]] std::size_t VerticesCount() const noexcept;
 
 private:
@@ -45,7 +49,11 @@ private:
 class VulkanIndexBuffer : public VulkanBuffer
 {
 public:
-    VulkanIndexBuffer(VulkanDevice& device, VulkanCommandPool& manager, const std::vector<std::uint32_t>& indices);
+    VulkanIndexBuffer(
+        VulkanDevice& device,
+        VulkanCommandPool& manager,
+        const std::vector<std::uint32_t>& indices,
+        const std::string& name);
     [[nodiscard]] std::size_t IndicesCount() const noexcept;
 
 private:
@@ -55,7 +63,13 @@ private:
 class VulkanUniformBuffer : public VulkanBuffer
 {
 public:
-    VulkanUniformBuffer(VulkanDevice& device);
+    VulkanUniformBuffer(VulkanDevice& device, const std::string& name);
+};
+
+class VulkanMaterialBuffer : public VulkanBuffer
+{
+public:
+    VulkanMaterialBuffer(VulkanDevice& device, const std::string& name);
 };
 
 } // namespace Lucid::Vulkan

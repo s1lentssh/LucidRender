@@ -7,17 +7,16 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
-
 static void
 ShowStartupInfo()
 {
-    LoggerInfo << "Version " << Defaults::Version << std::flush;
+    LoggerInfo << "Version " << Defaults::Version;
 
     std::string title = R"(
   █░░ █░█ █▀▀ █ █▀▄   █▀█ █▀▀ █▄░█ █▀▄ █▀▀ █▀█
   █▄▄ █▄█ █▄▄ █ █▄▀   █▀▄ ██▄ █░▀█ █▄▀ ██▄ █▀▄
     )";
-    LoggerPlain << title << std::endl;
+    LoggerPlain << title;
 
 #ifdef _WIN32
     SetConsoleTitle((Defaults::ApplicationName + " Console").c_str());
@@ -33,7 +32,6 @@ auto
 main(std::int32_t argc, const char** argv) -> int
 try
 {
-    boost::filesystem::path::imbue(std::locale("C"));
     ShowStartupInfo();
 
     boost::program_options::options_description description("Lucid options");
@@ -46,16 +44,14 @@ try
 
     if (vm.contains("help"))
     {
-        LoggerPlain << description << std::endl;
-        logging::core::get()->remove_all_sinks();
+        LoggerPlain << description;
         return EXIT_SUCCESS;
     }
 
     if (!vm.contains("scene"))
     {
-        LoggerError << "Scene not provided" << std::flush;
-        LoggerPlain << description << std::endl;
-        logging::core::get()->remove_all_sinks();
+        LoggerError << "Scene not provided";
+        LoggerPlain << description;
         return EXIT_FAILURE;
     }
 
@@ -65,7 +61,7 @@ try
     std::unique_ptr<Lucid::Core::Engine> engine
         = std::make_unique<Lucid::Core::Engine>(*window.get(), Lucid::Core::Engine::API::Vulkan);
 
-    Lucid::Core::SceneNodePtr scene = Lucid::Files::LoadModel(vm.at("scene").as<std::string>());
+    Lucid::Core::Scene::NodePtr scene = Lucid::Files::LoadModel(vm.at("scene").as<std::string>());
     engine->SetRootNode(scene);
 
     float lastTime = static_cast<float>(glfwGetTime());
@@ -81,24 +77,20 @@ try
         lastTime = currentTime;
     }
 
-    logging::core::get()->remove_all_sinks();
     return EXIT_SUCCESS;
 }
 catch (const std::runtime_error& ex)
 {
     LoggerError << ex.what();
-    logging::core::get()->remove_all_sinks();
     return EXIT_FAILURE;
 }
 catch (const std::exception& ex)
 {
     LoggerError << ex.what();
-    logging::core::get()->remove_all_sinks();
     return EXIT_FAILURE;
 }
 catch (...)
 {
     LoggerError << "Unknown reason";
-    logging::core::get()->remove_all_sinks();
     return EXIT_FAILURE;
 }

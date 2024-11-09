@@ -13,15 +13,16 @@
 namespace Lucid::Vulkan
 {
 
-VulkanCommandPool::VulkanCommandPool(VulkanDevice& device)
-    : mDevice(device)
+VulkanCommandPool::VulkanCommandPool(VulkanDevice& device, const std::string& name)
+    : VulkanEntity(name, device.Handle())
+    , mDevice(device)
 {
     // Create command pool
     auto commandPoolCreateInfo = vk::CommandPoolCreateInfo()
                                      .setQueueFamilyIndex(device.FindGraphicsQueueFamily().value())
                                      .setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
 
-    mHandle = device.Handle()->createCommandPoolUnique(commandPoolCreateInfo);
+    VulkanEntity::SetHandle(Device().createCommandPoolUnique(commandPoolCreateInfo));
 }
 
 vk::UniqueCommandBuffer&
@@ -40,10 +41,10 @@ VulkanCommandPool::RecreateCommandBuffers(VulkanSwapchain& swapchain)
     // Allocate command buffers
     auto commandBufferAllocateInfo = vk::CommandBufferAllocateInfo()
                                          .setCommandBufferCount(static_cast<std::uint32_t>(imageCount))
-                                         .setCommandPool(Handle().get())
+                                         .setCommandPool(Handle())
                                          .setLevel(vk::CommandBufferLevel::ePrimary);
 
-    mCommandBuffers = mDevice.Handle()->allocateCommandBuffersUnique(commandBufferAllocateInfo);
+    mCommandBuffers = Device().allocateCommandBuffersUnique(commandBufferAllocateInfo);
 
     LoggerInfo << "Command buffers allocated";
 }
@@ -69,7 +70,7 @@ VulkanCommandPool::RecordCommandBuffers(
         vk::ClearValue clearValues[] = { clearColor, clearDepth };
 
         auto renderPassBeginInfo = vk::RenderPassBeginInfo()
-                                       .setRenderPass(renderPass.Handle().get())
+                                       .setRenderPass(renderPass.Handle())
                                        .setFramebuffer(swapchain.GetFramebuffers().at(i).get())
                                        .setRenderArea(vk::Rect2D().setOffset({ 0, 0 }).setExtent(swapchain.GetExtent()))
                                        .setClearValueCount(static_cast<std::uint32_t>(std::size(clearValues)))
@@ -87,10 +88,10 @@ VulkanCommandPool::ExecuteSingleCommand(const std::function<void(vk::CommandBuff
 {
     auto allocateInfo = vk::CommandBufferAllocateInfo()
                             .setLevel(vk::CommandBufferLevel::ePrimary)
-                            .setCommandPool(Handle().get())
+                            .setCommandPool(Handle())
                             .setCommandBufferCount(1);
 
-    auto commandBuffers = mDevice.Handle()->allocateCommandBuffersUnique(allocateInfo);
+    auto commandBuffers = Device().allocateCommandBuffersUnique(allocateInfo);
     vk::CommandBuffer commandBuffer = commandBuffers.at(0).get();
 
     auto beginInfo = vk::CommandBufferBeginInfo().setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);

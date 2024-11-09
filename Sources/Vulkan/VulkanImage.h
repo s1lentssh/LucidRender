@@ -30,27 +30,42 @@ public:
         VulkanDevice& device,
         const vk::Extent2D& swapchainExtent,
         vk::Format format,
-        vk::ImageAspectFlags aspectFlags);
+        vk::ImageAspectFlags aspectFlags,
+        const std::string& name);
 
-    static std::unique_ptr<VulkanImage>
-    FromSwapchain(VulkanDevice& device, vk::Image image, vk::Format format, vk::ImageAspectFlags aspectFlags);
+    static std::unique_ptr<VulkanImage> FromSwapchain(
+        VulkanDevice& device,
+        vk::Image image,
+        vk::Format format,
+        vk::ImageAspectFlags aspectFlags,
+        const std::string& name);
 
     static std::unique_ptr<VulkanImage> FromTexture(
         VulkanDevice& device,
         VulkanCommandPool& commandPool,
         const Core::TexturePtr& texture,
         vk::Format format,
-        vk::ImageAspectFlags aspectFlags);
+        vk::ImageAspectFlags aspectFlags,
+        const std::string& name);
+
+    static std::unique_ptr<VulkanImage> FromColor(
+        VulkanDevice& device,
+        VulkanCommandPool& commandPool,
+        const glm::vec4& color,
+        vk::Format format,
+        vk::ImageAspectFlags aspectFlags,
+        const std::string& name);
 
     static std::unique_ptr<VulkanImage> FromCubemap(
         VulkanDevice& device,
         VulkanCommandPool& commandPool,
         const std::array<Core::TexturePtr, 6>& textures,
         vk::Format format,
-        vk::ImageAspectFlags aspectFlags);
+        vk::ImageAspectFlags aspectFlags,
+        const std::string& name);
 
     static std::unique_ptr<VulkanImage>
-    CreateImage(VulkanDevice& device, vk::Format format, const vk::Extent2D& swapchainExtent);
+    CreateImage(VulkanDevice& device, vk::Format format, const vk::Extent2D& swapchainExtent, const std::string& name);
 
     void Transition(
         VulkanCommandPool& commandPool,
@@ -77,13 +92,24 @@ private:
         vk::Format format,
         vk::ImageTiling tiling,
         vk::ImageUsageFlags usage,
-        vk::MemoryPropertyFlags memoryProperty);
+        vk::MemoryPropertyFlags memoryProperty,
+        const std::string& name);
 
-    VulkanImage(VulkanDevice& device, vk::Image image);
+    VulkanImage(VulkanDevice& device, vk::Image image, const std::string& name);
 
-    VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, const Core::TexturePtr& texture);
+    VulkanImage(
+        VulkanDevice& device,
+        VulkanCommandPool& commandPool,
+        const Core::TexturePtr& texture,
+        const std::string& name);
 
-    VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, const std::array<Core::TexturePtr, 6>& textures);
+    VulkanImage(
+        VulkanDevice& device,
+        VulkanCommandPool& commandPool,
+        const std::array<Core::TexturePtr, 6>& textures,
+        const std::string& name);
+
+    VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, const glm::vec4& color, const std::string& name);
 
     void GenerateImageView(
         vk::Format format,
@@ -97,7 +123,6 @@ private:
         vk::Format format,
         std::size_t layerCount = 1);
 
-    VulkanDevice& mDevice;
     vk::UniqueDeviceMemory mDeviceMemory;
     vk::UniqueImageView mImageView;
     std::optional<vk::UniqueImage> mUniqueImageHolder;

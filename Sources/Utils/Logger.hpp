@@ -1,18 +1,10 @@
 #pragma once
 
-#include <boost/log/core.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/log/sources/global_logger_storage.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/log/utility/manipulators/add_value.hpp>
-#include <boost/log/utility/setup/common_attributes.hpp>
+#include <iostream>
+#include <sstream>
 
-namespace logging = boost::log;
-namespace sinks = boost::log::sinks;
-namespace src = boost::log::sources;
-namespace expr = boost::log::expressions;
-namespace attrs = boost::log::attributes;
-namespace keywords = boost::log::keywords;
+#include <fmt/color.h>
+#include <fmt/format.h>
 
 namespace Lucid::Logger
 {
@@ -26,40 +18,30 @@ enum class Severity
     Plain
 };
 
-using LucidRenderLogger = boost::log::sources::severity_logger_mt<Severity>;
-BOOST_LOG_GLOBAL_LOGGER(LoggerInstance, LucidRenderLogger)
-BOOST_LOG_ATTRIBUTE_KEYWORD(SeverityAttr, "Severity", Severity)
+class LoggerImpl
+{
+public:
+    LoggerImpl(Severity severity, const std::string& file, std::int32_t line, const std::string& function);
+    ~LoggerImpl();
 
-#define _LOG(_severity)                                                                     \
-    BOOST_LOG_SEV(Lucid::Logger::LoggerInstance::get(), Lucid::Logger::Severity::_severity) \
-        << boost::log::add_value("Function", __FUNCTION__)                                  \
-        << boost::log::add_value("Line", static_cast<unsigned long>(__LINE__))
-#define LoggerWarning _LOG(Warning)
-#define LoggerError _LOG(Error)
-#define LoggerInfo _LOG(Info)
-#define LoggerDebug _LOG(Debug)
-#define LoggerPlain _LOG(Plain)
+    template <typename T> LoggerImpl& operator<<(const T& message)
+    {
+        mStream << fmt::format(fg(fmt::color::gray) | fmt::emphasis::bold, " ") << message;
+        return *this;
+    }
 
-#define _LOG_SET(_severity) boost::log::core::get()->set_filter(SeverityAttr >= Severity::_severity)
-inline void
-SetWarning()
-{
-    _LOG_SET(Warning);
-}
-inline void
-SetError()
-{
-    _LOG_SET(Error);
-}
-inline void
-SetInfo()
-{
-    _LOG_SET(Info);
-}
-inline void
-SetDebug()
-{
-    _LOG_SET(Debug);
-}
+private:
+    Severity mSeverity;
+    std::string mFile;
+    std::int32_t mLine;
+    std::string mFunction;
+    std::stringstream mStream;
+};
+
+#define LoggerWarning Lucid::Logger::LoggerImpl(Lucid::Logger::Severity::Warning, __FILE__, __LINE__, __func__)
+#define LoggerError Lucid::Logger::LoggerImpl(Lucid::Logger::Severity::Error, __FILE__, __LINE__, __func__)
+#define LoggerInfo Lucid::Logger::LoggerImpl(Lucid::Logger::Severity::Info, __FILE__, __LINE__, __func__)
+#define LoggerDebug Lucid::Logger::LoggerImpl(Lucid::Logger::Severity::Debug, __FILE__, __LINE__, __func__)
+#define LoggerPlain Lucid::Logger::LoggerImpl(Lucid::Logger::Severity::Plain, __FILE__, __LINE__, __func__)
 
 } // namespace Lucid::Logger

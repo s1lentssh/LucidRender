@@ -7,9 +7,10 @@
 namespace Lucid::Vulkan
 {
 
-VulkanShader::VulkanShader(VulkanDevice& device, Type type, const std::filesystem::path& path)
+VulkanShader::VulkanShader(VulkanDevice& device, Type type, const std::filesystem::path& path, const std::string& name)
+    : VulkanEntity(name, device.Handle())
 {
-    LoggerInfo << "Compiling " << path.string();
+    LoggerInfo << "Compiling" << path.string();
 
     std::vector<char> code = Files::LoadFile(path);
     std::string preprocessed = PreprocessShader({ code.begin(), code.end() }, type, path.string());
@@ -18,7 +19,7 @@ VulkanShader::VulkanShader(VulkanDevice& device, Type type, const std::filesyste
     auto shaderModuleCreateInfo
         = vk::ShaderModuleCreateInfo().setCodeSize(compiled.size() * sizeof(std::uint32_t)).setPCode(compiled.data());
 
-    mHandle = device.Handle()->createShaderModuleUnique(shaderModuleCreateInfo);
+    VulkanEntity::SetHandle(Device().createShaderModuleUnique(shaderModuleCreateInfo));
 }
 
 std::string

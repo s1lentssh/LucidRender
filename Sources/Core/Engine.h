@@ -19,14 +19,14 @@ public:
 
     Engine(const IWindow& window, API api);
     void Update(float time);
-    void SetRootNode(const SceneNodePtr& node);
+    void SetRootNode(const Scene::NodePtr& node);
     bool ShouldClose() const;
 
 private:
     void ProcessInput(float time);
     void ProcessDirtyNodes();
 
-    std::shared_ptr<Lucid::Core::Scene> mScene;
+    std::shared_ptr<Lucid::Core::Scene::Scene> mScene;
     std::unique_ptr<Lucid::Core::IRender> mRender;
 
     std::set<std::size_t> mDirtyNodes;

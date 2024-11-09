@@ -1,11 +1,13 @@
 #pragma once
 
+#include <memory>
+#include <ostream>
 #include <string>
 #include <vector>
-#include <memory>
 
 #include <Core/Vertex.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 namespace Lucid::Core
 {
@@ -30,13 +32,38 @@ struct Texture
 
 using TexturePtr = std::shared_ptr<Texture>;
 
+struct Material
+{
+    std::string name;
+    TexturePtr albedo;
+    TexturePtr metallicRoughness;
+    TexturePtr normal;
+
+    float roughnessFactor = 1.0;
+    float metalnessFactor = 0.0;
+    glm::vec4 baseColorFactor = {};
+
+    friend std::ostream& operator<<(std::ostream& os, const Material& material);
+};
+
+using MaterialPtr = std::shared_ptr<Material>;
+
 struct Mesh
 {
-    std::shared_ptr<Texture> texture;
+    std::string name;
+    std::shared_ptr<Material> material;
     std::vector<Vertex> vertices;
     std::vector<std::uint32_t> indices;
 };
 
 using MeshPtr = std::shared_ptr<Mesh>;
+
+struct Camera
+{
+    std::string name;
+    double fov = 0.5;
+};
+
+using CameraPtr = std::shared_ptr<Camera>;
 
 } // namespace Lucid::Core

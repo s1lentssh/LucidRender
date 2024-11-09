@@ -7,49 +7,52 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace Lucid::Core
+namespace Lucid::Core::Scene
 {
 
-class SceneNode;
-using SceneNodePtr = std::shared_ptr<SceneNode>;
-using SceneNodeWeakPtr = std::weak_ptr<SceneNode>;
+class Node;
+using NodePtr = std::shared_ptr<Node>;
+using NodeWeakPtr = std::weak_ptr<Node>;
 
-class SceneNode
+class Node
 {
-    SceneNode(const std::string& name, SceneNodePtr parent);
+    Node(const std::string& name, NodePtr parent);
 
 public:
-    template <typename... Args> static std::shared_ptr<SceneNode> Create(Args&&... args)
+    template <typename... Args> static std::shared_ptr<Node> Create(Args&&... args)
     {
-        return std::shared_ptr<SceneNode> { new SceneNode { std::forward<Args>(args)... } };
+        return std::shared_ptr<Node> { new Node { std::forward<Args>(args)... } };
     }
 
     // Getters
     std::size_t GetId() const;
     const std::string& GetName() const;
-    const std::vector<SceneNodePtr>& GetChildren() const;
-    SceneNodePtr GetParent() const;
+    const std::vector<NodePtr>& GetChildren() const;
+    NodePtr GetParent() const;
     glm::mat4 GetTransform() const;
 
     const std::optional<MeshPtr>& GetOptionalMesh() const;
+    const std::optional<CameraPtr>& GetOptionalCamera() const;
 
     // Setters
-    void AddChildren(SceneNodePtr& node);
+    void AddChildren(NodePtr& node);
     void SetTransform(const glm::mat4& transform);
     void SetMesh(const MeshPtr& mesh);
+    void SetCamera(const CameraPtr& camera);
 
 private:
     // Must have fields
     std::string mName;
-    std::vector<SceneNodePtr> mChildren;
-    SceneNodeWeakPtr mParent;
+    std::vector<NodePtr> mChildren;
+    NodeWeakPtr mParent;
     glm::mat4 mTransform { 1.0f };
 
     // Optional fields
     std::optional<MeshPtr> mMesh;
+    std::optional<CameraPtr> mCamera;
 
     // Utility fields
     std::size_t mId;
 };
 
-} // namespace Lucid::Core
+} // namespace Lucid::Core::Scene

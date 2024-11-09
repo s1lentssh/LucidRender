@@ -16,7 +16,7 @@ class VulkanInstance;
 class VulkanSurface : public VulkanEntity<vk::UniqueSurfaceKHR>
 {
 public:
-    VulkanSurface(VulkanInstance& instance, const Core::IWindow& window);
+    VulkanSurface(VulkanInstance& instance, const Core::IWindow& window, const std::string& name);
 };
 
 } // namespace Lucid::Vulkan

@@ -21,7 +21,7 @@ public:
         Fragment
     };
 
-    VulkanShader(VulkanDevice& device, Type type, const std::filesystem::path& path);
+    VulkanShader(VulkanDevice& device, Type type, const std::filesystem::path& path, const std::string& name);
 
 private:
     [[nodiscard]] std::string PreprocessShader(const std::string& source, Type type, const std::string& name);

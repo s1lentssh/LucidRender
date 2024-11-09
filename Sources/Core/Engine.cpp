@@ -12,11 +12,7 @@ namespace Lucid::Core
 
 Engine::Engine(const IWindow& window, API api)
 {
-    mScene = std::make_shared<Lucid::Core::Scene>();
-
-    auto camera = std::make_shared<Lucid::Core::Camera>(
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 6.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
-    mScene->AddCamera(camera);
+    mScene = std::make_shared<Lucid::Core::Scene::Scene>();
 
     switch (api)
     {
@@ -38,12 +34,13 @@ Engine::Update(float time)
 }
 
 void
-Engine::SetRootNode(const SceneNodePtr& node)
+Engine::SetRootNode(const Scene::NodePtr& node)
 {
     mScene->SetRootNode(node);
 
     // Set all nodes as dirty
-    mScene->Traverse([this](const Core::SceneNodePtr& it) { mDirtyNodes.insert(it->GetId()); }, mScene->GetRootNode());
+    mScene->Traverse(
+        [this](const Core::Scene::NodePtr& it) { mDirtyNodes.insert(it->GetId()); }, mScene->GetRootNode());
 }
 
 void
@@ -53,22 +50,22 @@ Engine::ProcessInput(float time)
 
     if (pressedKeys.contains(InputController::Key::Up))
     {
-        mScene->GetCamera()->Move(Camera::MoveDirection::Forward, time);
+        mScene->GetCamera()->Move(Scene::Camera::MoveDirection::Forward, time);
     }
 
     if (pressedKeys.contains(InputController::Key::Down))
     {
-        mScene->GetCamera()->Move(Camera::MoveDirection::Backward, time);
+        mScene->GetCamera()->Move(Scene::Camera::MoveDirection::Backward, time);
     }
 
     if (pressedKeys.contains(InputController::Key::Left))
     {
-        mScene->GetCamera()->Move(Camera::MoveDirection::Left, time);
+        mScene->GetCamera()->Move(Scene::Camera::MoveDirection::Left, time);
     }
 
     if (pressedKeys.contains(InputController::Key::Right))
     {
-        mScene->GetCamera()->Move(Camera::MoveDirection::Right, time);
+        mScene->GetCamera()->Move(Scene::Camera::MoveDirection::Right, time);
     }
 
     Vector2d<float> mouseDelta = InputController::Instance().GetMouseDelta();
@@ -89,10 +86,15 @@ Engine::ProcessDirtyNodes()
 {
     for (const std::size_t id : mDirtyNodes)
     {
-        const Core::SceneNodePtr& node = mScene->GetNodeById(id);
+        const Core::Scene::NodePtr& node = mScene->GetNodeById(id);
         if (node->GetOptionalMesh().has_value())
         {
             mRender->AddNode(node);
+        }
+
+        if (node->GetOptionalCamera().has_value())
+        {
+            mScene->AddCamera(node);
         }
     }
 

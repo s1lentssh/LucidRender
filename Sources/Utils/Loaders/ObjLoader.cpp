@@ -5,7 +5,7 @@
 namespace Lucid::Loaders
 {
 
-Core::SceneNodePtr
+Core::Scene::NodePtr
 ObjLoader::Load(const std::filesystem::path& path)
 {
     tinyobj::attrib_t attrib;
@@ -44,7 +44,7 @@ ObjLoader::Load(const std::filesystem::path& path)
         }
     }
 
-    Core::SceneNodePtr node = Core::SceneNode::Create("Root", nullptr);
+    Core::Scene::NodePtr node = Core::Scene::Node::Create("Root", nullptr);
     node->SetMesh(std::make_shared<Core::Mesh>(mesh));
     return node;
 }

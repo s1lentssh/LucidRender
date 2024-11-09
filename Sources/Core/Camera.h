@@ -5,7 +5,7 @@
 #include <Core/Types.h>
 #include <glm/glm.hpp>
 
-namespace Lucid::Core
+namespace Lucid::Core::Scene
 {
 
 class Camera
@@ -30,7 +30,7 @@ public:
 
 private:
     const glm::vec3 mCameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-    const float mCameraSpeed = 300.0f;
+    const float mCameraSpeed = 3.0f;
     const float mCameraSensitivity = 0.1f;
 
     glm::mat4 mTransform { 1.0f };
@@ -41,4 +41,4 @@ private:
     float mFov = 37.8f;
 };
 
-} // namespace Lucid::Core
+} // namespace Lucid::Core::Scene

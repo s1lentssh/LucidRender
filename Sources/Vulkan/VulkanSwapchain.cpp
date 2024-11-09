@@ -10,12 +10,13 @@ namespace Lucid::Vulkan
 VulkanSwapchain::VulkanSwapchain(
     VulkanDevice& device,
     const VulkanSurface& surface,
-    const Core::Vector2d<std::uint32_t>& size)
-    : mSurface(surface)
-    , mDevice(device)
+    const Core::Vector2d<std::uint32_t>& size,
+    const std::string& name)
+    : VulkanEntity(name, device.Handle())
+    , mSurface(surface)
     , mWindowSize(size)
 {
-    VulkanDevice::SwapchainDetails details = mDevice.GetSwapchainDetails(mSurface);
+    VulkanDevice::SwapchainDetails details = device.GetSwapchainDetails(mSurface);
 
     vk::SurfaceFormatKHR surfaceFormat = SelectSurfaceFormat(details.formats);
     vk::PresentModeKHR presentMode = SelectPresentMode(details.presentModes);
@@ -33,7 +34,7 @@ VulkanSwapchain::VulkanSwapchain(
     }
 
     auto swapchainCreateInfo = vk::SwapchainCreateInfoKHR()
-                                   .setSurface(mSurface.Handle().get())
+                                   .setSurface(mSurface.Handle())
                                    .setMinImageCount(imageCount)
                                    .setImageFormat(surfaceFormat.format)
                                    .setImageColorSpace(surfaceFormat.colorSpace)
@@ -46,7 +47,7 @@ VulkanSwapchain::VulkanSwapchain(
                                    .setClipped(true);
 
     std::uint32_t queueFamilies[]
-        = { mDevice.FindGraphicsQueueFamily().value(), mDevice.FindPresentQueueFamily(mSurface).value() };
+        = { device.FindGraphicsQueueFamily().value(), device.FindPresentQueueFamily(mSurface).value() };
 
     if (queueFamilies[0] != queueFamilies[1])
     {
@@ -59,21 +60,21 @@ VulkanSwapchain::VulkanSwapchain(
         swapchainCreateInfo.setImageSharingMode(vk::SharingMode::eExclusive);
     }
 
-    mHandle = mDevice.Handle()->createSwapchainKHRUnique(swapchainCreateInfo);
+    VulkanEntity::SetHandle(Device().createSwapchainKHRUnique(swapchainCreateInfo));
     LoggerInfo << "Swapchain created";
 
-    auto swapchainImages = mDevice.Handle()->getSwapchainImagesKHR(Handle().get());
+    auto swapchainImages = Device().getSwapchainImagesKHR(Handle());
     for (const auto& image : swapchainImages)
     {
-        mImages.push_back(VulkanImage::FromSwapchain(mDevice, image, mFormat, vk::ImageAspectFlagBits::eColor));
+        mImages.push_back(
+            VulkanImage::FromSwapchain(device, image, mFormat, vk::ImageAspectFlagBits::eColor, "Swapchain image"));
     }
 }
 
 vk::ResultValue<std::uint32_t>
 VulkanSwapchain::AcquireNextImage(const vk::UniqueSemaphore& semaphore)
 {
-    return mDevice.Handle()->acquireNextImageKHR(
-        Handle().get(), std::numeric_limits<std::uint64_t>::max(), semaphore.get(), {});
+    return Device().acquireNextImageKHR(Handle(), std::numeric_limits<std::uint64_t>::max(), semaphore.get(), {});
 }
 
 const std::vector<vk::UniqueFramebuffer>&
@@ -156,14 +157,14 @@ VulkanSwapchain::CreateFramebuffers(VulkanRenderPass& renderPass, VulkanImage& d
         vk::ImageView attachments[] = { resolveImage.GetImageView(), depthImage.GetImageView(), image->GetImageView() };
 
         auto framebufferCreateInfo = vk::FramebufferCreateInfo()
-                                         .setRenderPass(renderPass.Handle().get())
+                                         .setRenderPass(renderPass.Handle())
                                          .setAttachmentCount(static_cast<std::uint32_t>(std::size(attachments)))
                                          .setPAttachments(attachments)
                                          .setWidth(mExtent.width)
                                          .setHeight(mExtent.height)
                                          .setLayers(1);
 
-        mFramebuffers.push_back(mDevice.Handle()->createFramebufferUnique(framebufferCreateInfo));
+        mFramebuffers.push_back(Device().createFramebufferUnique(framebufferCreateInfo));
     }
 
     LoggerInfo << "Framebuffers created";
