@@ -22,8 +22,13 @@ private:
     VulkanVertexBuffer mVertexBuffer;
     VulkanIndexBuffer mIndexBuffer;
     VulkanUniformBuffer mUniformBuffer;
-    std::unique_ptr<VulkanImage> mTexture;
-    std::unique_ptr<VulkanSampler> mSampler;
+    VulkanMaterialBuffer mMaterialBuffer;
+    std::unique_ptr<VulkanImage> mAlbedoTexture;
+    std::unique_ptr<VulkanImage> mMetallicRoughnessTexture;
+    std::unique_ptr<VulkanImage> mNormalTexture;
+    std::unique_ptr<VulkanSampler> mAlbedoSampler;
+    std::unique_ptr<VulkanSampler> mMetallicRoughnessSampler;
+    std::unique_ptr<VulkanSampler> mNormalSampler;
     std::unique_ptr<VulkanDescriptorSet> mDescriptorSet;
 };
 

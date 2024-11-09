@@ -11,7 +11,7 @@
 namespace Lucid::Loaders
 {
 
-Core::SceneNodePtr
+Core::Scene::NodePtr
 GltfLoader::Load(const std::filesystem::path& path)
 {
     tinygltf::Model gltf;
@@ -45,12 +45,12 @@ GltfLoader::Load(const std::filesystem::path& path)
     }
 
     tinygltf::Scene scene = gltf.scenes.at(0);
-    Core::SceneNodePtr result = Core::SceneNode::Create("Root", nullptr);
+    Core::Scene::NodePtr result = Core::Scene::Node::Create("Root", nullptr);
 
     for (const auto nodeId : scene.nodes)
     {
         const tinygltf::Node rootNode = gltf.nodes.at(static_cast<std::size_t>(nodeId));
-        Core::SceneNodePtr traversed = GltfLoader::TraverseFn(gltf, rootNode, nullptr);
+        Core::Scene::NodePtr traversed = GltfLoader::TraverseFn(gltf, rootNode, nullptr);
         result->AddChildren(traversed);
     }
 
@@ -76,7 +76,7 @@ GltfLoader::GetBufferData(const tinygltf::Model& gltf, std::int32_t meshId, cons
         }
         catch (const std::exception& ex)
         {
-            LoggerError << "No attribute " << attribute << ": " << ex.what();
+            (void)ex;
             return std::nullopt;
         }
     }
@@ -129,21 +129,39 @@ GltfLoader::GetBufferData(const tinygltf::Model& gltf, std::int32_t meshId, cons
                accessor.componentType } };
 }
 
-Core::SceneNodePtr
-GltfLoader::TraverseFn(const tinygltf::Model& gltf, const tinygltf::Node& node, Core::SceneNodePtr parent)
+Core::Scene::NodePtr
+GltfLoader::TraverseFn(const tinygltf::Model& gltf, const tinygltf::Node& node, Core::Scene::NodePtr parent)
 {
-    Core::SceneNodePtr result = Core::SceneNode::Create(node.name, parent);
+    Core::Scene::NodePtr result = Core::Scene::Node::Create(node.name, parent);
     result->SetMesh(GltfLoader::MeshFn(gltf, node.mesh));
+    result->SetCamera(GltfLoader::CameraFn(gltf, node.camera));
     result->SetTransform(GltfLoader::TransformFn(node));
 
     for (const auto childId : node.children)
     {
         const tinygltf::Node childNode = gltf.nodes.at(static_cast<std::size_t>(childId));
-        Core::SceneNodePtr traversed = GltfLoader::TraverseFn(gltf, childNode, result);
+        Core::Scene::NodePtr traversed = GltfLoader::TraverseFn(gltf, childNode, result);
         result->AddChildren(traversed);
     }
 
     return result;
+}
+
+Core::CameraPtr
+GltfLoader::CameraFn(const tinygltf::Model& gltf, std::int32_t cameraId)
+{
+    if (cameraId == -1)
+    {
+        return nullptr;
+    }
+
+    Core::Camera result;
+    const tinygltf::Camera camera = gltf.cameras.at(static_cast<std::size_t>(cameraId));
+
+    result.fov = camera.perspective.yfov;
+    result.name = camera.name;
+
+    return std::make_shared<Core::Camera>(result);
 }
 
 Core::MeshPtr
@@ -157,6 +175,7 @@ GltfLoader::MeshFn(const tinygltf::Model& gltf, std::int32_t meshId)
     auto indexBuffer = GltfLoader::GetBufferData(gltf, meshId, "INDEX");
     auto vertexBuffer = GltfLoader::GetBufferData(gltf, meshId, "POSITION");
     auto normalBuffer = GltfLoader::GetBufferData(gltf, meshId, "NORMAL");
+    auto tangentBuffer = GltfLoader::GetBufferData(gltf, meshId, "TANGENT");
     auto uvBuffer = GltfLoader::GetBufferData(gltf, meshId, "TEXCOORD_0");
 
     Core::Mesh result;
@@ -178,6 +197,10 @@ GltfLoader::MeshFn(const tinygltf::Model& gltf, std::int32_t meshId)
                 = reinterpret_cast<const float*>(vertexBuffer.value().data + (i * vertexBuffer.value().stride));
             vertex.position = { position[0], position[1], position[2] };
         }
+        else
+        {
+            LoggerWarning << "Mesh has no vertices";
+        }
 
         // Normal
         if (normalBuffer.has_value())
@@ -186,12 +209,32 @@ GltfLoader::MeshFn(const tinygltf::Model& gltf, std::int32_t meshId)
                 = reinterpret_cast<const float*>(normalBuffer.value().data + (i * normalBuffer.value().stride));
             vertex.normal = { normal[0], normal[1], normal[2] };
         }
+        else
+        {
+            LoggerWarning << "Mesh has no normals";
+        }
 
         // UV
         if (uvBuffer.has_value())
         {
             const float* uv = reinterpret_cast<const float*>(uvBuffer.value().data + (i * uvBuffer.value().stride));
             vertex.uv = { uv[0], uv[1] };
+        }
+        else
+        {
+            LoggerWarning << "Mesh has no UVs";
+        }
+
+        // Tangent
+        if (tangentBuffer.has_value())
+        {
+            const float* tangent
+                = reinterpret_cast<const float*>(tangentBuffer.value().data + (i * tangentBuffer.value().stride));
+            vertex.tangent = { tangent[0], tangent[1], tangent[2], tangent[3] };
+        }
+        else
+        {
+            LoggerWarning << "Mesh has no tangents";
         }
 
         result.vertices.push_back(vertex);
@@ -220,13 +263,14 @@ GltfLoader::MeshFn(const tinygltf::Model& gltf, std::int32_t meshId)
         }
     }
 
-    result.texture = GltfLoader::TextureFn(gltf, meshId);
+    result.material = GltfLoader::MaterialFn(gltf, meshId);
+    result.name = gltf.meshes.at(static_cast<std::size_t>(meshId)).name;
 
     return std::make_shared<Core::Mesh>(result);
 }
 
 Core::TexturePtr
-GltfLoader::TextureFn(const tinygltf::Model& gltf, std::int32_t meshId)
+GltfLoader::AlbedoFn(const tinygltf::Model& gltf, std::int32_t meshId)
 {
     if (static_cast<std::size_t>(meshId) >= gltf.meshes.size() || meshId < 0)
     {
@@ -266,6 +310,138 @@ GltfLoader::TextureFn(const tinygltf::Model& gltf, std::int32_t meshId)
     result.pixels = image.image;
 
     return std::make_shared<Core::Texture>(result);
+}
+
+Core::TexturePtr
+GltfLoader::MetallicRoughnessFn(const tinygltf::Model& gltf, std::int32_t meshId)
+{
+    if (static_cast<std::size_t>(meshId) >= gltf.meshes.size() || meshId < 0)
+    {
+        return nullptr;
+    }
+
+    const tinygltf::Mesh& mesh = gltf.meshes.at(static_cast<std::size_t>(meshId));
+
+    if (mesh.primitives.empty())
+    {
+        return nullptr;
+    }
+
+    std::int32_t materialId = mesh.primitives.at(0).material;
+    if (materialId < 0)
+    {
+        return nullptr;
+    }
+
+    if (static_cast<std::size_t>(materialId) >= gltf.materials.size())
+    {
+        return nullptr;
+    }
+
+    const tinygltf::Material& material = gltf.materials.at(static_cast<std::size_t>(materialId));
+
+    std::int32_t textureId = material.pbrMetallicRoughness.metallicRoughnessTexture.index;
+    if (textureId == -1)
+    {
+        return nullptr;
+    }
+
+    const tinygltf::Image image = gltf.images.at(static_cast<std::size_t>(textureId));
+
+    Core::Texture result;
+    result.size = { static_cast<std::uint32_t>(image.width), static_cast<std::uint32_t>(image.height) };
+    result.pixels = image.image;
+
+    return std::make_shared<Core::Texture>(result);
+}
+
+Core::TexturePtr
+GltfLoader::NormalFn(const tinygltf::Model& gltf, std::int32_t meshId)
+{
+    if (static_cast<std::size_t>(meshId) >= gltf.meshes.size() || meshId < 0)
+    {
+        return nullptr;
+    }
+
+    const tinygltf::Mesh& mesh = gltf.meshes.at(static_cast<std::size_t>(meshId));
+
+    if (mesh.primitives.empty())
+    {
+        return nullptr;
+    }
+
+    std::int32_t materialId = mesh.primitives.at(0).material;
+    if (materialId < 0)
+    {
+        return nullptr;
+    }
+
+    if (static_cast<std::size_t>(materialId) >= gltf.materials.size())
+    {
+        return nullptr;
+    }
+
+    const tinygltf::Material& material = gltf.materials.at(static_cast<std::size_t>(materialId));
+
+    std::int32_t textureId = material.normalTexture.index;
+    if (textureId == -1)
+    {
+        return nullptr;
+    }
+
+    const tinygltf::Image image = gltf.images.at(static_cast<std::size_t>(textureId));
+
+    Core::Texture result;
+    result.size = { static_cast<std::uint32_t>(image.width), static_cast<std::uint32_t>(image.height) };
+    result.pixels = image.image;
+
+    return std::make_shared<Core::Texture>(result);
+}
+
+Core::MaterialPtr
+GltfLoader::MaterialFn(const tinygltf::Model& gltf, std::int32_t meshId)
+{
+    Core::Material result;
+
+    if (static_cast<std::size_t>(meshId) >= gltf.meshes.size() || meshId < 0)
+    {
+        return std::make_shared<Core::Material>(result);
+    }
+
+    const tinygltf::Mesh& mesh = gltf.meshes.at(static_cast<std::size_t>(meshId));
+
+    if (mesh.primitives.empty())
+    {
+        return std::make_shared<Core::Material>(result);
+    }
+
+    std::int32_t materialId = mesh.primitives.at(0).material;
+    if (materialId < 0)
+    {
+        return std::make_shared<Core::Material>(result);
+    }
+
+    if (static_cast<std::size_t>(materialId) >= gltf.materials.size())
+    {
+        return std::make_shared<Core::Material>(result);
+    }
+
+    const tinygltf::Material& material = gltf.materials.at(static_cast<std::size_t>(materialId));
+
+    result.albedo = GltfLoader::AlbedoFn(gltf, meshId);
+    result.metallicRoughness = GltfLoader::MetallicRoughnessFn(gltf, meshId);
+    result.normal = GltfLoader::NormalFn(gltf, meshId);
+
+    for (std::size_t i = 0; i < material.pbrMetallicRoughness.baseColorFactor.size(); i++)
+    {
+        result.baseColorFactor[static_cast<std::int32_t>(i)]
+            = static_cast<float>(material.pbrMetallicRoughness.baseColorFactor.at(i));
+    }
+
+    result.roughnessFactor = static_cast<float>(material.pbrMetallicRoughness.roughnessFactor);
+    result.metalnessFactor = static_cast<float>(material.pbrMetallicRoughness.metallicFactor);
+
+    return std::make_shared<Core::Material>(result);
 }
 
 glm::mat4

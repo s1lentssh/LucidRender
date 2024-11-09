@@ -7,18 +7,24 @@
 #include <Vulkan/VulkanBuffer.h>
 #include <Vulkan/VulkanCommandPool.h>
 #include <Vulkan/VulkanDevice.h>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace Lucid::Vulkan
 {
 
-VulkanImage::VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, const Core::TexturePtr& texture)
-    : mDevice(device)
+VulkanImage::VulkanImage(
+    VulkanDevice& device,
+    VulkanCommandPool& commandPool,
+    const Core::TexturePtr& texture,
+    const std::string& name)
+    : VulkanEntity(name, device.Handle())
 {
     VulkanBuffer stagingBuffer(
         device,
         texture->pixels.size(),
         vk::BufferUsageFlagBits::eTransferSrc,
-        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+        "Staging buffer for " + name);
 
     stagingBuffer.Write(texture->pixels.data());
 
@@ -37,18 +43,18 @@ VulkanImage::VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, c
                           .setSamples(vk::SampleCountFlagBits::e1)
                           .setMipLevels(texture->mipLevels);
 
-    mUniqueImageHolder = device.Handle()->createImageUnique(createInfo);
-    mHandle = mUniqueImageHolder.value().get();
+    mUniqueImageHolder = Device().createImageUnique(createInfo);
+    VulkanEntity::SetHandle(std::move(mUniqueImageHolder.value().get()));
     mMipLevels = texture->mipLevels;
 
-    vk::MemoryRequirements requirements = device.Handle()->getImageMemoryRequirements(Handle());
-    std::uint32_t memoryType
-        = VulkanBuffer::FindMemoryType(device, requirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal);
+    vk::MemoryRequirements requirements = Device().getImageMemoryRequirements(Handle());
+    std::uint32_t memoryType = VulkanBuffer::FindMemoryType(
+        device.GetPhysicalDevice(), requirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal);
 
     auto allocateInfo = vk::MemoryAllocateInfo().setAllocationSize(requirements.size).setMemoryTypeIndex(memoryType);
 
-    mDeviceMemory = device.Handle()->allocateMemoryUnique(allocateInfo);
-    device.Handle()->bindImageMemory(Handle(), mDeviceMemory.get(), 0);
+    mDeviceMemory = Device().allocateMemoryUnique(allocateInfo);
+    Device().bindImageMemory(Handle(), mDeviceMemory.get(), 0);
 
     Transition(
         commandPool, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
@@ -59,8 +65,9 @@ VulkanImage::VulkanImage(VulkanDevice& device, VulkanCommandPool& commandPool, c
 VulkanImage::VulkanImage(
     VulkanDevice& device,
     VulkanCommandPool& commandPool,
-    const std::array<Core::TexturePtr, 6>& textures)
-    : mDevice(device)
+    const std::array<Core::TexturePtr, 6>& textures,
+    const std::string& name)
+    : VulkanEntity(name, device.Handle())
 {
     (void)commandPool;
 
@@ -74,7 +81,8 @@ VulkanImage::VulkanImage(
         device,
         stagingSize,
         vk::BufferUsageFlagBits::eTransferSrc,
-        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+        "Staging buffer for " + name);
 
     std::size_t offset { 0 };
     for (const auto& texture : textures)
@@ -102,17 +110,17 @@ VulkanImage::VulkanImage(
               .setMipLevels(firstTexture->mipLevels)
               .setFlags(vk::ImageCreateFlagBits::eCubeCompatible);
 
-    mUniqueImageHolder = device.Handle()->createImageUnique(createInfo);
-    mHandle = mUniqueImageHolder.value().get();
+    mUniqueImageHolder = Device().createImageUnique(createInfo);
+    VulkanEntity::SetHandle(std::move(mUniqueImageHolder.value().get()));
 
-    vk::MemoryRequirements requirements = device.Handle()->getImageMemoryRequirements(Handle());
-    std::uint32_t memoryType
-        = VulkanBuffer::FindMemoryType(device, requirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal);
+    vk::MemoryRequirements requirements = Device().getImageMemoryRequirements(Handle());
+    std::uint32_t memoryType = VulkanBuffer::FindMemoryType(
+        device.GetPhysicalDevice(), requirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal);
 
     auto allocateInfo = vk::MemoryAllocateInfo().setAllocationSize(requirements.size).setMemoryTypeIndex(memoryType);
 
-    mDeviceMemory = device.Handle()->allocateMemoryUnique(allocateInfo);
-    device.Handle()->bindImageMemory(Handle(), mDeviceMemory.get(), 0);
+    mDeviceMemory = Device().allocateMemoryUnique(allocateInfo);
+    Device().bindImageMemory(Handle(), mDeviceMemory.get(), 0);
 
     Transition(
         commandPool,
@@ -131,12 +139,70 @@ VulkanImage::VulkanImage(
         textures.size());
 }
 
+VulkanImage::VulkanImage(
+    VulkanDevice& device,
+    VulkanCommandPool& commandPool,
+    const glm::vec4& color,
+    const std::string& name)
+    : VulkanEntity(name, device.Handle())
+{
+    VulkanBuffer stagingBuffer(
+        device,
+        sizeof(float) * 4,
+        vk::BufferUsageFlagBits::eTransferSrc,
+        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+        "Staging buffer for " + name);
+
+    std::vector<float> data(4);
+    for (std::size_t i = 0; i < color.length(); i++)
+    {
+        data.at(i) = color[static_cast<std::int32_t>(i)];
+    }
+    stagingBuffer.Write(data.data());
+
+    auto createInfo = vk::ImageCreateInfo()
+                          .setImageType(vk::ImageType::e2D)
+                          .setExtent(vk::Extent3D().setWidth(1).setHeight(1).setDepth(1))
+                          .setMipLevels(1)
+                          .setArrayLayers(1)
+                          .setFormat(vk::Format::eR32G32B32A32Sfloat)
+                          .setTiling(vk::ImageTiling::eOptimal)
+                          .setInitialLayout(vk::ImageLayout::eUndefined)
+                          .setUsage(
+                              vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled
+                              | vk::ImageUsageFlagBits::eTransferSrc)
+                          .setSharingMode(vk::SharingMode::eExclusive)
+                          .setSamples(vk::SampleCountFlagBits::e1);
+
+    mUniqueImageHolder = Device().createImageUnique(createInfo);
+    VulkanEntity::SetHandle(std::move(mUniqueImageHolder.value().get()));
+    mMipLevels = 1;
+
+    vk::MemoryRequirements requirements = Device().getImageMemoryRequirements(Handle());
+    std::uint32_t memoryType = VulkanBuffer::FindMemoryType(
+        device.GetPhysicalDevice(), requirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal);
+
+    auto allocateInfo = vk::MemoryAllocateInfo().setAllocationSize(requirements.size).setMemoryTypeIndex(memoryType);
+
+    mDeviceMemory = Device().allocateMemoryUnique(allocateInfo);
+    Device().bindImageMemory(Handle(), mDeviceMemory.get(), 0);
+
+    Transition(
+        commandPool,
+        vk::Format::eR32G32B32A32Sfloat,
+        vk::ImageLayout::eUndefined,
+        vk::ImageLayout::eTransferDstOptimal);
+    Write(commandPool, stagingBuffer, { 1, 1 });
+    GenerateMipmaps(commandPool, { 1, 1 }, vk::Format::eR32G32B32A32Sfloat);
+}
+
 std::unique_ptr<VulkanImage>
 VulkanImage::CreateDepthImage(
     VulkanDevice& device,
     const vk::Extent2D& swapchainExtent,
     vk::Format format,
-    vk::ImageAspectFlags aspectFlags)
+    vk::ImageAspectFlags aspectFlags,
+    const std::string& name)
 {
     VulkanImage result(
         device,
@@ -145,16 +211,22 @@ VulkanImage::CreateDepthImage(
         device.FindSupportedDepthFormat(),
         vk::ImageTiling::eOptimal,
         vk::ImageUsageFlagBits::eDepthStencilAttachment,
-        vk::MemoryPropertyFlagBits::eDeviceLocal);
+        vk::MemoryPropertyFlagBits::eDeviceLocal,
+        name);
 
     result.GenerateImageView(format, aspectFlags, vk::ImageViewType::e2D);
     return std::make_unique<VulkanImage>(std::move(result));
 }
 
 std::unique_ptr<VulkanImage>
-VulkanImage::FromSwapchain(VulkanDevice& device, vk::Image image, vk::Format format, vk::ImageAspectFlags aspectFlags)
+VulkanImage::FromSwapchain(
+    VulkanDevice& device,
+    vk::Image image,
+    vk::Format format,
+    vk::ImageAspectFlags aspectFlags,
+    const std::string& name)
 {
-    VulkanImage result(device, image);
+    VulkanImage result(device, image, name);
     result.GenerateImageView(format, aspectFlags, vk::ImageViewType::e2D);
     return std::make_unique<VulkanImage>(std::move(result));
 }
@@ -165,9 +237,24 @@ VulkanImage::FromTexture(
     VulkanCommandPool& commandPool,
     const Core::TexturePtr& texture,
     vk::Format format,
-    vk::ImageAspectFlags aspectFlags)
+    vk::ImageAspectFlags aspectFlags,
+    const std::string& name)
 {
-    VulkanImage result(device, commandPool, texture);
+    VulkanImage result(device, commandPool, texture, name);
+    result.GenerateImageView(format, aspectFlags, vk::ImageViewType::e2D);
+    return std::make_unique<VulkanImage>(std::move(result));
+}
+
+std::unique_ptr<VulkanImage>
+VulkanImage::FromColor(
+    VulkanDevice& device,
+    VulkanCommandPool& commandPool,
+    const glm::vec4& color,
+    vk::Format format,
+    vk::ImageAspectFlags aspectFlags,
+    const std::string& name)
+{
+    VulkanImage result(device, commandPool, color, name);
     result.GenerateImageView(format, aspectFlags, vk::ImageViewType::e2D);
     return std::make_unique<VulkanImage>(std::move(result));
 }
@@ -178,15 +265,20 @@ VulkanImage::FromCubemap(
     VulkanCommandPool& commandPool,
     const std::array<Core::TexturePtr, 6>& textures,
     vk::Format format,
-    vk::ImageAspectFlags aspectFlags)
+    vk::ImageAspectFlags aspectFlags,
+    const std::string& name)
 {
-    VulkanImage result(device, commandPool, textures);
+    VulkanImage result(device, commandPool, textures, name);
     result.GenerateImageView(format, aspectFlags, vk::ImageViewType::eCube, textures.size());
     return std::make_unique<VulkanImage>(std::move(result));
 }
 
 std::unique_ptr<VulkanImage>
-VulkanImage::CreateImage(VulkanDevice& device, vk::Format format, const vk::Extent2D& swapchainExtent)
+VulkanImage::CreateImage(
+    VulkanDevice& device,
+    vk::Format format,
+    const vk::Extent2D& swapchainExtent,
+    const std::string& name)
 {
     VulkanImage result(
         device,
@@ -195,7 +287,8 @@ VulkanImage::CreateImage(VulkanDevice& device, vk::Format format, const vk::Exte
         format,
         vk::ImageTiling::eOptimal,
         vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransientAttachment,
-        vk::MemoryPropertyFlagBits::eDeviceLocal);
+        vk::MemoryPropertyFlagBits::eDeviceLocal,
+        name);
     result.GenerateImageView(format, vk::ImageAspectFlagBits::eColor, vk::ImageViewType::e2D);
     return std::make_unique<VulkanImage>(std::move(result));
 }
@@ -207,8 +300,9 @@ VulkanImage::VulkanImage(
     vk::Format format,
     vk::ImageTiling tiling,
     vk::ImageUsageFlags usage,
-    vk::MemoryPropertyFlags memoryProperty)
-    : mDevice(device)
+    vk::MemoryPropertyFlags memoryProperty,
+    const std::string& name)
+    : VulkanEntity(name, device.Handle())
 {
     auto createInfo = vk::ImageCreateInfo()
                           .setImageType(vk::ImageType::e2D)
@@ -222,22 +316,23 @@ VulkanImage::VulkanImage(
                           .setSharingMode(vk::SharingMode::eExclusive)
                           .setSamples(device.GetMsaaSamples());
 
-    mUniqueImageHolder = device.Handle()->createImageUnique(createInfo);
-    mHandle = mUniqueImageHolder.value().get();
+    mUniqueImageHolder = Device().createImageUnique(createInfo);
+    VulkanEntity::SetHandle(std::move(mUniqueImageHolder.value().get()));
 
-    vk::MemoryRequirements requirements = device.Handle()->getImageMemoryRequirements(Handle());
-    std::uint32_t memoryType = VulkanBuffer::FindMemoryType(device, requirements.memoryTypeBits, memoryProperty);
+    vk::MemoryRequirements requirements = Device().getImageMemoryRequirements(Handle());
+    std::uint32_t memoryType
+        = VulkanBuffer::FindMemoryType(device.GetPhysicalDevice(), requirements.memoryTypeBits, memoryProperty);
 
     auto allocateInfo = vk::MemoryAllocateInfo().setAllocationSize(requirements.size).setMemoryTypeIndex(memoryType);
 
-    mDeviceMemory = device.Handle()->allocateMemoryUnique(allocateInfo);
-    device.Handle()->bindImageMemory(Handle(), mDeviceMemory.get(), 0);
+    mDeviceMemory = Device().allocateMemoryUnique(allocateInfo);
+    Device().bindImageMemory(Handle(), mDeviceMemory.get(), 0);
 }
 
-VulkanImage::VulkanImage(VulkanDevice& device, vk::Image image)
-    : mDevice(device)
+VulkanImage::VulkanImage(VulkanDevice& device, vk::Image image, const std::string& name)
+    : VulkanEntity(name, device.Handle())
 {
-    mHandle = image;
+    VulkanEntity::SetHandle(std::move(image));
 }
 
 void
@@ -329,8 +424,7 @@ VulkanImage::Write(
                               .setImageOffset({ 0, 0, 0 })
                               .setImageExtent({ size.x, size.y, 1 });
 
-            commandBuffer.copyBufferToImage(
-                buffer.Handle().get(), Handle(), vk::ImageLayout::eTransferDstOptimal, region);
+            commandBuffer.copyBufferToImage(buffer.Handle(), Handle(), vk::ImageLayout::eTransferDstOptimal, region);
         });
 }
 
@@ -359,7 +453,7 @@ VulkanImage::GenerateImageView(
                                                             .setLayerCount(static_cast<std::uint32_t>(layerCount))
                                                             .setLevelCount(mMipLevels));
 
-    mImageView = mDevice.Handle()->createImageViewUnique(imageViewCreateInfo);
+    mImageView = Device().createImageViewUnique(imageViewCreateInfo);
 }
 
 void
@@ -369,10 +463,11 @@ VulkanImage::GenerateMipmaps(
     vk::Format format,
     std::size_t layerCount)
 {
-    if (!mDevice.DoesSupportBlitting(format))
+    (void)format;
+    /*if (!mDevice.DoesSupportBlitting(format))
     {
         throw std::runtime_error("Device doesn't support blitting");
-    }
+    }*/
 
     commandPool.ExecuteSingleCommand(
         [&, this](vk::CommandBuffer& commandBuffer)

@@ -2,10 +2,10 @@
 
 #include <string>
 
-namespace Lucid::Core
+namespace Lucid::Core::Scene
 {
 
-SceneNode::SceneNode(const std::string& name, SceneNodePtr parent)
+Node::Node(const std::string& name, NodePtr parent)
     : mName(name)
     , mParent(parent)
 {
@@ -14,25 +14,25 @@ SceneNode::SceneNode(const std::string& name, SceneNodePtr parent)
 }
 
 std::size_t
-SceneNode::GetId() const
+Node::GetId() const
 {
     return mId;
 }
 
 const std::string&
-SceneNode::GetName() const
+Node::GetName() const
 {
     return mName;
 }
 
-const std::vector<SceneNodePtr>&
-SceneNode::GetChildren() const
+const std::vector<NodePtr>&
+Node::GetChildren() const
 {
     return mChildren;
 }
 
-SceneNodePtr
-SceneNode::GetParent() const
+NodePtr
+Node::GetParent() const
 {
     if (mParent.expired())
     {
@@ -43,9 +43,9 @@ SceneNode::GetParent() const
 }
 
 glm::mat4
-SceneNode::GetTransform() const
+Node::GetTransform() const
 {
-    if (SceneNodePtr parent = GetParent(); parent != nullptr)
+    if (NodePtr parent = GetParent(); parent != nullptr)
     {
         return parent->GetTransform() * mTransform;
     }
@@ -56,25 +56,31 @@ SceneNode::GetTransform() const
 }
 
 const std::optional<MeshPtr>&
-SceneNode::GetOptionalMesh() const
+Node::GetOptionalMesh() const
 {
     return mMesh;
 }
 
+const std::optional<CameraPtr>&
+Node::GetOptionalCamera() const
+{
+    return mCamera;
+}
+
 void
-SceneNode::AddChildren(SceneNodePtr& node)
+Node::AddChildren(NodePtr& node)
 {
     mChildren.push_back(node);
 }
 
 void
-SceneNode::SetTransform(const glm::mat4& transform)
+Node::SetTransform(const glm::mat4& transform)
 {
     mTransform = transform;
 }
 
 void
-SceneNode::SetMesh(const MeshPtr& mesh)
+Node::SetMesh(const MeshPtr& mesh)
 {
     if (mesh == nullptr)
     {
@@ -84,4 +90,15 @@ SceneNode::SetMesh(const MeshPtr& mesh)
     mMesh = mesh;
 }
 
-} // namespace Lucid::Core
+void
+Node::SetCamera(const CameraPtr& camera)
+{
+    if (camera == nullptr)
+    {
+        return;
+    }
+
+    mCamera = camera;
+}
+
+} // namespace Lucid::Core::Scene

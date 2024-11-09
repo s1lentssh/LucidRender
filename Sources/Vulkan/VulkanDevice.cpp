@@ -8,8 +8,9 @@
 namespace Lucid::Vulkan
 {
 
-VulkanDevice::VulkanDevice(const vk::PhysicalDevice& device)
-    : mPhysicalDevice(device)
+VulkanDevice::VulkanDevice(const vk::PhysicalDevice& device, const std::string& name)
+    : VulkanEntity(name, 1)
+    , mPhysicalDevice(device)
 {
     auto properties = device.getProperties();
     vk::SampleCountFlags flags
@@ -92,11 +93,12 @@ VulkanDevice::InitLogicalDeviceForSurface(const VulkanSurface& surface) noexcept
                                 .setEnabledExtensionCount(static_cast<std::uint32_t>(mExtensions.size()))
                                 .setPpEnabledExtensionNames(mExtensions.data());
 
-    mHandle = mPhysicalDevice.createDeviceUnique(deviceCreateInfo);
+    VulkanEntity::SetHandle(mPhysicalDevice.createDeviceUnique(deviceCreateInfo));
+    VulkanEntity::SetDevice(Handle());
     LoggerInfo << "Logical device created";
 
-    mGraphicsQueue = Handle()->getQueue(queueFamilies.graphics.value(), 0);
-    mPresentQueue = Handle()->getQueue(queueFamilies.present.value(), 0);
+    mGraphicsQueue = Handle().getQueue(queueFamilies.graphics.value(), 0);
+    mPresentQueue = Handle().getQueue(queueFamilies.present.value(), 0);
 }
 
 std::optional<std::uint32_t>
@@ -123,7 +125,7 @@ VulkanDevice::FindPresentQueueFamily(const VulkanSurface& surface) const noexcep
     std::vector<vk::QueueFamilyProperties> queueFamiliesProperties = mPhysicalDevice.getQueueFamilyProperties();
     for (std::uint32_t i = 0; i < queueFamiliesProperties.size(); ++i)
     {
-        vk::Bool32 supportsSurface = mPhysicalDevice.getSurfaceSupportKHR(i, surface.Handle().get());
+        vk::Bool32 supportsSurface = mPhysicalDevice.getSurfaceSupportKHR(i, surface.Handle());
 
         if (supportsSurface)
         {
@@ -157,9 +159,9 @@ VulkanDevice::GetSwapchainDetails(const VulkanSurface& surface) const noexcept
 {
     SwapchainDetails details;
 
-    details.formats = mPhysicalDevice.getSurfaceFormatsKHR(surface.Handle().get());
-    details.capabilities = mPhysicalDevice.getSurfaceCapabilitiesKHR(surface.Handle().get());
-    details.presentModes = mPhysicalDevice.getSurfacePresentModesKHR(surface.Handle().get());
+    details.formats = mPhysicalDevice.getSurfaceFormatsKHR(surface.Handle());
+    details.capabilities = mPhysicalDevice.getSurfaceCapabilitiesKHR(surface.Handle());
+    details.presentModes = mPhysicalDevice.getSurfacePresentModesKHR(surface.Handle());
 
     return details;
 }

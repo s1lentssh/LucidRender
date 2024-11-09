@@ -7,7 +7,8 @@
 namespace Lucid::Vulkan
 {
 
-VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, vk::Format imageFormat)
+VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, vk::Format imageFormat, const std::string& name)
+    : VulkanEntity(name, device.Handle())
 {
     // Create subpass
     auto colorAttachmentReference
@@ -80,7 +81,7 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, vk::Format imageFormat)
                                     .setDependencyCount(1)
                                     .setPDependencies(&subpassDependency);
 
-    mHandle = device.Handle()->createRenderPassUnique(renderPassCreateInfo);
+    VulkanEntity::SetHandle(Device().createRenderPassUnique(renderPassCreateInfo));
     LoggerInfo << "Render pass created";
 }
 

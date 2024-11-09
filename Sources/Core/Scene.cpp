@@ -1,40 +1,42 @@
 #include "Scene.h"
 
-namespace Lucid::Core
+namespace Lucid::Core::Scene
 {
 
 void
-Scene::SetRootNode(const SceneNodePtr& node)
+Scene::SetRootNode(const NodePtr& node)
 {
     mRootNode = node;
 
     // Add all nodes to index
-    Traverse([this](const Core::SceneNodePtr& it) { mNodeIndex[it->GetId()] = it; }, GetRootNode());
+    Traverse([this](const Core::Scene::NodePtr& it) { mNodeIndex[it->GetId()] = it; }, GetRootNode());
+    mActiveCamera = std::make_shared<Lucid::Core::Scene::Camera>(glm::mat4{1.0f});
 }
 
 void
-Scene::AddCamera(const std::shared_ptr<Camera>& entity)
+Scene::AddCamera(const NodePtr& node)
 {
-    mCamera = entity;
+    mCameras.push_back(node);
+    mActiveCamera = std::make_shared<Lucid::Core::Scene::Camera>(node->GetTransform());
 }
 
 void
-Scene::Traverse(const std::function<void(const SceneNodePtr&)>& fn, const SceneNodePtr& node) const
+Scene::Traverse(const std::function<void(const NodePtr&)>& fn, const NodePtr& node) const
 {
-    for (const SceneNodePtr& child : node->GetChildren())
+    for (const NodePtr& child : node->GetChildren())
     {
         fn(child);
         Traverse(fn, child);
     }
 }
 
-const SceneNodePtr&
+const NodePtr&
 Scene::GetRootNode() const
 {
     return mRootNode;
 }
 
-SceneNodePtr
+NodePtr
 Scene::GetNodeById(std::size_t id) const
 {
     return mNodeIndex.at(id).lock();
@@ -43,7 +45,7 @@ Scene::GetNodeById(std::size_t id) const
 const std::shared_ptr<Camera>&
 Scene::GetCamera() const
 {
-    return mCamera;
+    return mActiveCamera;
 }
 
-} // namespace Lucid::Core
+} // namespace Lucid::Core::Scene

@@ -16,7 +16,11 @@ class VulkanUniformBuffer;
 class VulkanSwapchain : public VulkanEntity<vk::UniqueSwapchainKHR>
 {
 public:
-    VulkanSwapchain(VulkanDevice& device, const VulkanSurface& surface, const Core::Vector2d<std::uint32_t>& size);
+    VulkanSwapchain(
+        VulkanDevice& device,
+        const VulkanSurface& surface,
+        const Core::Vector2d<std::uint32_t>& size,
+        const std::string& name);
     void CreateFramebuffers(VulkanRenderPass& renderPass, VulkanImage& depthImage, VulkanImage& resolveImage);
 
     [[nodiscard]] vk::Extent2D GetExtent() const noexcept;
@@ -34,7 +38,6 @@ private:
     [[nodiscard]] vk::Extent2D SelectSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities) const noexcept;
 
     const VulkanSurface& mSurface;
-    VulkanDevice& mDevice;
     Core::Vector2d<std::uint32_t> mWindowSize;
 
     vk::Format mFormat;

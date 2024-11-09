@@ -5,29 +5,41 @@
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/string_cast.hpp>
 
-namespace Lucid::Core
+namespace Lucid::Core::Scene
 {
 
 Camera::Camera(const glm::mat4& transform)
-    : mTransform(transform)
+    : mTransform(glm::inverse(transform))
 {
-    glm::mat4 viewMatrix = glm::inverse(transform);
+    mTransform = glm::translate(mTransform, glm::vec3 { 0.0f, 1.0f, 3.0f });
+    mTransform = glm::scale(mTransform, glm::vec3 { 1.0f, -1.0f, -1.0f });
 
     glm::vec3 scale;
     glm::quat rotation;
     glm::vec3 translation;
     glm::vec3 skew;
     glm::vec4 perspective;
-    glm::decompose(viewMatrix, scale, rotation, translation, skew, perspective);
+    glm::decompose(mTransform, scale, rotation, translation, skew, perspective);
+
+    std::swap(translation.x, translation.y);
+    translation.z = -translation.z;
+    translation.x = -translation.x;
+
+    glm::vec3 euler = glm::eulerAngles(rotation);
 
     mCameraPos = translation;
-    mCameraFront = -glm::normalize(glm::vec3(viewMatrix[2]));
+    mCameraFront = -glm::normalize(glm::vec3(mTransform[2]));
 
-    mYaw = -(glm::degrees(glm::yaw(rotation)) + 90.0f);
-    mPitch = glm::degrees(glm::pitch(rotation));
+    mYaw = glm::degrees(euler.x) - 90.0f;
+    mPitch = -glm::degrees(euler.y);
+
+    Move(MoveDirection::Forward, 0.0f);
+    Rotate({ 0, 0 });
 }
 
 void
@@ -42,7 +54,7 @@ Camera::Rotate(const Vector2d<float>& value)
     mCameraFront.y = std::sin(glm::radians(mPitch));
 
     mCameraFront = glm::normalize(mCameraFront);
-    mTransform = glm::lookAt(mCameraPos, mCameraPos + mCameraFront, mCameraUp);
+    mTransform = glm::inverse(glm::lookAt(mCameraPos, mCameraPos + mCameraFront, mCameraUp));
 }
 
 void
@@ -67,7 +79,7 @@ Camera::Move(MoveDirection direction, float deltaTime)
         break;
     }
 
-    mTransform = glm::lookAt(mCameraPos, mCameraPos + mCameraFront, mCameraUp);
+    mTransform = glm::inverse(glm::lookAt(mCameraPos, mCameraPos + mCameraFront, mCameraUp));
 }
 
 void
@@ -89,4 +101,4 @@ Camera::FieldOfView() const
     return mFov;
 }
 
-} // namespace Lucid::Core
+} // namespace Lucid::Core::Scene

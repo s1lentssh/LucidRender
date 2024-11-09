@@ -5,7 +5,8 @@
 namespace Lucid::Vulkan
 {
 
-VulkanSampler::VulkanSampler(VulkanDevice& device, std::uint32_t mipLevels)
+VulkanSampler::VulkanSampler(VulkanDevice& device, std::uint32_t mipLevels, const std::string& name)
+    : VulkanEntity(name, device.Handle())
 {
     vk::PhysicalDeviceProperties properties = device.GetPhysicalDevice().getProperties();
 
@@ -26,7 +27,7 @@ VulkanSampler::VulkanSampler(VulkanDevice& device, std::uint32_t mipLevels)
                           .setMinLod(0.0f)
                           .setMaxLod(static_cast<float>(mipLevels));
 
-    mHandle = device.Handle()->createSamplerUnique(createInfo);
+    VulkanEntity::SetHandle(Device().createSamplerUnique(createInfo));
 }
 
 } // namespace Lucid::Vulkan

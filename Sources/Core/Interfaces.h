@@ -41,7 +41,7 @@ class IRender
 {
 public:
     virtual void DrawFrame() = 0;
-    virtual void AddNode(const Core::SceneNodePtr& mesh) = 0;
+    virtual void AddNode(const Core::Scene::NodePtr& mesh) = 0;
     virtual ~IRender() = default;
     virtual bool ShouldClose() const = 0;
 };

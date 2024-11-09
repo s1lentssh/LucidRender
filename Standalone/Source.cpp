@@ -4,10 +4,11 @@
 #include <Utils/Defaults.hpp>
 #include <Utils/Files.h>
 #include <Utils/Logger.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
 
-auto
-main() -> int
-try
+static void
+ShowStartupInfo()
 {
     LoggerInfo << "Version " << Defaults::Version;
 
@@ -15,7 +16,7 @@ try
   █░░ █░█ █▀▀ █ █▀▄   █▀█ █▀▀ █▄░█ █▀▄ █▀▀ █▀█
   █▄▄ █▄█ █▄▄ █ █▄▀   █▀▄ ██▄ █░▀█ █▄▀ ██▄ █▀▄
     )";
-    std::cout << title << '\n';
+    LoggerPlain << title;
 
 #ifdef _WIN32
     SetConsoleTitle((Defaults::ApplicationName + " Console").c_str());
@@ -25,6 +26,34 @@ try
     std::cout << "\033]0;" << Defaults::ApplicationName << " Console"
               << "\007";
 #endif
+}
+
+auto
+main(std::int32_t argc, const char** argv) -> int
+try
+{
+    ShowStartupInfo();
+
+    boost::program_options::options_description description("Lucid options");
+    description.add_options()("help", "Show help message")(
+        "scene", boost::program_options::value<std::string>(), "Path to scene to load");
+
+    boost::program_options::variables_map vm;
+    boost::program_options::store(boost::program_options::parse_command_line(argc, argv, description), vm);
+    boost::program_options::notify(vm);
+
+    if (vm.contains("help"))
+    {
+        LoggerPlain << description;
+        return EXIT_SUCCESS;
+    }
+
+    if (!vm.contains("scene"))
+    {
+        LoggerError << "Scene not provided";
+        LoggerPlain << description;
+        return EXIT_FAILURE;
+    }
 
     std::unique_ptr<Lucid::Core::IWindow> window = std::make_unique<Lucid::Window>();
     window->SetIcon("Resources/Icons/AppIcon.png");
@@ -32,7 +61,7 @@ try
     std::unique_ptr<Lucid::Core::Engine> engine
         = std::make_unique<Lucid::Core::Engine>(*window.get(), Lucid::Core::Engine::API::Vulkan);
 
-    Lucid::Core::SceneNodePtr scene = Lucid::Files::LoadModel("/home/s1lentssh/Work/glTF-Sample-Models/2.0/FlightHelmet/glTF/FlightHelmet.gltf");
+    Lucid::Core::Scene::NodePtr scene = Lucid::Files::LoadModel(vm.at("scene").as<std::string>());
     engine->SetRootNode(scene);
 
     float lastTime = static_cast<float>(glfwGetTime());

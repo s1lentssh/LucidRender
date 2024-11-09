@@ -9,8 +9,8 @@
 namespace Lucid::Vulkan
 {
 
-VulkanDescriptorPool::VulkanDescriptorPool(VulkanDevice& device)
-    : mDevice(device)
+VulkanDescriptorPool::VulkanDescriptorPool(VulkanDevice& device, const std::string& name)
+    : VulkanEntity(name, device.Handle())
 {
     const std::uint32_t kMaxDescriptorCount = 1000;
     const std::uint32_t kMaxDescriptorSets = 1000;
@@ -65,7 +65,7 @@ VulkanDescriptorPool::VulkanDescriptorPool(VulkanDevice& device)
                           .setMaxSets(kMaxDescriptorSets)
                           .setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet);
 
-    mHandle = device.Handle()->createDescriptorPoolUnique(createInfo);
+    VulkanEntity::SetHandle(device.Handle().createDescriptorPoolUnique(createInfo));
 
     CreateDescriptorSetLayout();
 }
@@ -79,19 +79,41 @@ VulkanDescriptorPool::CreateDescriptorSetLayout()
                                    .setDescriptorCount(1)
                                    .setStageFlags(vk::ShaderStageFlagBits::eVertex);
 
-    auto samplerLayoutBinding = vk::DescriptorSetLayoutBinding()
-                                    .setBinding(1)
-                                    .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
-                                    .setDescriptorCount(1)
-                                    .setStageFlags(vk::ShaderStageFlagBits::eFragment);
+    auto albedoSamplerLayoutBinding = vk::DescriptorSetLayoutBinding()
+                                          .setBinding(1)
+                                          .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+                                          .setDescriptorCount(1)
+                                          .setStageFlags(vk::ShaderStageFlagBits::eFragment);
 
-    vk::DescriptorSetLayoutBinding bindings[] = { vertexLayoutBinding, samplerLayoutBinding };
+    auto metallicRoughnessSamplerLayoutBinding = vk::DescriptorSetLayoutBinding()
+                                                     .setBinding(2)
+                                                     .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+                                                     .setDescriptorCount(1)
+                                                     .setStageFlags(vk::ShaderStageFlagBits::eFragment);
+
+    auto normalSamplerLayoutBinding = vk::DescriptorSetLayoutBinding()
+                                          .setBinding(3)
+                                          .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+                                          .setDescriptorCount(1)
+                                          .setStageFlags(vk::ShaderStageFlagBits::eFragment);
+
+    auto materialLayoutBinding = vk::DescriptorSetLayoutBinding()
+                                     .setBinding(4)
+                                     .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+                                     .setDescriptorCount(1)
+                                     .setStageFlags(vk::ShaderStageFlagBits::eFragment);
+
+    vk::DescriptorSetLayoutBinding bindings[] = { vertexLayoutBinding,
+                                                  albedoSamplerLayoutBinding,
+                                                  metallicRoughnessSamplerLayoutBinding,
+                                                  normalSamplerLayoutBinding,
+                                                  materialLayoutBinding };
 
     auto createInfo = vk::DescriptorSetLayoutCreateInfo()
                           .setBindingCount(static_cast<std::uint32_t>(std::size(bindings)))
                           .setPBindings(bindings);
 
-    mDescriptorSetLayout = mDevice.Handle()->createDescriptorSetLayoutUnique(createInfo);
+    mDescriptorSetLayout = Device().createDescriptorSetLayoutUnique(createInfo);
 }
 
 } // namespace Lucid::Vulkan

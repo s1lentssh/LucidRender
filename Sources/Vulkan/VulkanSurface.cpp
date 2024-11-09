@@ -11,7 +11,8 @@
 namespace Lucid::Vulkan
 {
 
-VulkanSurface::VulkanSurface(VulkanInstance& instance, const Core::IWindow& window)
+VulkanSurface::VulkanSurface(VulkanInstance& instance, const Core::IWindow& window, const std::string& name)
+    : VulkanEntity(name, 1)
 {
 
 #ifdef _WIN32
@@ -19,7 +20,7 @@ VulkanSurface::VulkanSurface(VulkanInstance& instance, const Core::IWindow& wind
                           .setHwnd(static_cast<HWND>(window.Handle()))
                           .setHinstance(GetModuleHandle(nullptr));
 
-    mHandle = instance.Handle()->createWin32SurfaceKHRUnique(createInfo);
+    VulkanEntity::SetHandle(instance.Handle().createWin32SurfaceKHRUnique(createInfo));
 #endif
 
 #ifdef __linux__
@@ -27,16 +28,16 @@ VulkanSurface::VulkanSurface(VulkanInstance& instance, const Core::IWindow& wind
                           .setWindow(static_cast<std::uint32_t>(window.Handle()))
                           .setConnection(XGetXCBConnection(reinterpret_cast<Display*>(window.Display())));
 
-    mHandle = instance.Handle()->createXcbSurfaceKHRUnique(createInfo);
+    VulkanEntity::SetHandle(instance.Handle().createXcbSurfaceKHRUnique(createInfo));
 #endif
 
 #ifdef __APPLE__
     auto createInfo = vk::MetalSurfaceCreateInfoEXT().setPLayer(window.Handle());
 
-    mHandle = instance.Handle()->createMetalSurfaceEXTUnique(createInfo);
+    VulkanEntity::SetHandle(instance.Handle().createMetalSurfaceEXTUnique(createInfo));
 #endif
 
-    if (mHandle->operator bool())
+    if (Handle().operator bool())
     {
         LoggerInfo << "Surface created";
     }

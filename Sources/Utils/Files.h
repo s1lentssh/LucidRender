@@ -13,7 +13,7 @@ class Files
 public:
     static std::vector<char> LoadFile(const std::filesystem::path& path);
     static Core::TexturePtr LoadTexture(const std::filesystem::path& path);
-    static Core::SceneNodePtr LoadModel(const std::filesystem::path& path);
+    static Core::Scene::NodePtr LoadModel(const std::filesystem::path& path);
 };
 
 } // namespace Lucid

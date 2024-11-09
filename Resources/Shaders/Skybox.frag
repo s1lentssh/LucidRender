@@ -11,5 +11,5 @@ void
 main()
 {
     float gamma = 2.2;
-    outFragColor = vec4(pow(texture(samplerCubeMap, inUVW).rgb, vec3(1.0/gamma)), 1.0);
+    outFragColor = vec4(pow(texture(samplerCubeMap, inUVW).rgb, vec3(1.0 / gamma)), 1.0);
 }

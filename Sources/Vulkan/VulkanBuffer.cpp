@@ -12,21 +12,22 @@ VulkanBuffer::VulkanBuffer(
     VulkanDevice& device,
     vk::DeviceSize size,
     vk::BufferUsageFlags usage,
-    vk::MemoryPropertyFlags properties)
-    : mDevice(device)
+    vk::MemoryPropertyFlags properties,
+    const std::string& name)
+    : VulkanEntity(name, device.Handle())
 {
     auto createInfo = vk::BufferCreateInfo().setSize(size).setUsage(usage).setSharingMode(vk::SharingMode::eExclusive);
 
-    mHandle = device.Handle()->createBufferUnique(createInfo);
-    vk::MemoryRequirements requirements = device.Handle()->getBufferMemoryRequirements(Handle().get());
-    std::uint32_t memoryType = FindMemoryType(mDevice, requirements.memoryTypeBits, properties);
+    VulkanEntity::SetHandle(device.Handle().createBufferUnique(createInfo));
+    vk::MemoryRequirements requirements = device.Handle().getBufferMemoryRequirements(Handle());
+    std::uint32_t memoryType = FindMemoryType(device.GetPhysicalDevice(), requirements.memoryTypeBits, properties);
 
     auto allocateInfo = vk::MemoryAllocateInfo().setAllocationSize(requirements.size).setMemoryTypeIndex(memoryType);
 
-    mMemory = device.Handle()->allocateMemoryUnique(allocateInfo);
+    mMemory = device.Handle().allocateMemoryUnique(allocateInfo);
 
     mBufferSize = createInfo.size;
-    device.Handle()->bindBufferMemory(Handle().get(), mMemory.get(), 0);
+    device.Handle().bindBufferMemory(Handle(), mMemory.get(), 0);
 }
 
 void
@@ -37,15 +38,15 @@ VulkanBuffer::Write(const void* pixels, std::size_t size, std::size_t offset)
         size = mBufferSize;
     }
 
-    void* deviceMemory = mDevice.Handle()->mapMemory(mMemory.get(), 0, mBufferSize);
+    void* deviceMemory = Device().mapMemory(mMemory.get(), 0, mBufferSize);
     std::memcpy(reinterpret_cast<std::byte*>(deviceMemory) + offset, pixels, size);
-    mDevice.Handle()->unmapMemory(mMemory.get());
+    Device().unmapMemory(mMemory.get());
 }
 
 std::uint32_t
-VulkanBuffer::FindMemoryType(VulkanDevice& device, std::uint32_t filter, vk::MemoryPropertyFlags flags)
+VulkanBuffer::FindMemoryType(vk::PhysicalDevice& device, std::uint32_t filter, vk::MemoryPropertyFlags flags)
 {
-    vk::PhysicalDeviceMemoryProperties properties = device.GetPhysicalDevice().getMemoryProperties();
+    vk::PhysicalDeviceMemoryProperties properties = device.getMemoryProperties();
 
     for (std::uint32_t i = 0; i < properties.memoryTypeCount; i++)
     {
@@ -64,19 +65,22 @@ VulkanBuffer::FindMemoryType(VulkanDevice& device, std::uint32_t filter, vk::Mem
 VulkanVertexBuffer::VulkanVertexBuffer(
     VulkanDevice& device,
     VulkanCommandPool& manager,
-    const std::vector<Core::Vertex>& vertices)
+    const std::vector<Core::Vertex>& vertices,
+    const std::string& name)
     : VulkanBuffer(
         device,
         vertices.size() * sizeof(vertices.at(0)),
         vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst,
-        vk::MemoryPropertyFlagBits::eDeviceLocal)
+        vk::MemoryPropertyFlagBits::eDeviceLocal,
+        name)
     , mVerticesCount(vertices.size())
 {
     VulkanBuffer stagingBuffer(
         device,
         vertices.size() * sizeof(vertices.at(0)),
         vk::BufferUsageFlagBits::eTransferSrc,
-        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+        "Staging buffer for " + name);
 
     // Copy vertex data to staging buffer (CPU -> CPU + GPU)
     stagingBuffer.Write(reinterpret_cast<const void*>(vertices.data()));
@@ -98,26 +102,29 @@ VulkanBuffer::Write(VulkanCommandPool& pool, const VulkanBuffer& buffer)
         [&buffer, this](vk::CommandBuffer& commandBuffer)
         {
             auto copyRegion = vk::BufferCopy().setSize(mBufferSize);
-            commandBuffer.copyBuffer(buffer.Handle().get(), Handle().get(), copyRegion);
+            commandBuffer.copyBuffer(buffer.Handle(), Handle(), copyRegion);
         });
 }
 
 VulkanIndexBuffer::VulkanIndexBuffer(
     VulkanDevice& device,
     VulkanCommandPool& manager,
-    const std::vector<std::uint32_t>& indices)
+    const std::vector<std::uint32_t>& indices,
+    const std::string& name)
     : VulkanBuffer(
         device,
         indices.size() * sizeof(indices.at(0)),
         vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst,
-        vk::MemoryPropertyFlagBits::eDeviceLocal)
+        vk::MemoryPropertyFlagBits::eDeviceLocal,
+        name)
     , mIndicesCount(indices.size())
 {
     VulkanBuffer stagingBuffer(
         device,
         indices.size() * sizeof(indices.at(0)),
         vk::BufferUsageFlagBits::eTransferSrc,
-        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+        "Staging buffer for " + name);
 
     // Copy vertex data to staging buffer (CPU -> CPU + GPU)
     stagingBuffer.Write(reinterpret_cast<const void*>(indices.data()));
@@ -132,12 +139,23 @@ VulkanIndexBuffer::IndicesCount() const noexcept
     return mIndicesCount;
 }
 
-VulkanUniformBuffer::VulkanUniformBuffer(VulkanDevice& device)
+VulkanUniformBuffer::VulkanUniformBuffer(VulkanDevice& device, const std::string& name)
     : VulkanBuffer(
         device,
         sizeof(Core::UniformBufferObject),
         vk::BufferUsageFlagBits::eUniformBuffer,
-        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent)
+        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+        name)
+{
+}
+
+VulkanMaterialBuffer::VulkanMaterialBuffer(VulkanDevice& device, const std::string& name)
+    : VulkanBuffer(
+        device,
+        sizeof(Core::MaterialBufferObject),
+        vk::BufferUsageFlagBits::eUniformBuffer,
+        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+        name)
 {
 }
 

@@ -7,7 +7,8 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "Standalone")
 
 # Link libraries
-target_link_libraries(${PROJECT_NAME} Lucid::Lucid)
+find_package(Boost REQUIRED COMPONENTS program_options)
+target_link_libraries(${PROJECT_NAME} Lucid::Lucid Boost::program_options)
 
 if(WIN32)
     target_compile_definitions(${PROJECT_NAME} PUBLIC GLFW_EXPOSE_NATIVE_WIN32)

@@ -23,10 +23,10 @@ namespace Lucid::Vulkan
 class VulkanRender : public Core::IRender
 {
 public:
-    VulkanRender(const Core::IWindow& window, const Core::Scene& scene);
+    VulkanRender(const Core::IWindow& window, const Core::Scene::Scene& scene);
     ~VulkanRender() override;
     void DrawFrame() override;
-    void AddNode(const Core::SceneNodePtr& node) override;
+    void AddNode(const Core::Scene::NodePtr& node) override;
     bool ShouldClose() const override;
 
 private:
@@ -60,7 +60,7 @@ private:
     std::size_t mCurrentFrame = 0;
     const Core::IWindow* mWindow = nullptr;
 
-    const Core::Scene& mScene;
+    const Core::Scene::Scene& mScene;
     bool mShouldClose = false;
 
     // Settings
