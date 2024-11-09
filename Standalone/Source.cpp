@@ -32,7 +32,7 @@ try
     std::unique_ptr<Lucid::Core::Engine> engine
         = std::make_unique<Lucid::Core::Engine>(*window.get(), Lucid::Core::Engine::API::Vulkan);
 
-    Lucid::Core::SceneNodePtr scene = Lucid::Files::LoadModel("/Users/s1lentssh/Documents/Office.glb");
+    Lucid::Core::SceneNodePtr scene = Lucid::Files::LoadModel("/home/s1lentssh/Work/glTF-Sample-Models/2.0/FlightHelmet/glTF/FlightHelmet.gltf");
     engine->SetRootNode(scene);
 
     float lastTime = static_cast<float>(glfwGetTime());

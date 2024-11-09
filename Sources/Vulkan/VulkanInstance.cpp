@@ -24,8 +24,11 @@ VulkanInstance::VulkanInstance(std::vector<const char*> requiredInstanceExtensio
         auto unsupportedValidationLayers = VulkanInstance::GetUnsupportedLayers(mValidationLayers);
         if (!unsupportedValidationLayers.empty())
         {
-            LoggerError << "Unsupported validation layers: "
-                        << "[...]";
+            LoggerError << "Unsupported validation layers: ";
+            for (const auto& layer: unsupportedValidationLayers)
+            {
+                LoggerError << layer;
+            }
             throw std::runtime_error("Unsupported validation layers");
         }
     }
@@ -108,6 +111,8 @@ VulkanInstance::PickSuitableDeviceForSurface(const VulkanSurface& surface) const
     {
         throw std::runtime_error("Suitable device not found");
     }
+
+    LoggerInfo << "Selected device " << availableDeviceIterator->GetPhysicalDevice().getProperties().deviceName;
 
     return std::move(*availableDeviceIterator);
 }

@@ -57,14 +57,14 @@ LucidFormatter(logging::record_view const& rec, logging::formatting_ostream& str
     // Message section
     strm << fmt::format(fg(fmt::color::gray) | fmt::emphasis::bold, " ") << rec[expr::smessage] << " ";
 
+    std::string function = logging::extract<std::string>("Function", rec).get();
+    std::string line = std::to_string(logging::extract<unsigned long>("Line", rec).get());
+
     // Function and line section
     strm << fmt::format(fg(fmt::color::light_steel_blue) | fmt::emphasis::bold, "(")
-         << fmt::format(
-                fg(fmt::color::steel_blue) | fmt::emphasis::bold, logging::extract<std::string>("Function", rec).get())
+         << fmt::format(fg(fmt::color::steel_blue) | fmt::emphasis::bold, fmt::runtime(function))
          << fmt::format(fg(fmt::color::light_steel_blue) | fmt::emphasis::bold, ":")
-         << fmt::format(
-                fg(fmt::color::steel_blue) | fmt::emphasis::bold,
-                std::to_string(logging::extract<unsigned long>("Line", rec).get()))
+         << fmt::format(fg(fmt::color::steel_blue) | fmt::emphasis::bold, fmt::runtime(line))
          << fmt::format(fg(fmt::color::light_steel_blue) | fmt::emphasis::bold, ")");
 }
 

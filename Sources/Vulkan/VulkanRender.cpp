@@ -48,8 +48,6 @@ VulkanRender::VulkanRender(const Core::IWindow& window, const Core::Scene& scene
         mInFlightFences.push_back(mDevice->Handle()->createFenceUnique(fenceCreateInfo));
     }
 
-    mImagesInFlight.resize(Defaults::MaxFramesInFlight, {});
-
     // Skybox
     mSkybox = std::make_unique<VulkanSkybox>(*mDevice.get(), *mDescriptorPool.get(), *mCommandPool.get());
 
@@ -171,12 +169,9 @@ VulkanRender::SetupImgui()
     info.MinImageCount = 2;
     info.ImageCount = static_cast<std::uint32_t>(mSwapchain->GetImageCount());
     info.MSAASamples = static_cast<VkSampleCountFlagBits>(mDevice->GetMsaaSamples());
+    info.RenderPass = mRenderPass->Handle().get();
 
-    ImGui_ImplVulkan_Init(&info, mRenderPass->Handle().get());
-    mCommandPool->ExecuteSingleCommand([](vk::CommandBuffer& commandBuffer)
-                                       { ImGui_ImplVulkan_CreateFontsTexture(commandBuffer); });
-
-    ImGui_ImplVulkan_DestroyFontUploadObjects();
+    ImGui_ImplVulkan_Init(&info);
 }
 
 VulkanRender::~VulkanRender()
@@ -275,16 +270,6 @@ VulkanRender::DrawFrame()
     std::uint32_t imageIndex = acquireResult.value;
 
     UpdateUniformBuffers();
-
-    // Fix if max frames in flight greater than swapchain image count or if aquire returns out of order
-    if (mImagesInFlight[imageIndex])
-    {
-        auto result2 = mDevice->Handle()->waitForFences(
-            mImagesInFlight[imageIndex], true, std::numeric_limits<std::uint64_t>::max());
-        (void)result2;
-    }
-
-    mImagesInFlight[imageIndex] = mInFlightFences[mCurrentFrame].get();
 
     vk::Semaphore waitSemaphores[] = { mImagePresentedSemaphores[mCurrentFrame].get() };
     vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
