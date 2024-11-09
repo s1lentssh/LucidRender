@@ -26,6 +26,19 @@ LoggerImpl::LoggerImpl(Severity severity, const std::string& file, std::int32_t 
     case Severity::Plain:
         break;
     }
+
+    // Message section
+    strm << fmt::format(fg(fmt::color::gray) | fmt::emphasis::bold, " ") << rec[expr::smessage] << " ";
+
+    std::string function = logging::extract<std::string>("Function", rec).get();
+    std::string line = std::to_string(logging::extract<unsigned long>("Line", rec).get());
+
+    // Function and line section
+    strm << fmt::format(fg(fmt::color::light_steel_blue) | fmt::emphasis::bold, "(")
+         << fmt::format(fg(fmt::color::steel_blue) | fmt::emphasis::bold, fmt::runtime(function))
+         << fmt::format(fg(fmt::color::light_steel_blue) | fmt::emphasis::bold, ":")
+         << fmt::format(fg(fmt::color::steel_blue) | fmt::emphasis::bold, fmt::runtime(line))
+         << fmt::format(fg(fmt::color::light_steel_blue) | fmt::emphasis::bold, ")");
 }
 
 LoggerImpl::~LoggerImpl()

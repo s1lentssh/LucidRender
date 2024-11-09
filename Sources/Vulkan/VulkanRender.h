@@ -56,7 +56,6 @@ private:
     std::vector<vk::UniqueSemaphore> mImagePresentedSemaphores;
     std::vector<vk::UniqueSemaphore> mRenderFinishedSemaphores;
     std::vector<vk::UniqueFence> mInFlightFences;
-    std::vector<vk::Fence> mImagesInFlight;
 
     std::size_t mCurrentFrame = 0;
     const Core::IWindow* mWindow = nullptr;

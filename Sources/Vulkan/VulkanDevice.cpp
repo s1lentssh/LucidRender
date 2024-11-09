@@ -12,8 +12,6 @@ VulkanDevice::VulkanDevice(const vk::PhysicalDevice& device, const std::string& 
     : VulkanEntity(name, 1)
     , mPhysicalDevice(device)
 {
-    LoggerInfo << "Selected device" << device.getProperties().deviceName;
-
     auto properties = device.getProperties();
     vk::SampleCountFlags flags
         = properties.limits.framebufferColorSampleCounts & properties.limits.framebufferDepthSampleCounts;
